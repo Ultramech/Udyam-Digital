@@ -1,5 +1,9 @@
 # Deploying Udyam Digital (Vercel + Turso)
 
+> **Live deployment:** https://udyam-digital-kappa.vercel.app (Vercel project `udyam-digital`, Turso database `udyam-digital-db` provisioned through the Vercel Marketplace; health at `/api/health`).
+> Deploy from this folder with `vercel deploy --prod` (`.vercelignore` keeps local build output out of the upload). The Vercel Turso integration sets
+> `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN`; the app accepts those names as well as `DATABASE_URL` / `DATABASE_AUTH_TOKEN`.
+
 The app is a Next.js 16 app with a libSQL database. Locally it uses a SQLite file (`.data/udyam.db`); in production it uses
 **Turso** (hosted libSQL — same SQL, same code). Nothing is written to local disk in production: document images are read in
 memory and never stored, so no file storage service is needed.
