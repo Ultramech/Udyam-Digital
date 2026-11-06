@@ -79,7 +79,7 @@ export function BundleCards({ signedIn }: { signedIn: boolean }) {
           </div>
           <h3 className="mt-4 text-lg font-extrabold">{bundleName(c.id, lang)}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{bundleTagline(c.id, lang)}</p>
-          <ul className="mt-4 space-y-2 text-sm">
+          <ul className="mb-5 mt-4 space-y-2 text-sm">
             {c.items.map((p) => <li key={p} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />{plainName(p, lang)}</li>)}
           </ul>
           <div className="mt-auto flex items-end justify-between gap-2 border-t pt-4">

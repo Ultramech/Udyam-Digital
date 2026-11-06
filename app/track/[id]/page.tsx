@@ -167,7 +167,7 @@ function Inner({ id }: { id: string }) {
         </Card>
       )}
       {o.engineer && (
-        <Card className="flex flex-row items-center gap-3 p-3.5"><span className="flex size-10 items-center justify-center rounded-full bg-secondary text-foreground"><HardHat className="size-5" /></span>
+        <Card className="flex flex-row items-center gap-3 p-3.5"><span className="flex size-10 items-center justify-center rounded-full bg-accent text-primary"><HardHat className="size-5" /></span>
           <div className="flex-1 text-sm"><div className="text-xs text-muted-foreground">{t("engineer")}</div><div className="font-semibold">{o.engineer.name}</div><div className="text-xs text-muted-foreground">{t("slot")}: {o.engineer.slot}</div>{o.engineer.enRoute && <Badge className="mt-1 gap-1" role="status"><HardHat className="size-3" />{(lang === "hi" || lang === "mr") ? "रास्ते में हैं" : "On the way"}</Badge>}</div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="size-3.5" />{o.engineer.phoneMasked}</div></Card>
       )}

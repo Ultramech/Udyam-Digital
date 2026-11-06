@@ -26,7 +26,7 @@ export function LinesList({ lines, showPrice = true }: { lines: Line[]; showPric
         const p = getProduct(g.productId);
         return (
           <li key={g.productId} className="flex items-start gap-3 p-3">
-            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><ProductIcon id={g.productId} /></span>
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><ProductIcon id={g.productId} /></span>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium leading-snug">{plainName(g.productId, lang)}{p.unit !== "per account" && g.qty > 1 ? <span className="ml-1 text-muted-foreground">× {g.qty}</span> : null}</div>
               <div className="text-xs text-muted-foreground">{plainBenefit(g.productId, lang)}</div>

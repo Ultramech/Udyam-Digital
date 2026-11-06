@@ -53,7 +53,7 @@ export function StageTrack({ stage, className }: { stage: string | null; classNa
 export function Row({ href, icon, title, sub, right, className }: { href: string; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; right?: React.ReactNode; className?: string }) {
   return (
     <Link href={href} className={cn("flex min-h-16 items-center gap-3 rounded-2xl border bg-card px-4 py-3 transition-colors hover:bg-muted/60", className)}>
-      {icon ? <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-foreground">{icon}</span> : null}
+      {icon ? <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">{icon}</span> : null}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[0.9375rem] font-semibold">{title}</span>
         {sub ? <span className="mt-0.5 block truncate text-sm text-muted-foreground">{sub}</span> : null}

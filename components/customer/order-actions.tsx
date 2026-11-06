@@ -53,7 +53,7 @@ export function OrderActions({ o, token, lang, onChange }: { o: Order; token: st
   }
   return (
     <>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 [&_button]:h-auto [&_button]:min-h-11 [&_button]:w-full [&_button]:whitespace-normal [&_button]:py-2 [&_button]:text-center">
         <Link href={`/support?order=${o.id}`}><Button variant="outline" className="w-full gap-1.5"><LifeBuoy className="size-4" />{H("Help", "मदद")}</Button></Link>
         <Button variant="outline" className="gap-1.5" disabled={busy} onClick={() => reorder("upgrade")}><Sparkles className="size-4" />{H("Add services", "सेवाएँ जोड़ें")}</Button>
         <Button variant="outline" className="gap-1.5" disabled={busy} onClick={() => reorder("new_site")}><CopyPlus className="size-4" />{H("Plan for a new branch", "नई ब्रांच के लिए")}</Button>

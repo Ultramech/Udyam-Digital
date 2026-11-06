@@ -107,7 +107,7 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
               const each = g.sites > 1 ? first.qty : g.qty;
               return (
                 <li key={g.productId} className="flex items-start gap-3 p-3">
-                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-foreground"><ProductIcon id={g.productId} /></span>
+                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary"><ProductIcon id={g.productId} /></span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium leading-snug">{plainName(g.productId, lang)}</div>
                     <div className="text-xs text-muted-foreground">{inr(first.unitPrice)} {plainUnit(p.unit, lang)}{g.sites > 1 ? ` · ${g.sites} ${t("sites_n")}` : ""}{p.setup ? ` · ${inr(p.setup)} ${t("setup_once")}` : ""}</div>

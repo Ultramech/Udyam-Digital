@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ProductIcon } from "@/components/brand";
 import { useI18n } from "@/components/i18n-provider";
+import { BundleCards } from "@/components/landing/welcome";
 import { CustomerShell } from "@/components/customer/shell";
 import { plainBenefit, plainName, plainUnit, type Lang } from "@/lib/catalogue/plain";
 import { api, ApiError, useJourney } from "@/lib/client/api";
@@ -85,13 +86,20 @@ function Catalogue() {
           {quoteId && <Link href={`/quote/${quoteId}`}><Button size="sm" variant="outline" className="gap-1"><ArrowLeft className="size-3.5" />{hi ? "मेरा प्लान" : "My plan"}</Button></Link>}
         </div>
 
+        {!sp.get("quote") && (
+          <section aria-labelledby="bundles-h" className="space-y-3">
+            <div><h2 id="bundles-h" className="text-xl font-extrabold">{hi ? "बिज़नेस बंडल" : "Business bundles"}</h2><p className="text-sm text-muted-foreground">{hi ? "आपके जैसे बिज़नेस के लिए चुने गए समाधान।" : "Curated solutions for businesses like yours."}</p></div>
+            <BundleCards signedIn />
+          </section>
+        )}
+
         <div className="space-y-2">
           <div className="relative"><Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input className="pl-8" placeholder={hi ? "खोजें: CCTV, ईमेल, Wi-Fi…" : "Search: CCTV, email, Wi-Fi…"} value={q} onChange={(e) => setQ(e.target.value)} aria-label={hi ? "खोजें" : "Search"} /></div>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={hi ? "श्रेणी" : "Category"}>
             {["all", ...Object.keys(CAT)].map((c) => (
               <button key={c} type="button" onClick={() => setCat(c)} aria-pressed={cat === c}
-                className={cn("min-h-10 rounded-full border px-4 text-sm font-medium", cat === c ? "border-foreground bg-foreground text-background" : "border-input bg-card text-foreground hover:bg-muted")}>
+                className={cn("min-h-10 rounded-full border px-4 text-sm font-medium", cat === c ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card text-foreground hover:bg-accent")}>
                 {c === "all" ? (hi ? "सभी" : "All") : hi ? CAT[c].hi : CAT[c].en}
               </button>
             ))}
@@ -134,7 +142,7 @@ function ProductCard({ p, lang, busy, onAdd }: { p: Item; lang: Lang; busy: bool
   return (
     <Card className={cn("flex flex-col gap-2 p-3.5", (p.status === "unavailable" || p.paused) && "bg-muted/40")}>
       <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><ProductIcon id={p.id} /></span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><ProductIcon id={p.id} /></span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold leading-snug">{plainName(p.id, lang)}</div>
           <div className="text-xs text-muted-foreground">{plainBenefit(p.id, lang)}</div>

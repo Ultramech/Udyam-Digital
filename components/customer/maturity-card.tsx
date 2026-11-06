@@ -14,7 +14,7 @@ export function MaturityCard({ m, quoteId, lang }: { m: Maturity; quoteId: strin
   return (
     <Card className="space-y-3 p-3">
       <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><Gauge className="size-5" /></span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><Gauge className="size-5" /></span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{hi ? "आपका डिजिटल स्कोर" : "Your digital score"}</div>
           <div className="mt-0.5 flex items-baseline gap-2" aria-label={hi ? `आज ${m.before.total}, इस प्लान के साथ ${m.after.total}, 100 में से` : `Today ${m.before.total}, with this plan ${m.after.total}, out of 100`}>
