@@ -33,7 +33,7 @@ export default function AuditLog() {
         </div>
         {!rows ? <Skeleton className="h-64" /> : rows.length === 0 ? <Card className="p-6 text-center text-sm text-muted-foreground">No staff actions recorded yet.</Card> : (
           <Card className="overflow-x-auto p-0">
-            <table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["When", "Who", "Role", "Action", "Record"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+            <table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["When", "Who", "Role", "Action", "Record"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{rows.map((r) => <tr key={r.id} className="border-t"><td className="px-3 py-1.5 text-xs">{fmtTime(r.at)}</td><td className="px-3">{r.actorName}</td><td className="px-3 capitalize">{r.role}</td><td className="px-3 font-mono text-xs">{r.action}</td><td className="px-3 font-mono text-xs">{r.entity} {r.entityId}</td></tr>)}</tbody></table>
           </Card>
         )}

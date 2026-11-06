@@ -79,7 +79,7 @@ function Catalogue() {
       <div className="space-y-4 pb-10">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">{hi ? "सभी सेवाएँ" : "All business services"}</h1>
+            <h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{hi ? "सभी सेवाएँ" : "All business services"}</h1>
             <p className="text-sm text-muted-foreground">{hi ? "25 सेवाएँ, साफ़ कीमत और शर्तों के साथ।" : "25 services with clear prices, setup fees and conditions."}</p>
           </div>
           {quoteId && <Link href={`/quote/${quoteId}`}><Button size="sm" variant="outline" className="gap-1"><ArrowLeft className="size-3.5" />{hi ? "मेरा प्लान" : "My plan"}</Button></Link>}
@@ -91,7 +91,7 @@ function Catalogue() {
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={hi ? "श्रेणी" : "Category"}>
             {["all", ...Object.keys(CAT)].map((c) => (
               <button key={c} type="button" onClick={() => setCat(c)} aria-pressed={cat === c}
-                className={cn("rounded-full border px-3 py-1 text-xs", cat === c ? "border-primary bg-primary text-primary-foreground" : "bg-card text-muted-foreground")}>
+                className={cn("min-h-10 rounded-full border px-4 text-sm font-medium", cat === c ? "border-foreground bg-foreground text-background" : "border-input bg-card text-foreground hover:bg-muted")}>
                 {c === "all" ? (hi ? "सभी" : "All") : hi ? CAT[c].hi : CAT[c].en}
               </button>
             ))}
@@ -134,22 +134,22 @@ function ProductCard({ p, lang, busy, onAdd }: { p: Item; lang: Lang; busy: bool
   return (
     <Card className={cn("flex flex-col gap-2 p-3.5", (p.status === "unavailable" || p.paused) && "bg-muted/40")}>
       <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><ProductIcon id={p.id} /></span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><ProductIcon id={p.id} /></span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold leading-snug">{plainName(p.id, lang)}</div>
           <div className="text-xs text-muted-foreground">{plainBenefit(p.id, lang)}</div>
         </div>
-        {p.status === "included" && <Badge className="shrink-0 gap-0.5"><Check className="size-3" />{hi ? "प्लान में" : "In plan"}</Badge>}
+        {p.status === "included" && <Badge variant="success" className="shrink-0 gap-0.5"><Check className="size-3" />{hi ? "प्लान में" : "In plan"}</Badge>}
         {p.paused && <Badge variant="secondary" className="shrink-0">{hi ? "अभी बंद" : "Paused"}</Badge>}
       </div>
-      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/60 p-2 text-[11px]">
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/60 p-2 text-xs">
         <div><div className="text-muted-foreground">{hi ? "हर महीने" : "Monthly"}</div><div className="font-semibold">{price}</div><div className="text-muted-foreground">{plainUnit(p.unit, lang)}</div></div>
         <div><div className="text-muted-foreground">{hi ? "सेटअप" : "Setup"}</div><div className="font-semibold">{p.setup ? inr(p.setup) : hi ? "मुफ़्त" : "Free"}</div></div>
         <div><div className="text-muted-foreground">{hi ? "कॉन्ट्रैक्ट / चालू" : "Contract / live in"}</div><div className="font-semibold">{p.minContract} {hi ? "माह" : "mo"} · {p.installDays} {hi ? "दिन" : "d"}</div></div>
       </div>
-      {conds.length > 0 && <div className="text-[11px] text-muted-foreground">{hi ? "शर्तें: " : "Conditions: "}{conds.join(" · ")}</div>}
-      {p.status === "unavailable" && p.reason && <div className="text-[11px] text-warning">{ruleReason({ code: p.reason.code, params: p.reason.params, productId: p.id }, lang)}</div>}
-      {p.status === "swap" && <div className="text-[11px] text-muted-foreground">{hi ? "इंटरनेट/मोबाइल प्लान बदलने के लिए सलाहकार से कहें — लोकेशन जाँच ज़रूरी है।" : "To switch your internet or mobile plan, ask the advisor — it needs a location check."}</div>}
+      {conds.length > 0 && <div className="text-xs text-muted-foreground">{hi ? "शर्तें: " : "Conditions: "}{conds.join(" · ")}</div>}
+      {p.status === "unavailable" && p.reason && <div className="text-xs text-warning">{ruleReason({ code: p.reason.code, params: p.reason.params, productId: p.id }, lang)}</div>}
+      {p.status === "swap" && <div className="text-xs text-muted-foreground">{hi ? "इंटरनेट/मोबाइल प्लान बदलने के लिए सलाहकार से कहें — लोकेशन जाँच ज़रूरी है।" : "To switch your internet or mobile plan, ask the advisor — it needs a location check."}</div>}
       {onAdd && p.status === "addable" && <Button size="sm" variant="outline" className="mt-auto gap-1 self-start" disabled={busy} onClick={onAdd}><Plus className="size-3.5" />{hi ? "प्लान में जोड़ें" : "Add to my plan"}</Button>}
     </Card>
   );

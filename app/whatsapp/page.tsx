@@ -154,7 +154,7 @@ function Chat() {
             <div className={cn("max-w-[86%] rounded-lg px-2.5 pb-1 pt-1.5 text-[15px] leading-snug shadow-[0_1px_0.5px_rgba(11,20,26,0.13)]", m.from === "me" ? "rounded-tr-none bg-[#d9fdd3]" : "rounded-tl-none bg-white")}>
               <span className="sr-only">{m.from === "me" ? (hi ? "आप: " : "You: ") : hi ? "सलाहकार: " : "Advisor: "}</span>
               <Formatted text={m.text} />
-              <span className="float-right ml-3 mt-1 flex items-center gap-0.5 text-[11px] text-[#54656f]">
+              <span className="float-right ml-3 mt-1 flex items-center gap-0.5 text-xs text-[#54656f]">
                 {fmtTime(m.at)}
                 {m.from === "me" && (m.done ? <CheckCheck className="size-3.5 text-[#027eb5]" aria-label={hi ? "देखा गया" : "Read"} /> : <Check className="size-3.5" aria-label={hi ? "भेजा गया" : "Sent"} />)}
               </span>

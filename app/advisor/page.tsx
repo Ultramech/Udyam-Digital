@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mic, MicOff, Pencil, Send, Volume2, VolumeX } from "lucide-react";
+import { ChevronDown, Mic, MicOff, Pencil, Send, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,7 +31,7 @@ function Bubble({ m }: { m: ChatMsg }) {
   const mine = m.role === "user";
   return (
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-[15px] leading-snug", mine ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-card shadow-sm ring-1 ring-border")}>
+      <div className={cn("max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed", mine ? "rounded-br-md bg-foreground text-background" : "rounded-bl-md border bg-card")}>
         <RichText text={m.text} />
       </div>
     </div>
@@ -49,15 +49,21 @@ function FactsPanel({ facts, onEdit }: { facts: Facts; onEdit: () => void }) {
   const known = rows.filter(([, v]) => v);
   if (!known.length) return null;
   return (
-    <Card className="p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <div><div className="text-sm font-semibold">{t("facts_title")}</div><div className="text-[11px] text-muted-foreground">{t("facts_edit")}</div></div>
-        <Button variant="outline" size="sm" className="gap-1" onClick={onEdit}><Pencil className="size-3" />{t("edit")}</Button>
+    <details className="group rounded-2xl border bg-card">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-2.5 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold">{t("facts_title")}</span>
+          <span className="block truncate text-sm text-muted-foreground">{known.map(([, v]) => v).join(", ")}</span>
+        </span>
+        <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="space-y-3 border-t px-4 py-3">
+        <dl className="grid grid-cols-2 gap-x-3 gap-y-2.5 text-[0.9375rem]">
+          {known.map(([k, v]) => <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="font-semibold">{v}</dd></div>)}
+        </dl>
+        <Button variant="outline" size="sm" onClick={onEdit}><Pencil className="size-3.5" />{t("facts_edit")}</Button>
       </div>
-      <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
-        {known.map(([k, v]) => <div key={k}><dt className="text-[11px] text-muted-foreground">{k}</dt><dd className="font-medium">{v}</dd></div>)}
-      </dl>
-    </Card>
+    </details>
   );
 }
 
@@ -73,10 +79,10 @@ function EditFacts({ open, onClose, facts, onSave }: { open: boolean; onClose: (
           <div className="space-y-1"><Label htmlFor="e-emp">{t("f_employees")}</Label><Input id="e-emp" inputMode="numeric" value={f.employees} onChange={(e) => setF({ ...f, employees: e.target.value.replace(/\D/g, "") })} /></div>
           <div className="space-y-1"><Label htmlFor="e-sites">{t("f_sites")}</Label><Input id="e-sites" inputMode="numeric" value={f.sites} onChange={(e) => setF({ ...f, sites: e.target.value.replace(/\D/g, "") })} /></div>
           <div className="space-y-1"><Label htmlFor="e-city">{t("f_city")}</Label>
-            <input id="e-city" list="cities" value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm" />
+            <input id="e-city" list="cities" value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} className="h-12 w-full rounded-xl border border-input bg-card px-3.5 text-base" />
             <datalist id="cities">{KNOWN_CITIES.map((c) => <option key={c} value={c} />)}</datalist></div>
           <div className="space-y-1"><Label htmlFor="e-gst">{t("f_gst")}</Label>
-            <select id="e-gst" value={f.gst} onChange={(e) => setF({ ...f, gst: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-sm"><option value="">—</option><option value="yes">{t("yes")}</option><option value="no">{t("no")}</option></select></div>
+            <select id="e-gst" value={f.gst} onChange={(e) => setF({ ...f, gst: e.target.value })} className="h-12 w-full rounded-xl border border-input bg-card px-3 text-base"><option value="">—</option><option value="yes">{t("yes")}</option><option value="no">{t("no")}</option></select></div>
           <div className="col-span-2 space-y-1"><Label htmlFor="e-bud">{t("budget_label")}</Label><Input id="e-bud" inputMode="numeric" placeholder="1500" value={f.budget} onChange={(e) => setF({ ...f, budget: e.target.value.replace(/\D/g, "") })} /></div>
         </div>
         <Button onClick={() => {
@@ -117,6 +123,8 @@ function AdvisorInner() {
 
   const send = useCallback(async (body: Record<string, unknown>) => {
     setBusy(true);
+    const said = typeof body.text === "string" ? body.text : typeof body.chipLabel === "string" ? body.chipLabel : null;
+    if (said) setMessages((m) => [...m, { role: "user", text: said, at: Date.now() }]); // your words appear at once, before the answer
     try {
       const r = await api<Resp>("POST", "/api/advisor", { conversationId: convId, lang, persona: personaId, attribution: readJourney().attribution ?? {}, ...(copilot ? { copilot: true } : {}), ...body });
       setConvId(r.conversationId); writeJourney({ conversationId: r.conversationId });
@@ -202,25 +210,30 @@ function AdvisorInner() {
   const chips = turn?.stage === "collecting" && lastIsAssistant ? turn.quickReplies : [];
 
   return (
-    <div className="space-y-3 pb-28">
+    <div className="space-y-3 pb-36">
       {copilot && <div role="status" className="mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs"><b>Co-pilot mode</b> — you are assisting this customer as a signed-in rep/partner. Your help is recorded on the lead for assist credit.</div>}
-      <div className="text-xs text-muted-foreground">{t("explore_note")}</div>
       {turn && <FactsPanel facts={turn.facts} onEdit={() => setEditing(true)} />}
       <div className="space-y-2.5" aria-live="polite">
         {messages.map((m, i) => <Bubble key={i} m={m} />)}
-        {busy && <div className="text-xs text-muted-foreground">{t("adv_think")}</div>}
+        {busy && (
+          <div className="flex justify-start" role="status" aria-label={t("adv_think")}>
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border bg-card px-4 py-4" aria-hidden>
+              {[0, 1, 2].map((i) => <span key={i} className="size-2 animate-pulse rounded-full bg-muted-foreground" style={{ animationDelay: `${i * 180}ms` }} />)}
+            </div>
+          </div>
+        )}
       </div>
       {rec && turn?.profile && turn.stage !== "collecting" && <BundleCard rec={rec} profile={turn.profile} onBuy={buy} busy={busy} />}
       <div ref={endRef} />
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-xl space-y-2 px-4 py-2.5">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur">
+        <div className="mx-auto max-w-3xl space-y-2.5 px-4 py-3 md:px-6">
           {chips.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {chips.map((c, i) => {
                 const on = c.slot === "needs" && multi.includes(c.value);
                 return <button key={i} type="button" onClick={() => chip(c)} disabled={busy} aria-pressed={on}
-                  className={cn("rounded-full border px-3 py-1.5 text-sm transition-colors", on ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary")}>{c.label}</button>;
+                  className={cn("min-h-11 rounded-full border px-4 text-[0.9375rem] font-medium transition-colors", on ? "border-foreground bg-foreground text-background" : "border-input bg-card hover:bg-muted")}>{c.label}</button>;
               })}
               {multi.length > 0 && <Button size="sm" onClick={confirmNeeds}>{t("continue")} ({multi.length})</Button>}
             </div>
@@ -228,7 +241,7 @@ function AdvisorInner() {
           <form onSubmit={submit} className="flex items-center gap-2">
             <Button type="button" variant={readAloud ? "default" : "outline"} size="icon-lg" onClick={toggleReadAloud} aria-pressed={readAloud} aria-label={(lang === "hi" || lang === "mr") ? "जवाब बोलकर सुनाएँ" : "Read replies aloud"}>{readAloud ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}</Button>
             <Button type="button" variant={listening ? "default" : "outline"} size="icon-lg" onClick={mic} aria-label={t("mic")}>{listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}</Button>
-            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("adv_placeholder")} aria-label={t("adv_placeholder")} className="h-9 flex-1 text-[15px]" maxLength={1000} />
+            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("adv_placeholder")} aria-label={t("adv_placeholder")} className="flex-1" maxLength={1000} />
             <Button type="submit" size="icon-lg" disabled={busy || !text.trim()} aria-label={t("send")}><Send className="size-4" /></Button>
           </form>
         </div>

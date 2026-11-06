@@ -20,7 +20,7 @@ const SEV: Record<Severity, { key: string; cls: string; Icon: typeof CheckCircle
 export function VerdictChip({ severity }: { severity: Severity | "ok" }) {
   const { t } = useI18n();
   const s = severity === "ok" ? { key: "v_verified", cls: "bg-success/10 text-success", Icon: CheckCircle2 } : SEV[severity];
-  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium", s.cls)}><s.Icon className="size-3" />{t(s.key)}</span>;
+  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", s.cls)}><s.Icon className="size-3" />{t(s.key)}</span>;
 }
 
 /** Every failed check says what's wrong and exactly how to fix it, in the owner's language. */
@@ -33,9 +33,9 @@ export function CheckList({ checks, slot }: { checks: Check[]; slot?: Slot }) {
       {rows.map((c, i) => {
         const { reason, fix } = kycReason(c.code, c.params, lang);
         return (
-          <li key={i} className="rounded-lg border bg-card p-2.5 text-sm">
-            <div className="flex items-start justify-between gap-2"><div className="font-medium leading-snug">{!slot && c.slot ? `${slotName(c.slot, lang)}: ` : ""}{reason}</div><VerdictChip severity={c.severity} /></div>
-            {fix && <div className="mt-1 text-xs text-muted-foreground"><b>{t("fix")}:</b> {fix}</div>}
+          <li key={i} className="rounded-2xl border bg-card p-3.5 text-[0.9375rem]">
+            <div className="mb-1.5"><VerdictChip severity={c.severity} /></div><div className="font-semibold leading-snug">{!slot && c.slot ? `${slotName(c.slot, lang)}: ` : ""}{reason}</div>
+            {fix && <div className="mt-1.5 text-sm text-muted-foreground"><b>{t("fix")}:</b> {fix}</div>}
           </li>
         );
       })}
@@ -53,14 +53,14 @@ export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel
   return (
     <Card className="space-y-2.5 p-3.5">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold"><FileImage className="size-4 text-primary" />{t(`doc_${slot}`)}</div>
+        <div className="flex items-center gap-2 text-sm font-semibold"><FileImage className="size-4" />{t(`doc_${slot}`)}</div>
         {worst && <VerdictChip severity={worst} />}
       </div>
       {doc && (
         <div className="rounded-lg bg-secondary p-2.5 text-xs">
-          <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground"><span>{(lang === "hi" || lang === "mr") ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-[10px]">{(lang === "hi" || lang === "mr") ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
+          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground"><span>{(lang === "hi" || lang === "mr") ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-xs">{(lang === "hi" || lang === "mr") ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-            {Object.entries(doc.fields).filter(([k]) => k !== "document").map(([k, v]) => <div key={k} className="min-w-0"><dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{k.replace(/_/g, " ")}</dt><dd className="truncate font-medium">{v ?? <span className="text-destructive">—</span>}</dd></div>)}
+            {Object.entries(doc.fields).filter(([k]) => k !== "document").map(([k, v]) => <div key={k} className="min-w-0"><dt className="text-xs text-muted-foreground">{k.replace(/_/g, " ")}</dt><dd className="truncate font-medium">{v ?? <span className="text-destructive">—</span>}</dd></div>)}
           </dl>
         </div>
       )}
@@ -71,8 +71,8 @@ export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel
         {digilockerHref && <a href={digilockerHref} className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium hover:bg-accent">DigiLocker</a>}
         {onSample && <Button size="sm" variant="ghost" disabled={busy} onClick={onSample}>{sampleLabel ?? t("use_sample")}</Button>}
       </div>
-      {busy ? <p className="text-[11px] text-primary" role="status">{(lang === "hi" || lang === "mr") ? "पढ़ा जा रहा है… (10–30 सेकंड)" : "Reading your document… (10–30 seconds)"}</p>
-        : !doc && <p className="text-[11px] text-muted-foreground">{(lang === "hi" || lang === "mr") ? "PNG, JPG या PDF · 5 MB तक · समतल जगह, अच्छी रोशनी, चारों कोने दिखें" : "PNG, JPG or PDF · up to 5 MB · lay it flat, good light, all four corners in view"}</p>}
+      {busy ? <p className="text-xs text-primary" role="status">{(lang === "hi" || lang === "mr") ? "पढ़ा जा रहा है… (10–30 सेकंड)" : "Reading your document… (10–30 seconds)"}</p>
+        : !doc && <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "PNG, JPG या PDF · 5 MB तक · समतल जगह, अच्छी रोशनी, चारों कोने दिखें" : "PNG, JPG or PDF · up to 5 MB · lay it flat, good light, all four corners in view"}</p>}
     </Card>
   );
 }

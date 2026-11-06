@@ -5,6 +5,7 @@ import { MapPin, Wifi, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/components/i18n-provider";
 import { api, ApiError } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
 
@@ -13,6 +14,7 @@ interface Result { pincode: string; fibre: boolean; basis: "ops_coverage" | "pos
 /** Answers "can I even get this where I am?" before any questions — from the same feasibility layers the order flow uses. */
 export function AvailabilityCheck({ lang }: { lang: string }) {
   const hi = lang === "hi" || lang === "mr";
+  const { t } = useI18n();
   const [pin, setPin] = useState("");
   const [r, setR] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,10 +33,10 @@ export function AvailabilityCheck({ lang }: { lang: string }) {
 
   return (
     <Card className="space-y-3 p-4" aria-labelledby="avail-h">
-      <div className="flex items-center gap-2"><MapPin className="size-4 text-primary" /><h2 id="avail-h" className="text-sm font-semibold">{hi ? "क्या आपके इलाके में मिलेगा?" : "Is it available where you are?"}</h2></div>
+      <div className="flex items-center gap-2"><MapPin className="size-4" /><h2 id="avail-h" className="text-[0.9375rem] font-bold">{t("home_check_title")}</h2></div>
       <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (pin.length === 6) check(); }}>
-        <Input inputMode="numeric" autoComplete="postal-code" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} placeholder={hi ? "पिनकोड" : "Pincode"} aria-label={hi ? "पिनकोड" : "Pincode"} />
-        <Button type="submit" disabled={busy || pin.length !== 6}>{busy ? "…" : (hi ? "जाँचें" : "Check")}</Button>
+        <Input inputMode="numeric" autoComplete="postal-code" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} placeholder={t("home_check_ph")} aria-label={hi ? "पिनकोड" : "Pincode"} />
+        <Button type="submit" disabled={busy || pin.length !== 6}>{busy ? "…" : t("home_check_btn")}</Button>
       </form>
       {err && <p role="alert" className="text-xs text-destructive">{err}</p>}
       {r && (

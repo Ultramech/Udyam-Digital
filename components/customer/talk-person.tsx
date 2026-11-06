@@ -8,7 +8,7 @@ import { useVerify } from "./verify";
 import { api, readJourney, writeJourney } from "@/lib/client/api";
 
 /** Never a dead end: asking for a person creates a lead (with everything the advisor already knows) and says so. */
-export function TalkToPerson({ variant = "outline" }: { variant?: "outline" | "ghost" | "default" }) {
+export function TalkToPerson({ variant = "outline", compact }: { variant?: "outline" | "ghost" | "default"; compact?: boolean }) {
   const { t, lang } = useI18n();
   const { ensureVerified } = useVerify();
   const [busy, setBusy] = useState(false);
@@ -23,9 +23,16 @@ export function TalkToPerson({ variant = "outline" }: { variant?: "outline" | "g
     } catch { toast.error(t("error_generic")); }
     setBusy(false);
   }
+  if (compact) {
+    return (
+      <Button variant="ghost" size="icon" onClick={go} disabled={busy} aria-label={t("talk_person")} title={t("talk_person")}>
+        <Headset className="size-5" />
+      </Button>
+    );
+  }
   return (
-    <Button variant={variant} size="sm" onClick={go} disabled={busy} className="gap-1.5">
-      <Headset className="size-3.5" /> <span className="hidden sm:inline">{t("talk_person")}</span><span className="sm:hidden">{lang === "en" ? "Help" : "👤"}</span>
+    <Button variant={variant} onClick={go} disabled={busy}>
+      <Headset className="size-4" />{t("talk_person")}
     </Button>
   );
 }

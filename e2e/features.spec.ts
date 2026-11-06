@@ -51,7 +51,7 @@ test.describe("Quote: packages, digital score, report", () => {
     const request = page.request;
     const qid = await newQuote(request, "Pharmacy in Indore, 4 staff, one shop, GST yes, need billing, CCTV and WhatsApp");
     await page.goto(`/quote/${qid}`);
-    await expect(page.getByText("Compare packages")).toBeVisible();
+    await page.locator("summary", { hasText: "Compare packages" }).click();
     const table = page.getByRole("table", { name: "Package comparison" });
     await expect(table.getByText("Selected")).toBeVisible();
     const before = await monthlyBar(page).innerText();
@@ -69,7 +69,7 @@ test.describe("Quote: packages, digital score, report", () => {
     const request = page.request;
     const qid = await newQuote(request, "CA firm in Pune, 8 staff, one office, GST yes, need email and backup");
     await page.goto(`/quote/${qid}`);
-    await expect(page.getByText("Your digital score")).toBeVisible();
+    await page.getByText("Your digital score", { exact: true }).first().click();
     await page.getByRole("button", { name: /Biggest gaps and your roadmap/ }).click();
     await expect(page.getByText(/advisory score, not an official certification/)).toBeVisible();
     const pdf = await request.get(`/api/quote/${qid}/report`);

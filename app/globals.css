@@ -8,10 +8,15 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* literal family names: Tailwind v4 resolves @theme inline at parse time, so var(--font-*) would be circular/empty */
-  --font-sans: "Geist", "Geist Fallback", "Noto Sans Devanagari", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", "Noto Sans Devanagari", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-heading: "Geist", "Geist Fallback", "Noto Sans Devanagari", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", "Noto Sans Devanagari", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-info-soft: var(--info-soft);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
   --color-warning: var(--warning);
   --color-info: var(--info);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -53,42 +58,47 @@
 }
 
 :root {
-  /* Airtel-inspired: red accent, warm neutral surfaces, charcoal text */
-  --background: oklch(0.978 0.004 70);
-  --foreground: oklch(0.24 0.005 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.005 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.005 60);
-  --primary: oklch(0.55 0.235 28);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.006 70);
-  --secondary-foreground: oklch(0.28 0.005 60);
-  --muted: oklch(0.955 0.006 70);
-  --muted-foreground: oklch(0.48 0.01 60);
-  --accent: oklch(0.96 0.025 28);
-  --accent-foreground: oklch(0.4 0.17 28);
+  /* Udyam Digital: warm paper, ink text, one red signal for the single main action per screen. Status colours always mean something. */
+  --paper: oklch(0.972 0.008 85);
+  --ink: oklch(0.2 0.012 60);
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: oklch(0.995 0.003 85);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.995 0.003 85);
+  --popover-foreground: var(--ink);
+  --primary: oklch(0.55 0.22 27);
+  --primary-foreground: oklch(0.99 0.003 85);
+  --secondary: oklch(0.94 0.01 85);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.95 0.008 85);
+  --muted-foreground: oklch(0.46 0.014 60);
+  --accent: oklch(0.955 0.03 27);
+  --accent-foreground: oklch(0.42 0.16 27);
   --destructive: oklch(0.5 0.2 25);
-  --border: oklch(0.905 0.008 70);
-  --input: oklch(0.88 0.008 70);
-  --ring: oklch(0.6 0.2 28);
-  --success: oklch(0.52 0.13 150);
-  --warning: oklch(0.62 0.14 75);
-  --info: oklch(0.5 0.12 250);
-  --chart-1: oklch(0.55 0.235 28);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: oklch(0.89 0.01 80);
+  --input: oklch(0.8 0.012 80);
+  --ring: oklch(0.55 0.22 27);
+  --success: oklch(0.46 0.1 160);
+  --success-soft: oklch(0.955 0.035 160);
+  --warning: oklch(0.5 0.11 70);
+  --warning-soft: oklch(0.96 0.05 85);
+  --info: oklch(0.46 0.1 245);
+  --info-soft: oklch(0.955 0.025 245);
+  --chart-1: oklch(0.55 0.22 27);
+  --chart-2: oklch(0.46 0.1 160);
+  --chart-3: oklch(0.46 0.1 245);
+  --chart-4: oklch(0.5 0.11 70);
+  --chart-5: oklch(0.34 0.012 60);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.995 0.003 85);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: oklch(0.99 0.003 85);
+  --sidebar-accent: oklch(0.94 0.01 85);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: oklch(0.89 0.01 80);
+  --sidebar-ring: oklch(0.55 0.22 27);
 }
 
 .dark {
@@ -129,10 +139,39 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 4.5rem;
   }
+  body {
+    @apply bg-background text-foreground antialiased;
+    overflow-x: clip;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-feature-settings: "tnum" 0;
+  }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.01em; }
+  p { text-wrap: pretty; }
+  :where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* money and counts line up and read at a glance */
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.price-xl { font-size: 2.25rem; line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+/* the operations console is a dense desktop tool: keep controls compact there */
+.dense [data-slot="button"]:not([data-keep-size]) { height: 2.25rem; }
+.dense [data-slot="input"] { height: 2.25rem; font-size: 0.875rem; }
+.dense [data-slot="select-trigger"] { height: 2.25rem; }
+
+/* bottom tab bar clears the home indicator on phones */
+@media (max-width: 767px) { .pb-tabbar { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

@@ -13,7 +13,7 @@ const rows: [string, string, string][] = [
 export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 text-sm leading-6">
-      <h1 className="text-2xl font-semibold">Privacy policy</h1>
+      <h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">Privacy policy</h1>
       <p className="mt-1 text-muted-foreground">Udyam Digital — hackathon prototype (YTL Hackathon 2026). All business data shown is synthetic. Last updated 6 November 2026.</p>
 
       <h2 className="mt-8 text-lg font-semibold">What we collect and why</h2>

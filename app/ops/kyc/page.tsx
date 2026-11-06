@@ -31,7 +31,7 @@ function Case({ r, onDone }: { r: Row; onDone: () => void }) {
       {r.score && (
         <div className="rounded-lg border p-3">
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-            <div className="text-sm"><span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Review score </span><b className={`text-lg ${r.score.band === "high" ? "text-success" : r.score.band === "medium" ? "text-warning" : "text-destructive"}`}>{r.score.score}</b><span className="text-xs text-muted-foreground"> / 100 · {r.score.band}</span></div>
+            <div className="text-sm"><span className="text-xs font-semibold text-muted-foreground">Review score </span><b className={`text-lg ${r.score.band === "high" ? "text-success" : r.score.band === "medium" ? "text-warning" : "text-destructive"}`}>{r.score.score}</b><span className="text-xs text-muted-foreground"> / 100 · {r.score.band}</span></div>
             <span className="text-[11px] text-muted-foreground">Triage signal only — a high score is not an approval.</span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
@@ -47,7 +47,7 @@ function Case({ r, onDone }: { r: Row; onDone: () => void }) {
         </div>
       )}
       <div className="grid gap-3 lg:grid-cols-2">
-        <div className="space-y-2"><div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Registry & uploads</div>
+        <div className="space-y-2"><div className="text-xs font-semibold text-muted-foreground">Registry & uploads</div>
           {r.gstName && <div className="rounded-lg bg-secondary p-2.5 text-sm"><b>{r.gstName}</b> · GST {r.gstStatus} <span className="font-mono text-xs text-muted-foreground">{r.gstinMasked}</span></div>}
           {Object.values(r.docs).map((d) => (
             <div key={d.slot} className="rounded-lg border p-2.5 text-xs"><div className="mb-1 flex items-center justify-between font-medium"><span>{slotName(d.slot)} <span className="font-mono text-[10px] text-muted-foreground">{d.file ?? ""}</span></span>
@@ -55,7 +55,7 @@ function Case({ r, onDone }: { r: Row; onDone: () => void }) {
               <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5">{Object.entries(d.fields).filter(([k]) => k !== "document").map(([k, v]) => <div key={k}><dt className="text-[10px] uppercase text-muted-foreground">{k.replace(/_/g, " ")}</dt><dd className="truncate">{v ?? <span className="text-destructive">blank</span>}</dd></div>)}</dl></div>
           ))}
         </div>
-        <div className="space-y-2"><div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Why it&apos;s here</div>
+        <div className="space-y-2"><div className="text-xs font-semibold text-muted-foreground">Why it&apos;s here</div>
           {issues.length === 0 ? <div className="flex items-center gap-1.5 text-sm text-success"><CheckCircle2 className="size-4" />All checks passed</div> : issues.map((c, i) => { const k = kycReason(c.code, c.params, "en"); return <div key={i} className="rounded-lg border p-2.5 text-sm"><div className="flex items-start justify-between gap-2"><span className="font-medium">{c.slot ? `${slotName(c.slot)}: ` : ""}{k.reason}</span><Badge variant={SEV[c.severity]} className="shrink-0 text-[10px]">{c.severity}</Badge></div><div className="font-mono text-[10px] text-muted-foreground">{c.code}</div></div>; })}
         </div>
       </div>

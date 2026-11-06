@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // migrations are read from disk at runtime in dev/tests; make sure serverless bundles include them too
   outputFileTracingIncludes: { "/api/**": ["./drizzle/**/*"] },
   poweredByHeader: false,
+  devIndicators: false,
   // dev only: let pages opened through the `npm run tunnel` URL use hot reload (production has no dev server)
   allowedDevOrigins: ["*.trycloudflare.com"],
   async headers() {

@@ -44,7 +44,7 @@ export default function Team() {
         {!rows ? <Skeleton className="h-48" /> : (
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[720px] text-sm">
-              <thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Person", "Role", "Status", "Last sign-in", ""].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead><tr className="text-left text-[11px] text-muted-foreground">{["Person", "Role", "Status", "Last sign-in", ""].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{rows.map((m) => (
                 <tr key={m.id} className="border-t">
                   <td className="px-3 py-2"><div className="font-medium">{m.name}{m.isDemo && <Badge variant="outline" className="ml-1.5">demo</Badge>}</div><div className="text-xs text-muted-foreground">{m.email}</div></td>

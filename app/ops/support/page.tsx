@@ -59,14 +59,14 @@ export default function SupportQueue() {
                   </div>
                 </div>
                 <div className="rounded-lg bg-muted/60 p-3 text-sm">
-                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Handoff context</div>
+                  <div className="mb-1 text-[11px] font-semibold text-muted-foreground">Handoff context</div>
                   <ul className="list-disc space-y-0.5 pl-4">{cur.context.summary.map((s, i) => <li key={i}>{s}</li>)}</ul>
                   {cur.orderId && <div className="mt-2 flex flex-wrap gap-3 text-xs"><span>Monthly {cur.context.monthly ? inr(cur.context.monthly) : "—"}</span><span>Go-live {cur.context.goLive ?? "—"}</span><Link className="text-primary underline" href="/ops/orders">Open orders board →</Link></div>}
                 </div>
                 <ul className="space-y-2 text-sm">
                   {cur.messages.map((m, i) => (
                     <li key={i} className={cn("rounded-lg px-3 py-2", m.by === "staff" ? "ml-8 bg-accent" : m.by === "assistant" ? "bg-muted/50 text-muted-foreground" : "mr-8 bg-muted")}>
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{m.by === "staff" ? m.name : m.by} · {fmtTime(m.at)}</div>{m.text}
+                      <div className="text-[10px] text-muted-foreground">{m.by === "staff" ? m.name : m.by} · {fmtTime(m.at)}</div>{m.text}
                     </li>
                   ))}
                 </ul>

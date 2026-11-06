@@ -18,14 +18,14 @@ interface Hist {
 interface Live { conversations: number; advisorRecommended: number; leads: number; escalated: number; quotes: number; kycCases: number; kycClean: number; kycReview: number; orders: number; activated: number; mrr: number; chasesPerOrder: number; escalationRate: number; kycFirstPass: number; conversion: number; avgMonthly: number ; referralConversations?: number; referralOrders?: number; copilotLeads?: number }
 
 const Tile = ({ label, value, sub }: { label: string; value: string | number; sub?: string }) => (
-  <Card className="p-3.5"><div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div><div className="mt-1 text-2xl font-bold leading-none">{value}</div>{sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}</Card>
+  <Card className="p-3.5"><div className="text-[11px] text-muted-foreground">{label}</div><div className="mt-1 text-2xl font-bold leading-none">{value}</div>{sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}</Card>
 );
 
 function GroupTable({ title, rows }: { title: string; rows: Group[] }) {
   return (
     <Card className="overflow-x-auto p-0">
       <div className="border-b p-3 text-sm font-semibold">{title}</div>
-      <table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["", "Leads", "Conv.", "₹/mo", "Churn", "Cost / activation", "Days", "Chases"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+      <table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["", "Leads", "Conv.", "₹/mo", "Churn", "Cost / activation", "Days", "Chases"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
         <tbody>{rows.map((r) => <tr key={r.key} className="border-t"><td className="px-3 py-1.5 font-medium">{r.key}</td><td className="px-3">{r.leads.toLocaleString("en-IN")}</td><td className="px-3">{r.conversion}%</td><td className="px-3">{r.avgMonthly ? inr(r.avgMonthly) : "—"}</td><td className="px-3">{r.churn}%</td><td className="px-3">{r.costPerActivation ? inr(r.costPerActivation) : "—"}</td><td className="px-3">{r.avgDays || "—"}</td><td className="px-3">{r.chaseCalls || "—"}</td></tr>)}</tbody></table>
     </Card>
   );
@@ -40,7 +40,7 @@ interface Cx {
 function CxScorecard({ cx }: { cx: Cx }) {
   return (
     <section className="space-y-2.5">
-      <div className="flex items-center gap-2"><h2 className="font-semibold">CX scorecard</h2><Badge>live journeys · measured, not assumed</Badge></div>
+      <div className="flex items-center gap-2"><h2 className="font-semibold">CX scorecard</h2><Badge variant="success">live journeys · measured, not assumed</Badge></div>
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <Tile label="Paid journeys" value={cx.journeys} />
         <Tile label="First message → order" value={`${cx.medianMinutesToOrder} min`} sub="median" />
@@ -58,7 +58,7 @@ function CxScorecard({ cx }: { cx: Cx }) {
       {cx.recent.length > 0 && (
         <Card className="overflow-x-auto p-0">
           <div className="border-b p-3 text-sm font-semibold">Recent journeys</div>
-          <table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Order", "Stage", "Turns", "Edits", "Minutes", "Pay tries", "KYC review", "Chases", "Human touches"].map((h) => <th key={h} className="px-3 py-1.5 font-medium">{h}</th>)}</tr></thead>
+          <table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["Order", "Stage", "Turns", "Edits", "Minutes", "Pay tries", "KYC review", "Chases", "Human touches"].map((h) => <th key={h} className="px-3 py-1.5 font-medium">{h}</th>)}</tr></thead>
             <tbody>{cx.recent.map((j) => <tr key={j.orderId} className="border-t"><td className="px-3 py-1.5 font-mono text-xs">{j.orderId}</td><td className="px-3 text-xs">{j.stage}</td><td className="px-3 tabular-nums">{j.advisorTurns}</td><td className="px-3 tabular-nums">{j.quoteEdits}</td><td className="px-3 tabular-nums">{j.minutesToOrder ?? "—"}</td><td className="px-3 tabular-nums">{j.paymentAttempts}</td><td className="px-3">{j.kycReview ? "yes" : "no"}</td><td className="px-3 tabular-nums">{j.chases}</td><td className="px-3 tabular-nums">{j.humanTouches}{j.selfServe ? " · self-serve" : ""}</td></tr>)}</tbody></table>
         </Card>
       )}
@@ -78,7 +78,7 @@ export default function Overview() {
           <div className="space-y-6">
             <div><h1 className="text-2xl font-bold">Overview</h1><p className="text-sm text-muted-foreground">Live prototype activity and the historical dataset are kept separate on purpose.</p></div>
 
-            <section className="space-y-2.5"><div className="flex items-center gap-2"><h2 className="font-semibold">Live prototype activity</h2><Badge>live · refreshes every 6s</Badge></div>
+            <section className="space-y-2.5"><div className="flex items-center gap-2"><h2 className="font-semibold">Live prototype activity</h2><Badge variant="success">live · refreshes every 6s</Badge></div>
               <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 xl:grid-cols-6">
                 <Tile label="Advisor conversations" value={l.conversations} /><Tile label="Plans recommended" value={l.advisorRecommended} /><Tile label="Quotes generated" value={l.quotes} />
                 <Tile label="KYC cases" value={l.kycCases} sub={`${l.kycClean} clean · ${l.kycReview} in review`} /><Tile label="Orders placed (paid)" value={l.orders} /><Tile label="Activated" value={l.activated} />
@@ -101,7 +101,7 @@ export default function Overview() {
             </section>
 
             <section className="space-y-2.5"><div className="flex items-center gap-2"><h2 className="font-semibold">Impact hypothesis</h2><Badge variant="outline">proposed targets · not measured · need a real pilot</Badge></div>
-              <Card className="overflow-x-auto p-0"><table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground"><th className="px-3 py-2">Metric</th><th>Baseline (dataset)</th><th>Proposed pilot target</th></tr></thead><tbody>
+              <Card className="overflow-x-auto p-0"><table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground"><th className="px-3 py-2">Metric</th><th>Baseline (dataset)</th><th>Proposed pilot target</th></tr></thead><tbody>
                 {[["Lead → activation", `${h.totals.conversion}%`, "12%"], ["Time to activate", `${h.totals.avgDaysToActivate} days`, "≤ 7 days"], ["Blended cost / activation", inr(h.totals.blendedCac), "≤ ₹7,000 (micro ≤ ₹5,000)"], ["Chase calls / order", h.totals.avgChaseCalls, "≤ 0.5"], ["Micro-retail 6-month churn", `${h.bySegment.find((s) => s.key.startsWith("Micro"))?.churn}%`, "≤ 15%"]].map((r) => <tr key={String(r[0])} className="border-t"><td className="px-3 py-1.5 font-medium">{r[0]}</td><td>{r[1]}</td><td className="text-primary">{r[2]}</td></tr>)}
               </tbody></table></Card>
               <p className="text-xs text-muted-foreground">Chase calls correlate with churn in the dataset (1 call → 6%, 5 calls → 28%); we do not claim the tracker causes the difference.</p>

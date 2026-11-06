@@ -20,9 +20,9 @@ export function NotificationBell() {
     return () => { clearInterval(t); window.removeEventListener("ud-notes-seen", refresh); };
   }, []);
   return (
-    <Link href="/notifications" className="relative flex size-8 items-center justify-center rounded-full border bg-card" aria-label={n ? `Notifications, ${n} unread` : "Notifications"}>
-      <Bell className="size-4" />
-      {n > 0 && <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] font-bold leading-4 text-primary-foreground">{n > 9 ? "9+" : n}</span>}
+    <Link href="/notifications" className="relative flex size-10 items-center justify-center rounded-full border border-input bg-card" aria-label={n ? `Notifications, ${n} unread` : "Notifications"}>
+      <Bell className="size-[1.125rem]" />
+      {n > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-5 rounded-full bg-primary px-1 text-center text-xs font-bold leading-5 text-primary-foreground">{n > 9 ? "9+" : n}</span>}
     </Link>
   );
 }

@@ -1,4 +1,5 @@
 import type { Lang } from "@/lib/catalogue/plain";
+import { APP_COPY } from "./app-copy";
 
 type Dict = Record<string, string>;
 
@@ -534,8 +535,10 @@ export const LANGS: { code: Lang; label: string }[] = [
   { code: "en", label: "English" }, { code: "hi", label: "हिन्दी" }, { code: "mr", label: "मराठी" }, { code: "ta", label: "தமிழ்" },
 ];
 
+const APP: Record<Lang, Dict> = { en: APP_COPY("en"), hi: APP_COPY("hi"), mr: APP_COPY("mr"), ta: APP_COPY("ta") };
+
 export function translate(lang: Lang, key: string): string {
-  const chain: Dict[] = lang === "hi" ? [HI, EN] : lang === "mr" ? [MR, HI, EN] : lang === "ta" ? [TA, EN] : [EN];
+  const chain: Dict[] = [APP[lang], ...(lang === "hi" ? [HI, EN] : lang === "mr" ? [MR, HI, EN] : lang === "ta" ? [TA, EN] : [EN])];
   for (const d of chain) if (key in d) return d[key];
   return key;
 }

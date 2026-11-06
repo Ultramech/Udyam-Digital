@@ -24,7 +24,7 @@ export function BillCompare({ quoteId, lang }: { quoteId: string; lang: string }
   }
   return (
     <div className="space-y-2 rounded-lg border p-3">
-      <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="size-4 text-primary" />{hi ? "अपने मौजूदा बिल से तुलना करें" : "Compare with your current bill"}</div>
+      <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="size-4" />{hi ? "अपने मौजूदा बिल से तुलना करें" : "Compare with your current bill"}</div>
       <p className="text-xs text-muted-foreground">{hi ? "फ़ोन/इंटरनेट बिल की फ़ोटो डालें। हम सिर्फ़ मासिक रकम पढ़ते हैं; फ़ोटो सेव नहीं होती।" : "Add a photo of your phone or internet bill. We only read the monthly amount; the photo isn't saved."}</p>
       <label className="inline-flex h-8 cursor-pointer items-center rounded-md border px-3 text-xs font-medium hover:bg-accent">
         {busy ? (hi ? "पढ़ रहे हैं…" : "Reading…") : (hi ? "बिल चुनें" : "Choose bill")}

@@ -54,7 +54,7 @@ export default function Playbook() {
             <Card className="overflow-x-auto p-0">
               <div className="border-b p-3"><div className="text-sm font-semibold">Segments, ranked by what ₹1 of acquisition spend brings back in year one</div>
                 <div className="text-xs text-muted-foreground">= average monthly bundle × 12 × (1 − observed 6-month churn) ÷ cost per activation. Revenue, not margin.</div></div>
-              <table className="w-full min-w-[820px] text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["#", "Segment", "Leads", "Lead → activation", "CAC", "Avg ₹/mo", "6-mo churn", "Year-1 ₹ per ₹1", "Share of base"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <table className="w-full min-w-[820px] text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["#", "Segment", "Leads", "Lead → activation", "CAC", "Avg ₹/mo", "6-mo churn", "Year-1 ₹ per ₹1", "Share of base"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
                 <tbody>{d.segments.map((s, i) => (
                   <tr key={s.segment} className="border-t"><td className="px-3 py-1.5 font-semibold">{i + 1}</td><td className="px-3 font-medium">{s.segment}</td><td className="px-3">{s.leads.toLocaleString("en-IN")}</td><td className="px-3">{s.conversion}%</td><td className="px-3">{cac(s.cac)}</td><td className="px-3">{inr(s.arpa)}</td><td className="px-3">{s.churn}%</td><td className="px-3 font-semibold">{s.firstYearPerRupee ?? "—"}</td><td className="px-3">{s.shareOfLeads}%</td></tr>
                 ))}</tbody></table>
@@ -65,7 +65,7 @@ export default function Playbook() {
                 <Card key={s.segment} className="space-y-2.5 p-4 text-sm">
                   <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">{s.segment}</h2><Badge variant="secondary">{s.shareOfLeads}% of leads</Badge></div>
                   {s.advisor && (
-                    <div className="rounded-lg bg-accent p-2.5"><div className="text-[11px] uppercase tracking-wide text-muted-foreground">What the advisor offers a typical one</div>
+                    <div className="rounded-lg bg-accent p-2.5"><div className="text-[11px] text-muted-foreground">What the advisor offers a typical one</div>
                       <div><b>{s.advisor.bundle}</b> · {inr(s.advisor.monthly)}/mo + GST · {s.advisor.contractMonths}-month contract</div>
                       <div className="text-xs text-muted-foreground">{s.advisor.basis}. Customers in this segment actually bought a median {inr(s.medianBought)}/mo, usually on {s.typicalContract} months.</div></div>
                   )}
@@ -83,7 +83,7 @@ export default function Playbook() {
             <Card className="overflow-x-auto p-0">
               <div className="border-b p-3"><div className="text-sm font-semibold">Cost per activation, segment × channel</div>
                 <div className="text-xs text-muted-foreground">Cells with fewer than {d.minCell} leads are greyed: too few to conclude anything.</div></div>
-              <table className="w-full min-w-[760px] text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground"><th className="px-3 py-2 font-medium">Segment</th>{sources.map((s) => <th key={s} className="px-3 py-2 font-medium">{s}</th>)}</tr></thead>
+              <table className="w-full min-w-[760px] text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground"><th className="px-3 py-2 font-medium">Segment</th>{sources.map((s) => <th key={s} className="px-3 py-2 font-medium">{s}</th>)}</tr></thead>
                 <tbody>{d.segments.map((s) => (
                   <tr key={s.segment} className="border-t"><td className="px-3 py-1.5 font-medium">{s.segment}</td>
                     {s.bySource.map((x) => <td key={x.source} className={`px-3 ${x.lowSample ? "text-muted-foreground/60" : ""}`}>{cac(x.cac)}<div className="text-[11px] text-muted-foreground">{x.conversion}% of {x.leads}</div></td>)}</tr>
@@ -93,7 +93,7 @@ export default function Playbook() {
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="overflow-x-auto p-0">
                 <div className="border-b p-3 text-sm font-semibold">Channels overall</div>
-                <table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Channel", "Conv.", "CAC", "Share of spend", "6-mo churn"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+                <table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["Channel", "Conv.", "CAC", "Share of spend", "6-mo churn"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
                   <tbody>{d.channels.map((c) => <tr key={c.source} className="border-t"><td className="px-3 py-1.5 font-medium">{c.source}</td><td className="px-3">{c.conversion}%</td><td className="px-3">{cac(c.cac)}</td><td className="px-3">{c.shareOfSpend}%</td><td className="px-3">{c.churn}%</td></tr>)}</tbody></table>
               </Card>
               <Card className="space-y-2 p-4 text-sm">

@@ -51,26 +51,26 @@ export default function SitesPage({ params }: { params: Promise<{ id: string }> 
   return (
     <CustomerShell step={3}>
       <div className="space-y-4 pb-28">
-        <div><h1 className="text-xl font-bold">{t("sites_title")}</h1><p className="text-sm text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हम हर लोकेशन अलग से जाँचते हैं।" : "We check every location separately."}</p></div>
+        <div><h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("sites_title")}</h1><p className="text-sm text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हम हर लोकेशन अलग से जाँचते हैं।" : "We check every location separately."}</p></div>
         {persona && <Button variant="outline" size="sm" onClick={fillDemo}>{(lang === "hi" || lang === "mr") ? "डेमो पता भरें" : "Fill demo address"}</Button>}
         {rows.map((r, i) => {
           const out = res?.perSite.find((s) => s.index === i);
           return (
             <Card key={i} className="space-y-3 p-3.5">
-              <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4 text-primary" />{t("site_n")} {i + 1}</div>
+              <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4" />{t("site_n")} {i + 1}</div>
               <div className="space-y-1.5"><Label htmlFor={`a${i}`}>{t("address")}</Label><Input id={`a${i}`} autoComplete="street-address" value={r.address} onChange={(e) => setRows((x) => x.map((y, k) => (k === i ? { ...y, address: e.target.value } : y)))} /></div>
               <div className="space-y-1.5"><Label htmlFor={`p${i}`}>{t("pincode")}</Label><Input id={`p${i}`} inputMode="numeric" maxLength={6} className="w-32" value={r.pincode} onChange={(e) => setRows((x) => x.map((y, k) => (k === i ? { ...y, pincode: e.target.value.replace(/\D/g, "") } : y)))} /></div>
               {out && (
                 <div className={`flex gap-2 rounded-lg p-2.5 text-sm ${out.fibre ? "bg-success/10 text-success" : "bg-accent text-accent-foreground"}`}>
                   {out.fibre ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> : <Radio className="mt-0.5 size-4 shrink-0" />}
                   <div><div className="font-medium">{out.fibre ? t("fibre_ok") : t("fibre_no")}</div>{out.connectivity && <div className="text-xs opacity-90">{plainName(out.connectivity, lang)}</div>}
-                    <div className="mt-0.5 text-[11px] opacity-80">
+                    <div className="mt-0.5 text-xs opacity-80">
                       {out.area ? `${out.area.district}, ${out.area.state} · ` : ""}
                       {out.confirmed ? ((lang === "hi" || lang === "mr") ? "हमारी टीम ने पुष्टि की है" : "Confirmed by our network team")
                         : out.basis === "policy" ? ((lang === "hi" || lang === "mr") ? "यह पिनकोड डाक निर्देशिका में नहीं मिला — अनुमान है, हमारी टीम इंस्टॉलेशन से पहले पक्का करेगी" : "Pincode not found in the postal directory — this is an estimate; our team confirms before installation")
                         : ((lang === "hi" || lang === "mr") ? "अनुमान — हमारी टीम इंस्टॉलेशन से पहले पक्का करेगी" : "Estimate — our team confirms before installation")}
                     </div>
-                    {out.cityMismatch && <div className="mt-0.5 text-[11px] font-medium">{(lang === "hi" || lang === "mr") ? "ध्यान दें: यह पिनकोड आपके बताए शहर से मेल नहीं खाता।" : "Heads-up: this pincode doesn't look like it belongs to the city you gave."}</div>}</div>
+                    {out.cityMismatch && <div className="mt-0.5 text-xs font-medium">{(lang === "hi" || lang === "mr") ? "ध्यान दें: यह पिनकोड आपके बताए शहर से मेल नहीं खाता।" : "Heads-up: this pincode doesn't look like it belongs to the city you gave."}</div>}</div>
                 </div>
               )}
             </Card>

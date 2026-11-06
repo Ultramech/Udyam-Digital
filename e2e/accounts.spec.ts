@@ -7,7 +7,8 @@ test.describe("Customer account", () => {
     await page.goto("/account");
     await expect(page).toHaveURL(/\/login\?next=%2Faccount/);
     await expect(page.getByRole("heading", { name: "Sign in or create an account" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue with mobile number" })).toBeVisible();
+    await expect(page.getByLabel("Mobile number")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send code" })).toBeVisible();
     await noSideScroll(page);
   });
 
@@ -67,12 +68,13 @@ test.describe("Customer account", () => {
   test("signed in: edit profile, add another business + location, see devices, sign out → locked again", async ({ page }) => {
     await signInAndSetup(page);
     await page.goto("/account");
-    await expect(page.getByText("My businesses")).toBeVisible();
+    await page.getByText("My businesses", { exact: true }).click();
     await expect(page.getByText("Sharma Medical Store")).toBeVisible(); // created by setup
+    await page.getByText("Profile", { exact: true }).click();
     await page.getByLabel("Your name").fill("Rakesh K Sharma");
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByText("Saved")).toBeVisible();
-    await expect(page.getByRole("link", { name: /My account \(Rakesh K Sharma\)/ })).toHaveText("R"); // header initial
+    await expect(page.getByRole("link", { name: "Account" })).toHaveAttribute("aria-current", "page"); // the Account tab is the current place
 
     await page.getByRole("button", { name: "Add", exact: true }).first().click();
     await page.getByLabel("Business name").fill("Sharma Wellness Pharmacy");
@@ -82,6 +84,7 @@ test.describe("Customer account", () => {
     await page.getByRole("button", { name: "Save business" }).click();
     await expect(page.getByText("Sharma Wellness Pharmacy")).toBeVisible();
 
+    await page.getByText("Signed-in devices", { exact: true }).click();
     await expect(page.getByText("This device")).toBeVisible();
     const exp = await page.request.get("/api/me/export");
     expect(exp.headers()["content-disposition"]).toContain("attachment");

@@ -49,7 +49,7 @@ export default function OpsLogin() {
       </Card>
       {demo && dir.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Demo accounts (DEMO_MODE is on)</div>
+          <div className="text-xs font-semibold text-muted-foreground">Demo accounts (DEMO_MODE is on)</div>
           {dir.map((s) => (
             <button key={s.id} type="button" disabled={busy} onClick={() => login({ id: s.id })} className="w-full text-left">
               <Card className="p-3.5 transition-colors hover:border-primary"><div className="flex items-center justify-between"><span className="font-medium">{s.name}</span><Badge variant="secondary" className="capitalize">{s.role}</Badge></div><p className="mt-0.5 text-xs text-muted-foreground">{BLURB[s.role]}</p></Card>

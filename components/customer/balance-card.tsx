@@ -42,7 +42,7 @@ export function BalanceCard({ orderId, token, amount, lang, onPaid }: { orderId:
   }
   return (
     <Card className="space-y-2 border-primary/30 bg-accent p-3.5 text-sm" aria-labelledby="bal-h">
-      <div id="bal-h" className="flex items-center gap-2 font-semibold"><Wallet className="size-4 text-primary" />{hi ? "बाकी राशि चुकाएँ" : "Pay the remaining balance"}</div>
+      <div id="bal-h" className="flex items-center gap-2 font-semibold"><Wallet className="size-4" />{hi ? "बाकी राशि चुकाएँ" : "Pay the remaining balance"}</div>
       <p className="text-muted-foreground">{hi ? `आपने शुरू में आरक्षण राशि दी थी। सेवाएँ चालू करने के लिए बाकी ${inr(amount)} चुकाएँ — इसके बाद कोई और शुल्क नहीं।` : `You reserved with a deposit. Pay the remaining ${inr(amount)} so we can switch your services on — nothing else is added.`}</p>
       <Button disabled={busy} onClick={pay}>{hi ? `${inr(amount)} चुकाएँ` : `Pay ${inr(amount)}`}</Button>
     </Card>

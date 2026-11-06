@@ -112,7 +112,7 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
   return (
     <CustomerShell step={5}>
       <div className="space-y-4 pb-28">
-        <div><h1 className="text-xl font-bold">{t("kyc_title")}</h1><p className="text-sm text-muted-foreground">{t("kyc_sub")}</p></div>
+        <div><h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("kyc_title")}</h1><p className="mt-1 text-[0.9375rem] text-muted-foreground">{t("kyc_sub")}</p></div>
 
         {k.review && (
           <Card className={`p-3 text-sm ${k.review.decision === "approved" ? "border-success/40 bg-success/5" : "border-warning/40 bg-warning/5"}`}>
@@ -173,15 +173,15 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
               onSample={() => api<{ kyc: KycView; quote: QuoteView }>("POST", `/api/kyc/${id}`, { action: "specimen", applicant: set, slot: s }).then((r) => { setK(r.kyc); setQ(r.quote); }).catch(() => toast.info((lang === "hi" || lang === "mr") ? "इस सेट में यह दस्तावेज़ नहीं है।" : `Sample set ${set} has no document for this slot.`))}
               sampleLabel={`${t("use_sample")} (${set})`} digilockerHref={dl ? `/api/digilocker/start?quoteId=${id}&slot=${s}` : undefined} />
           ))}
-          {SLOTS.filter(visible).length === 0 && k.status === "verified" && <Card className="flex items-center gap-2 p-3.5 text-sm text-success"><BadgeCheck className="size-4" />{t("kyc_ok")}</Card>}
+          {SLOTS.filter(visible).length === 0 && k.status === "verified" && <Card className="flex flex-row items-center gap-2 p-3.5 text-sm text-success"><BadgeCheck className="size-4" />{t("kyc_ok")}</Card>}
         </section>
 
         {/* demo: attach any supplied specimen set (K01–K12) to see each planted problem */}
         <Card className="space-y-2 border-dashed p-3">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><FlaskConical className="size-3.5" />Demo · {t("sample_hint")}</div>
-          <div className="flex gap-2">
-            <select aria-label="Sample document set" value={set} onChange={(e) => setSet(e.target.value)} className="h-8 flex-1 rounded-lg border border-input bg-transparent px-2 text-sm">{SAMPLE_SETS.map((s) => <option key={s} value={s}>{s === "D01" ? "D01 · Sharma Medical Store (demo)" : s}</option>)}</select>
-            <Button size="sm" variant="outline" disabled={busy} onClick={attachSet}>{(lang === "hi" || lang === "mr") ? "सेट जोड़ें" : "Attach set"}</Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <select aria-label="Sample document set" value={set} onChange={(e) => setSet(e.target.value)} className="h-12 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-base">{SAMPLE_SETS.map((s) => <option key={s} value={s}>{s === "D01" ? "D01 · Sharma Medical Store (demo)" : s}</option>)}</select>
+            <Button variant="outline" disabled={busy} onClick={attachSet}>{(lang === "hi" || lang === "mr") ? "सेट जोड़ें" : "Attach set"}</Button>
           </div>
         </Card>
 
@@ -193,7 +193,7 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card"><div className="mx-auto max-w-xl space-y-1 px-4 py-3">
-        {!ready && <p className="text-center text-[11px] text-muted-foreground">{t("kyc_not_ready")}</p>}
+        {!ready && <p className="text-center text-xs text-muted-foreground">{t("kyc_not_ready")}</p>}
         <Button size="lg" className="w-full" disabled={!ready || busy} onClick={() => router.push(`/order/${id}/checkout`)}>{t("kyc_continue")}</Button>
       </div></div>
     </CustomerShell>

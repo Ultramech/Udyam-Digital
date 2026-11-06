@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import { Bot, ChevronDown, LifeBuoy, Send, User, UserRound } from "lucide-react";
+import { Bot, ChevronDown, Send, User, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export default function SupportPage() {
   return (
     <CustomerShell>
       <div className="space-y-5 pb-10">
-        <div className="flex items-center gap-2"><LifeBuoy className="size-5 text-primary" /><h1 className="text-xl font-bold">{H("Help & support", "मदद और सहायता")}</h1></div>
+        <h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{H("Help & support", "मदद और सहायता")}</h1>
 
         {/* assistant */}
         <Card className="space-y-3 p-3.5">
@@ -101,7 +101,7 @@ export default function SupportPage() {
             <div className="space-y-2" aria-live="polite">
               {turns.map((t, i) => (
                 <div key={i} className={cn("flex gap-2 text-sm", t.by === "customer" && "flex-row-reverse")}>
-                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted">{t.by === "customer" ? <User className="size-3.5" /> : <Bot className="size-3.5 text-primary" />}</span>
+                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted">{t.by === "customer" ? <User className="size-3.5" /> : <Bot className="size-3.5" />}</span>
                   <div className={cn("max-w-[85%] rounded-xl px-3 py-2", t.by === "customer" ? "bg-primary text-primary-foreground" : "bg-muted")}>{t.text}</div>
                 </div>
               ))}
@@ -122,7 +122,7 @@ export default function SupportPage() {
               <UserRound className="size-4" />{H("Send to a person", "व्यक्ति को भेजें")}
             </Button>
           )}
-          <p className="text-[11px] text-muted-foreground">{H("Answers come from your live order record. A person sees everything you asked here, so you won't need to repeat it.", "जवाब आपके ऑर्डर के लाइव रिकॉर्ड से आते हैं। व्यक्ति को आपकी पूरी बातचीत दिखती है, दोहराना नहीं पड़ेगा।")}</p>
+          <p className="text-xs text-muted-foreground">{H("Answers come from your live order record. A person sees everything you asked here, so you won't need to repeat it.", "जवाब आपके ऑर्डर के लाइव रिकॉर्ड से आते हैं। व्यक्ति को आपकी पूरी बातचीत दिखती है, दोहराना नहीं पड़ेगा।")}</p>
         </Card>
 
         {/* requests */}
@@ -135,7 +135,7 @@ export default function SupportPage() {
         {/* FAQs */}
         <section className="space-y-2">
           <h2 className="text-sm font-semibold">{H("Common questions", "आम सवाल")}</h2>
-          <div className="divide-y rounded-lg border bg-card">
+          <div className="divide-y rounded-2xl border bg-card">
             {FAQ.map((f) => (
               <div key={f.id}>
                 <button type="button" className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm font-medium" aria-expanded={openFaq === f.id} onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>
@@ -167,7 +167,7 @@ function TicketCard({ t, token, hi, onChange }: { t: PublicTicket; token: string
       <ul className="space-y-1.5 text-sm">
         {t.messages.filter((m) => m.by !== "assistant").map((m, i) => (
           <li key={i} className={cn("rounded-lg px-2.5 py-1.5", m.by === "staff" ? "bg-accent" : "bg-muted")}>
-            <div className="text-[10px] text-muted-foreground">{m.by === "staff" ? `${m.name ?? "Team"} · Airtel Business` : hi ? "आप" : "You"} · {fmtTime(m.at)}</div>{m.text}
+            <div className="text-xs text-muted-foreground">{m.by === "staff" ? `${m.name ?? "Team"} · Airtel Business` : hi ? "आप" : "You"} · {fmtTime(m.at)}</div>{m.text}
           </li>
         ))}
       </ul>

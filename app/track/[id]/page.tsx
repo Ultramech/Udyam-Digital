@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapse, SectionTitle, StageTrack } from "@/components/customer/kit";
 import { ProductIcon } from "@/components/brand";
 import { useI18n } from "@/components/i18n-provider";
 import { CustomerShell } from "@/components/customer/shell";
@@ -34,8 +35,6 @@ function actionText(a: { code: string; params?: Record<string, string | number> 
     default: return hi ? "हमारी टीम को आपसे एक चीज़ चाहिए — हम संपर्क करेंगे।" : "Our team needs one thing from you — we'll be in touch.";
   }
 }
-
-const ICON: Record<string, string> = { stage: "✅", delay: "⏳", action: "📎", chase: "📞", message: "💬", payment: "💳", kyc: "🪪", visit: "🧰" };
 
 function Inner({ id }: { id: string }) {
   const { t, lang } = useI18n();
@@ -85,25 +84,31 @@ function Inner({ id }: { id: string }) {
           <div className="text-sm">{t("order_id")} <b className="font-mono">{o.id}</b> · {bundleName(o.bundleId, lang)}</div><p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "इस पेज को बुकमार्क करें — कॉल करने की ज़रूरत नहीं, यहीं पूरी स्थिति दिखेगी।" : "Bookmark this page — you won't need to call us. Everything is tracked here."}</p></Card>
       )}
 
-      <div className="flex items-start justify-between gap-3">
-        <div><h1 className="text-xl font-bold">{t("track_title")}</h1><div className="text-sm text-muted-foreground">{o.businessName} · <span className="font-mono">{o.id}</span></div></div>
-        <div className="flex flex-col items-end gap-1"><Badge variant={done ? "default" : "secondary"} className="gap-1"><CalendarClock className="size-3" />{done ? t("st_live") : `${t("expected_by")} ${fmtDate(o.goLive, lang as "en")}`}</Badge></div>
-      </div>
+      <section aria-label={t("track_title")} className="rounded-3xl bg-foreground p-5 text-background">
+        <h1 className="sr-only">{t("track_title")}</h1>
+        <div className="flex items-center justify-between gap-3 text-sm opacity-75"><span className="truncate">{bundleName(o.bundleId, lang)}</span><span className="shrink-0 font-mono text-xs">{o.id}</span></div>
+        <div className="mt-3 text-[1.5rem] font-extrabold leading-tight">{o.cancelled ? t("order_cancelled") : done ? t("stage_ACTIVATED") : o.stage ? t(`stage_${o.stage}`) : t("order_unpaid")}</div>
+        {!o.cancelled && (
+          <>
+            <div className="mt-1 text-sm opacity-75">{done ? o.businessName : `${t("expected_by")} ${fmtDate(o.goLive, lang as "en")}`}</div>
+            <StageTrack stage={o.stage ?? null} className="mt-4 text-background" />
+          </>
+        )}
+        {!o.stage && !o.cancelled && (
+          <>
+            <p className="mt-3 text-sm opacity-85">{o.payment.status === "failed" ? t("pay_failed_msg") : o.payment.status === "processing" ? t("pay_pending_msg") : t("pay_to_place")}</p>
+            <Link href={`/order/${o.quoteId}/checkout`} className="mt-4 block"><Button size="lg" className="w-full">{t("pay_now")}</Button></Link>
+          </>
+        )}
+        {last && !o.cancelled && <div className="mt-4 border-t border-background/20 pt-3 text-sm opacity-75">{t("last_update")}: {fmtDate(last.at, lang as "en")}</div>}
+      </section>
 
       {o.cancelled && <OrderActions o={o} token={token} lang={lang} onChange={load} />}
 
-      {!o.stage && !o.cancelled && (
-        <Card className="space-y-2 border-warning/40 bg-warning/5 p-3.5 text-sm">
-          <div className="flex items-center gap-2 font-semibold"><TriangleAlert className="size-4" />{t("payment")}: {o.payment.status}</div>
-          <p>{o.payment.status === "failed" ? t("pay_failed_msg") : o.payment.status === "processing" ? t("pay_pending_msg") : t("otp_needed")}</p>
-          <Link href={`/order/${o.quoteId}/checkout`}><Button size="sm">{t("pay_now")}</Button></Link>
-        </Card>
-      )}
-
-      {o.delayed && !o.cancelled && <Card className="flex gap-2 border-warning/50 bg-warning/10 p-3.5 text-sm"><AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" /><div><div className="font-semibold">{t("delayed")}</div><p>{o.delayed.reason}. {t("expected_by")} <b>{fmtDate(o.delayed.newEta, lang as "en")}</b>. {(lang === "hi" || lang === "mr") ? "कॉल करने की ज़रूरत नहीं।" : "No need to call us."}</p></div></Card>}
+      {o.delayed && !o.cancelled && <Card className="flex flex-row gap-2 border-warning/50 bg-warning/10 p-3.5 text-sm"><AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" /><div><div className="font-semibold">{t("delayed")}</div><p>{o.delayed.reason}. {t("expected_by")} <b>{fmtDate(o.delayed.newEta, lang as "en")}</b>. {(lang === "hi" || lang === "mr") ? "कॉल करने की ज़रूरत नहीं।" : "No need to call us."}</p></div></Card>}
 
       {!o.cancelled && ((o.actionNeeded && o.actionNeeded.code !== "BALANCE_DUE") || o.kycStatus === "reupload" || o.kycStatus === "review") && (
-        <Card className="space-y-2 border-primary/30 bg-accent p-3.5 text-sm">
+        <Card className="space-y-2 border-warning/30 bg-warning-soft p-4 text-sm">
           <div className="font-semibold">{t("action_needed")}</div>
           <p>{o.kycStatus === "review" ? t("kyc_review_note") : o.kycStatus === "reupload" ? ((lang === "hi" || lang === "mr") ? "एक दस्तावेज़ दोबारा चाहिए।" : "One document needs to be re-uploaded.") : actionText(o.actionNeeded, lang)}</p>
           {o.kycStatus === "reupload" && <Link href={`/order/${o.quoteId}/kyc`}><Button size="sm">{t("upload")}</Button></Link>}
@@ -120,7 +125,7 @@ function Inner({ id }: { id: string }) {
             return (
               <li key={s} className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <span className={cn("flex size-6 items-center justify-center rounded-full border-2 text-[11px]", reached ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground", current && "ring-4 ring-primary/20")}>{reached ? <Check className="size-3.5" /> : i + 1}</span>
+                  <span className={cn("flex size-6 items-center justify-center rounded-full border-2 text-xs", reached ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground", current && "ring-4 ring-primary/20")}>{reached ? <Check className="size-3.5" /> : i + 1}</span>
                   {i < STAGES.length - 1 && <span className={cn("w-0.5 flex-1", i < idx ? "bg-primary" : "bg-border")} style={{ minHeight: 22 }} />}
                 </div>
                 <div className="pb-4"><div className={cn("text-sm font-medium", !reached && "text-muted-foreground")}>{t(`stage_${s}`)}</div><div className="text-xs text-muted-foreground">{reached && o.stageHistory.find((h) => h.stage === s) ? fmtDate(o.stageHistory.find((h) => h.stage === s)!.at, lang as "en") : fmtDate(o.stageDates[s], lang as "en")}</div></div>
@@ -128,7 +133,7 @@ function Inner({ id }: { id: string }) {
             );
           })}
         </ol>
-        <p className="border-t pt-2 text-[11px] text-muted-foreground">{t("demo_timeline")}{last ? ` · ${t("last_update")}: ${fmtDate(last.at, lang as "en")}` : ""}</p>
+        <p className="border-t pt-2 text-xs text-muted-foreground">{t("demo_timeline")}{last ? ` · ${t("last_update")}: ${fmtDate(last.at, lang as "en")}` : ""}</p>
       </Card>
 
       {/* per-location, per-product lanes */}
@@ -141,8 +146,8 @@ function Inner({ id }: { id: string }) {
               <ul className="space-y-2">
                 {o.items.filter((i) => (i.siteIndex ?? 0) === s).map((i, k) => (
                   <li key={k} className="flex items-center gap-2.5"><ProductIcon id={i.productId} className="size-4 shrink-0 text-primary" />
-                    <div className="min-w-0 flex-1"><div className="truncate text-sm">{plainName(i.productId, lang)}{i.qty > 1 ? ` × ${i.qty}` : ""}</div><div className="text-[11px] text-muted-foreground">{fmtDate(i.etaDate, lang as "en")}</div></div>
-                    <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", statusCls[i.status])}>{statusLabel[i.status]}</span></li>
+                    <div className="min-w-0 flex-1"><div className="truncate text-sm">{plainName(i.productId, lang)}{i.qty > 1 ? ` × ${i.qty}` : ""}</div><div className="text-xs text-muted-foreground">{fmtDate(i.etaDate, lang as "en")}</div></div>
+                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", statusCls[i.status])}>{statusLabel[i.status]}</span></li>
                 ))}
               </ul>
             </Card>
@@ -162,25 +167,32 @@ function Inner({ id }: { id: string }) {
         </Card>
       )}
       {o.engineer && (
-        <Card className="flex items-center gap-3 p-3.5"><span className="flex size-10 items-center justify-center rounded-full bg-accent text-primary"><HardHat className="size-5" /></span>
+        <Card className="flex flex-row items-center gap-3 p-3.5"><span className="flex size-10 items-center justify-center rounded-full bg-secondary text-foreground"><HardHat className="size-5" /></span>
           <div className="flex-1 text-sm"><div className="text-xs text-muted-foreground">{t("engineer")}</div><div className="font-semibold">{o.engineer.name}</div><div className="text-xs text-muted-foreground">{t("slot")}: {o.engineer.slot}</div>{o.engineer.enRoute && <Badge className="mt-1 gap-1" role="status"><HardHat className="size-3" />{(lang === "hi" || lang === "mr") ? "रास्ते में हैं" : "On the way"}</Badge>}</div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="size-3.5" />{o.engineer.phoneMasked}</div></Card>
       )}
 
-      <div className="flex flex-wrap gap-1.5 text-xs">
-        <Badge variant="outline">{t("kyc_status")}: {o.kycStatus}</Badge><Badge variant="outline">{t("payment")}: {o.payment.status}</Badge><Badge variant="outline">{inr(o.totals.monthly)} {t("per_month")}</Badge>
-        {kyc?.review && <Badge variant="outline">{t(kyc.review.decision)}</Badge>}
-      </div>
-
-      {/* WhatsApp-style updates (simulated) */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold">{t("updates")} <span className="font-normal text-muted-foreground">· {t("whatsapp_style")}</span></h2>
-        <div className="space-y-2 rounded-2xl bg-[oklch(0.94_0.03_150)] p-3">
-          {[...events].reverse().map((e) => (
-            <div key={e.id} className="max-w-[92%] rounded-xl rounded-tl-sm bg-white px-3 py-2 text-sm shadow-sm"><div className="whitespace-pre-wrap">{ICON[e.type] ?? "💬"} {e.text}</div><div className="mt-0.5 text-right text-[10px] text-muted-foreground">{fmtDate(e.at, lang as "en")}</div></div>
+      <Collapse title={t("qc_details")}>
+        <dl className="space-y-2 text-[0.9375rem]">
+          {([[t("order_id"), o.id], [t("kyc_status"), kyc?.review ? `${o.kycStatus}, ${t(kyc.review.decision)}` : o.kycStatus], [t("payment"), o.payment.status], [t("per_month"), inr(o.totals.monthly)]] as const).map(([k, val]) => (
+            <div key={k} className="flex items-baseline justify-between gap-4"><dt className="text-muted-foreground">{k}</dt><dd className="num text-right font-semibold">{val}</dd></div>
           ))}
-          {events.length === 0 && <div className="text-sm text-muted-foreground">—</div>}
-        </div>
+        </dl>
+      </Collapse>
+
+      <section>
+        <SectionTitle>{t("updates")}</SectionTitle>
+        {events.length === 0 ? <p className="text-sm text-muted-foreground">{t("upd_none")}</p> : (
+          <ol className="space-y-4 border-l-2 border-border pl-5">
+            {[...events].reverse().map((e) => (
+              <li key={e.id} className="relative">
+                <span className="absolute -left-[1.6rem] top-2 size-2.5 rounded-full bg-foreground" aria-hidden />
+                <div className="whitespace-pre-wrap text-[0.9375rem]">{e.text}</div>
+                <div className="num mt-0.5 text-xs text-muted-foreground">{fmtDate(e.at, lang as "en")}</div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       {!o.cancelled && <OrderActions o={o} token={token} lang={lang} onChange={load} />}

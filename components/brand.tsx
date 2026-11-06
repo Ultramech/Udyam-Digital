@@ -4,12 +4,17 @@ import { cn } from "@/lib/utils";
 
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <span className={cn("inline-flex items-center gap-2 font-semibold tracking-tight", className)}>
-      <svg viewBox="0 0 96 96" className="size-8 shrink-0" aria-hidden>
-        <rect width="96" height="96" rx="22" fill="var(--primary)" />
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
+      <svg viewBox="0 0 96 96" className="size-9 shrink-0" aria-hidden>
+        <rect width="96" height="96" rx="24" fill="var(--primary)" />
         <path d="M26 58c0-17 11-30 28-30 9 0 15 4 15 11 0 8-8 13-19 13-6 0-10-2-13-5-1 9 4 15 14 15 7 0 13-3 17-8l6 5c-5 7-14 11-24 11-15 0-24-8-24-18z" fill="#fff" />
       </svg>
-      {!compact && <span className="leading-none">Airtel <span className="font-normal text-muted-foreground">Business</span></span>}
+      {!compact && (
+        <span className="flex flex-col leading-none">
+          <span className="text-[1.0625rem] font-extrabold tracking-tight">Udyam Digital</span>
+          <span className="mt-1 text-[0.6875rem] font-medium text-muted-foreground">by Airtel Business</span>
+        </span>
+      )}
     </span>
   );
 }

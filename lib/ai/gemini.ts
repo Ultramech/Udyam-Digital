@@ -94,7 +94,8 @@ async function geminiJsonOnce<T>(opts: { system: string; parts: Part[]; schema: 
       try { return JSON.parse(text) as T; } catch { throw new GeminiError("BAD_RESPONSE", "Response was not valid JSON"); }
     } catch (e) {
       if (e instanceof GeminiError) throw e;
-      if (attempt === 1) throw new GeminiError("UNAVAILABLE", e instanceof Error && e.name === "AbortError" ? "Gemini timed out" : "Could not reach Gemini");
+      if (e instanceof Error && e.name === "AbortError") throw new GeminiError("UNAVAILABLE", "Gemini timed out"); // never wait twice on a slow call: the next model gets a turn
+      if (attempt === 1) throw new GeminiError("UNAVAILABLE", "Could not reach Gemini");
     } finally { clearTimeout(timer); }
   }
   throw new GeminiError("UNAVAILABLE", "Gemini unavailable");

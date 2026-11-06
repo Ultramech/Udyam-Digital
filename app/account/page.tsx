@@ -48,15 +48,15 @@ function DeviceAccount() {
   return (
     <>
       <div className="space-y-5 pb-10">
-        <h1 className="text-xl font-bold">{t("account_title")}</h1>
+        <h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("account_title")}</h1>
         <SignInPrompt />
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <Link href="/notifications"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><Bell className="size-4 text-primary" />{(lang === "hi" || lang === "mr") ? "सूचनाएँ" : "Notifications"}</Card></Link>
-          <Link href="/support"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><LifeBuoy className="size-4 text-primary" />{(lang === "hi" || lang === "mr") ? "मदद" : "Help"}</Card></Link>
-          <Link href="/catalogue"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><BookOpen className="size-4 text-primary" />{(lang === "hi" || lang === "mr") ? "सेवाएँ" : "Services"}</Card></Link>
+          <Link href="/notifications"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><Bell className="size-4" />{(lang === "hi" || lang === "mr") ? "सूचनाएँ" : "Notifications"}</Card></Link>
+          <Link href="/support"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><LifeBuoy className="size-4" />{(lang === "hi" || lang === "mr") ? "मदद" : "Help"}</Card></Link>
+          <Link href="/catalogue"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><BookOpen className="size-4" />{(lang === "hi" || lang === "mr") ? "सेवाएँ" : "Services"}</Card></Link>
         </div>
 
-        <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" />{t("my_orders")}</h2>
+        <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4" />{t("my_orders")}</h2>
           {orders.length === 0 && <Card className="p-3.5 text-sm text-muted-foreground">{t("no_orders")}</Card>}
           {orders.map((o) => {
             const tok = j.orders.find((x) => x.id === o.id)?.token ?? "";
@@ -72,10 +72,10 @@ function DeviceAccount() {
           })}
         </section>
 
-        <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold"><History className="size-4 text-primary" />{t("my_quotes")}</h2>
+        <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold"><History className="size-4" />{t("my_quotes")}</h2>
           {j.quoteId && <Link href={`/quote/${j.quoteId}`}><Button variant="outline" className="w-full justify-start gap-2"><FileText className="size-4" />{t("resume")}</Button></Link>}
           {mine?.quotes.filter((q) => q.quoteId !== j.quoteId).map((q) => (
-            <Link key={q.quoteId} href={`/quote/${q.quoteId}`} className="block"><Card className="flex items-center justify-between p-3 text-sm transition-colors hover:border-primary"><span>{bundleName(q.bundleId, lang)} · <span className="font-mono text-xs">{q.quoteId}</span></span><Badge variant="secondary">{q.orderId ? ((lang === "hi" || lang === "mr") ? "ऑर्डर हुआ" : "Ordered") : ((lang === "hi" || lang === "mr") ? "सेव" : "Saved")}</Badge></Card></Link>
+            <Link key={q.quoteId} href={`/quote/${q.quoteId}`} className="block"><Card className="flex flex-row items-center justify-between p-3 text-sm transition-colors hover:border-primary"><span>{bundleName(q.bundleId, lang)} · <span className="font-mono text-xs">{q.quoteId}</span></span><Badge variant="secondary">{q.orderId ? ((lang === "hi" || lang === "mr") ? "ऑर्डर हुआ" : "Ordered") : ((lang === "hi" || lang === "mr") ? "सेव" : "Saved")}</Badge></Card></Link>
           ))}
           {j.conversationId && <Link href={`/advisor?c=${j.conversationId}`}><Button variant="ghost" className="w-full justify-start">{t("cta_advisor")}</Button></Link>}
           {!j.quoteId && !j.conversationId && <Card className="p-3.5 text-sm text-muted-foreground">—</Card>}
@@ -105,7 +105,7 @@ function SignInPrompt() {
   const { ensureVerified } = useVerify();
   const hi = lang === "hi" || lang === "mr";
   return (
-    <Card className="flex items-center gap-3 border-primary/30 bg-accent p-3.5 text-sm">
+    <Card className="flex flex-row items-center gap-3 border-primary/30 bg-accent p-3.5 text-sm">
       <div className="flex-1">{hi ? "साइन इन करें ताकि आपके ऑर्डर, बिज़नेस और प्लान हर फ़ोन पर दिखें।" : "Sign in so your orders, businesses and plans follow you to any phone."}</div>
       <Button size="sm" onClick={() => ensureVerified()}>{hi ? "साइन इन" : "Sign in"}</Button>
     </Card>

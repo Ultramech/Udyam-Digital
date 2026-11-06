@@ -14,7 +14,7 @@ export function MaturityCard({ m, quoteId, lang }: { m: Maturity; quoteId: strin
   return (
     <Card className="space-y-3 p-3">
       <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><Gauge className="size-5" /></span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><Gauge className="size-5" /></span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{hi ? "आपका डिजिटल स्कोर" : "Your digital score"}</div>
           <div className="mt-0.5 flex items-baseline gap-2" aria-label={hi ? `आज ${m.before.total}, इस प्लान के साथ ${m.after.total}, 100 में से` : `Today ${m.before.total}, with this plan ${m.after.total}, out of 100`}>
@@ -23,7 +23,7 @@ export function MaturityCard({ m, quoteId, lang }: { m: Maturity; quoteId: strin
             <span className="text-2xl font-extrabold text-primary">{m.after.total}</span>
             <span className="text-xs text-muted-foreground">/ 100</span>
           </div>
-          <div className="text-[11px] text-muted-foreground">{hi ? "आज → इस प्लान के साथ" : "Today → with this plan"}</div>
+          <div className="text-xs text-muted-foreground">{hi ? "आज → इस प्लान के साथ" : "Today → with this plan"}</div>
         </div>
       </div>
       <div className="space-y-1.5">
@@ -31,7 +31,7 @@ export function MaturityCard({ m, quoteId, lang }: { m: Maturity; quoteId: strin
           const b = m.before.areas[i].score;
           return (
             <div key={a.area}>
-              <div className="flex justify-between text-[11px]"><span>{areaLabel(a.area, lang)}</span><span className="text-muted-foreground">{b} → <b className="text-foreground">{a.score}</b> / 20</span></div>
+              <div className="flex justify-between text-xs"><span>{areaLabel(a.area, lang)}</span><span className="text-muted-foreground">{b} → <b className="text-foreground">{a.score}</b> / 20</span></div>
               <div className="relative h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
                 <div className="absolute inset-y-0 left-0 bg-primary/35" style={{ width: `${(a.score / 20) * 100}%` }} />
                 <div className="absolute inset-y-0 left-0 bg-muted-foreground/60" style={{ width: `${(b / 20) * 100}%` }} />
@@ -54,7 +54,7 @@ export function MaturityCard({ m, quoteId, lang }: { m: Maturity; quoteId: strin
           <ol className="space-y-1.5">{m.roadmap.filter((r) => r.items.length).map((r) => (
             <li key={r.horizon}><b>{hi ? HORIZON[r.horizon].hi : HORIZON[r.horizon].en}:</b> {r.items.map((it) => roadmapText(it.code, it.products, it.params, lang)).join(" · ")}</li>
           ))}</ol>
-          <p className="text-[11px] text-muted-foreground">{hi ? "यह सलाह के लिए एक अनुमानित स्कोर है, कोई आधिकारिक प्रमाणपत्र नहीं। आपने जो नहीं बताया उसे मौजूद नहीं माना गया है।" : "An advisory score, not an official certification. Anything you didn't mention is assumed not in place today."}</p>
+          <p className="text-xs text-muted-foreground">{hi ? "यह सलाह के लिए एक अनुमानित स्कोर है, कोई आधिकारिक प्रमाणपत्र नहीं। आपने जो नहीं बताया उसे मौजूद नहीं माना गया है।" : "An advisory score, not an official certification. Anything you didn't mention is assumed not in place today."}</p>
         </div>
       )}
       <a href={`/api/quote/${quoteId}/report`} target="_blank" rel="noopener" className="block">

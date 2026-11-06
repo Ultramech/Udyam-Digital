@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { BadgeCheck, Bell, Building2, Download, LifeBuoy, LogOut, MapPin, MonitorSmartphone, Package, Plus, Trash2, UserRound } from "lucide-react";
+import { BadgeCheck, Bell, Download, FlaskConical, LifeBuoy, LogOut, MapPin, Package, Plus, Trash2, UserRound } from "lucide-react";
+import { Collapse, Row } from "@/components/customer/kit";
+import { openDemoTools } from "@/components/customer/app-nav";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,31 +57,29 @@ export function AccountProfile() {
   return (
     <div className="space-y-5 pb-10">
       {/* identity */}
-      <Card className="flex items-center gap-3 p-4">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">{(u.name?.[0] ?? "").toUpperCase() || <UserRound className="size-5" />}</span>
+      <Card className="flex flex-row items-center gap-3 p-4">
+        <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-foreground text-xl font-bold text-background">{(u.name?.[0] ?? "").toUpperCase() || <UserRound className="size-5" />}</span>
         <div className="min-w-0 flex-1">
           <div className="truncate text-lg font-bold">{u.name || H("Your account", "आपका अकाउंट")}</div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground"><BadgeCheck className="size-3.5 text-success" />{u.phoneMasked} · {profileTypeLabel(u.profileType, lang)} · {H("member since", "सदस्य")} {fmtDate(new Date(u.createdAt).toISOString().slice(0, 10), lang)}</div>
         </div>
-        <Button size="sm" variant="ghost" className="gap-1" onClick={async () => { await signOut(); toast.success(H("Signed out", "साइन आउट हो गया")); }}><LogOut className="size-4" />{H("Sign out", "साइन आउट")}</Button>
       </Card>
 
       {!u.onboarded && (
-        <Card className="flex items-center gap-3 border-primary/30 bg-accent p-3.5 text-sm">
+        <Card className="flex flex-row items-center gap-3 border-primary/30 bg-accent p-3.5 text-sm">
           <div className="flex-1">{H("Finish setting up your profile — tell us who you are and add your business.", "अपनी प्रोफ़ाइल पूरी करें — बताएँ आप कौन हैं और अपना बिज़नेस जोड़ें।")}</div>
           <Link href="/account/setup"><Button size="sm">{H("Set up", "पूरा करें")}</Button></Link>
         </Card>
       )}
 
-      <div className="grid grid-cols-3 gap-2 text-xs">
-        <Link href="/notifications"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><Bell className="size-4 text-primary" />{H("Notifications", "सूचनाएँ")}</Card></Link>
-        <Link href="/support"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><LifeBuoy className="size-4 text-primary" />{H("Help", "मदद")}{me.tickets.filter((x) => x.status !== "resolved").length > 0 && <Badge className="h-4 px-1 text-[9px]">{me.tickets.filter((x) => x.status !== "resolved").length}</Badge>}</Card></Link>
-        <Link href="/advisor"><Card className="flex flex-col items-center gap-1 p-3 hover:border-primary"><Plus className="size-4 text-primary" />{H("New plan", "नया प्लान")}</Card></Link>
+      <div className="space-y-2">
+        <Row href="/notifications" icon={<Bell className="size-5" />} title={H("Notifications", "सूचनाएँ")} />
+        <Row href="/support" icon={<LifeBuoy className="size-5" />} title={H("Help and support", "मदद और सहायता")} right={me.tickets.filter((x) => x.status !== "resolved").length > 0 ? <Badge variant="info">{me.tickets.filter((x) => x.status !== "resolved").length}</Badge> : undefined} />
+        <Row href="/orders" icon={<Package className="size-5" />} title={t("orders_title")} />
       </div>
 
       {/* profile */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold">{H("Profile", "प्रोफ़ाइल")}</h2>
+      <Collapse title={H("Profile", "प्रोफ़ाइल")}>
         <Card className="space-y-3 p-3.5">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5"><Label htmlFor="pf-name">{H("Your name", "आपका नाम")}</Label><Input id="pf-name" value={form.name} maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
@@ -99,11 +99,11 @@ export function AccountProfile() {
             <Button size="sm" disabled={form.name === (u.name ?? "") && form.email === (u.email ?? "")} onClick={() => patch({ name: form.name.trim() || null, email: form.email.trim() })}>{H("Save", "सेव करें")}</Button>
           </div>
         </Card>
-      </section>
+      </Collapse>
 
       {/* businesses */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-semibold"><Building2 className="size-4 text-primary" />{H("My businesses", "मेरे बिज़नेस")}</h2>
+      <Collapse title={H("My businesses", "मेरे बिज़नेस")}>
+        <div className="flex justify-end">
           <Button size="sm" variant="ghost" className="gap-1" onClick={() => setAddingBiz((x) => !x)}><Plus className="size-3.5" />{H("Add", "जोड़ें")}</Button></div>
         {addingBiz && (
           <Card className="space-y-2 p-3.5">
@@ -124,7 +124,7 @@ export function AccountProfile() {
           <Card key={b.id} className="space-y-2 p-3.5">
             <div className="flex items-start justify-between gap-2">
               <div><div className="font-semibold">{b.name}</div><div className="text-xs text-muted-foreground">{[b.businessType, b.city, b.employees ? `${b.employees} ${H("staff", "स्टाफ")}` : null, b.sites ? `${b.sites} ${H("location(s)", "लोकेशन")}` : null].filter(Boolean).join(" · ") || "—"}</div></div>
-              {b.gstin && <Badge variant={b.gstStatus === "Active" ? "default" : "secondary"} className="shrink-0 gap-1 font-mono text-[10px]"><BadgeCheck className="size-3" />GST {b.gstin}{b.gstStatus && b.gstStatus !== "Active" ? ` · ${b.gstStatus}` : ""}</Badge>}
+              {b.gstin && <Badge variant={b.gstStatus === "Active" ? "default" : "secondary"} className="shrink-0 gap-1 font-mono text-xs"><BadgeCheck className="size-3" />GST {b.gstin}{b.gstStatus && b.gstStatus !== "Active" ? ` · ${b.gstStatus}` : ""}</Badge>}
             </div>
             <ul className="space-y-1 text-xs">
               {b.locations.map((l) => (
@@ -143,58 +143,44 @@ export function AccountProfile() {
             ) : <Button size="sm" variant="outline" className="gap-1" onClick={() => setLocFor(b.id)}><Plus className="size-3.5" />{H("Add a location", "लोकेशन जोड़ें")}</Button>}
           </Card>
         ))}
-      </section>
+      </Collapse>
 
-      {/* orders + quotes */}
-      <section className="space-y-2">
-        <h2 className="flex items-center gap-2 text-sm font-semibold"><Package className="size-4 text-primary" />{t("my_orders")}</h2>
-        {me.orders.length === 0 && <Card className="p-3.5 text-sm text-muted-foreground">{t("no_orders")}</Card>}
-        {me.orders.map((o) => (
-          <Link key={o.id} href={`/track/${o.id}?t=${o.token}`} className="block">
-            <Card className="p-3.5 transition-colors hover:border-primary">
-              <div className="flex items-center justify-between gap-2"><div className="font-semibold">{o.businessName}</div><Badge variant={o.stage === "ACTIVATED" ? "default" : o.stage === "CANCELLED" ? "destructive" : "secondary"}>{o.stage === "CANCELLED" ? H("Cancelled", "रद्द") : o.stage ? t(`stage_${o.stage}`) : o.payment}</Badge></div>
-              <div className="mt-0.5 text-xs text-muted-foreground">{o.bundle} · {inr(o.monthly)} {t("per_month")} · {o.id} · {t("expected_by")} {fmtDate(o.goLive, lang)}</div>
-            </Card>
-          </Link>
-        ))}
-        {me.quotes.filter((q) => !q.orderId).length > 0 && <div className="pt-1 text-xs font-semibold text-muted-foreground">{t("my_quotes")}</div>}
-        {me.quotes.filter((q) => !q.orderId).map((q) => (
-          <Link key={q.id} href={`/quote/${q.id}`} className="block"><Card className="flex items-center justify-between p-3 text-sm hover:border-primary"><span>{q.bundle} · <span className="font-mono text-xs">{q.id}</span></span><span className="text-xs text-muted-foreground">{fmtTime(q.createdAt, lang)}</span></Card></Link>
-        ))}
-      </section>
-
-      {/* notifications */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold">{H("How we update you", "हम आपको कैसे बताएँ")}</h2>
+      <Collapse title={H("How we update you", "हम आपको कैसे बताएँ")}>
         <Card className="divide-y p-0 text-sm">
           {([["notifyWhatsapp", H("Order updates on WhatsApp", "WhatsApp पर ऑर्डर अपडेट")], ["notifySms", H("Order updates by SMS", "SMS पर ऑर्डर अपडेट")], ["notifyEmail", H("Order updates by email", "ईमेल पर ऑर्डर अपडेट")], ["marketingOptIn", H("Offers and new products (marketing)", "ऑफ़र और नए प्रोडक्ट (मार्केटिंग)")]] as const).map(([k, label]) => (
             <label key={k} className="flex items-center justify-between gap-3 px-3.5 py-3"><span>{label}</span><Switch checked={u[k]} onCheckedChange={(c) => patch({ [k]: !!c })} aria-label={label} /></label>
           ))}
         </Card>
-        <p className="text-[11px] text-muted-foreground">{H("Service updates are about your own orders. Marketing is separate and stays off unless you turn it on.", "सर्विस अपडेट सिर्फ़ आपके ऑर्डर के बारे में होते हैं। मार्केटिंग अलग है और आपके चालू किए बिना बंद रहती है।")}</p>
-      </section>
+        <p className="text-xs text-muted-foreground">{H("Service updates are about your own orders. Marketing is separate and stays off unless you turn it on.", "सर्विस अपडेट सिर्फ़ आपके ऑर्डर के बारे में होते हैं। मार्केटिंग अलग है और आपके चालू किए बिना बंद रहती है।")}</p>
+      </Collapse>
 
       {/* devices */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-semibold"><MonitorSmartphone className="size-4 text-primary" />{H("Signed-in devices", "साइन-इन डिवाइस")}</h2>
+      <Collapse title={H("Signed-in devices", "साइन-इन डिवाइस")}>
+        <div className="flex items-center justify-end">
           {me.sessions.length > 1 && <Button size="sm" variant="ghost" onClick={async () => { await api("DELETE", "/api/me/sessions", { others: true }); toast.success(H("Other devices signed out", "दूसरे डिवाइस साइन आउट")); load(); }}>{H("Sign out others", "बाकी साइन आउट")}</Button>}</div>
         <Card className="divide-y p-0 text-sm">
           {me.sessions.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-2 px-3.5 py-2.5">
-              <div><div>{device(s.userAgent)}{s.current && <Badge variant="secondary" className="ml-2 text-[10px]">{H("This device", "यह डिवाइस")}</Badge>}</div><div className="text-[11px] text-muted-foreground">{H("last active", "आख़िरी बार")} {fmtTime(s.lastSeenAt, lang)}</div></div>
+              <div><div>{device(s.userAgent)}{s.current && <Badge variant="secondary" className="ml-2 text-xs">{H("This device", "यह डिवाइस")}</Badge>}</div><div className="text-xs text-muted-foreground">{H("last active", "आख़िरी बार")} {fmtTime(s.lastSeenAt, lang)}</div></div>
               {!s.current && <Button size="sm" variant="ghost" onClick={async () => { await api("DELETE", "/api/me/sessions", { id: s.id }); load(); }}>{H("Sign out", "साइन आउट")}</Button>}
             </div>
           ))}
         </Card>
-      </section>
+      </Collapse>
 
       {/* privacy */}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold">{t("my_data")}</h2>
+      <Collapse title={t("my_data")}>
         <a href="/api/me/export" className="block"><Button variant="outline" className="w-full gap-2"><Download className="size-4" />{H("Download my data (JSON)", "मेरा डेटा डाउनलोड करें (JSON)")}</Button></a>
         <p className="text-xs text-muted-foreground">{H("Deleting your account erases your profile, businesses, conversations, plans, KYC details, consent records and support requests. Orders are contract records and are kept anonymised.", "अकाउंट हटाने पर आपकी प्रोफ़ाइल, बिज़नेस, बातचीत, प्लान, KYC जानकारी, सहमति और सहायता अनुरोध मिट जाते हैं। ऑर्डर अनुबंध रिकॉर्ड हैं और गुमनाम रूप में रखे जाते हैं।")}</p>
         <Button variant="outline" className="w-full gap-2 text-destructive" onClick={() => setConfirmDelete(true)}><Trash2 className="size-4" />{H("Delete my account", "मेरा अकाउंट हटाएँ")}</Button>
-      </section>
+      </Collapse>
+
+      <div className="space-y-2 pt-1">
+        {process.env.NEXT_PUBLIC_DEMO_MODE !== "false" && (
+          <Button variant="outline" size="lg" className="w-full" onClick={openDemoTools}><FlaskConical className="size-4" />{t("demo_tools")}</Button>
+        )}
+        <Button variant="outline" size="lg" className="w-full" onClick={async () => { await signOut(); toast.success(H("Signed out", "साइन आउट हो गया")); }}><LogOut className="size-4" />{H("Sign out", "साइन आउट")}</Button>
+      </div>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>

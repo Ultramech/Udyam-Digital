@@ -170,13 +170,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   return (
     <CustomerShell step={6}>
       <div className="space-y-4 pb-32">
-        <div><h1 className="text-xl font-bold">{t("checkout_title")}</h1><p className="text-sm text-muted-foreground">{bundleName(q.quote.bundleId, lang)} · {p.contractMonths} {t("months")}</p></div>
+        <div><h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("checkout_title")}</h1><p className="text-sm text-muted-foreground">{bundleName(q.quote.bundleId, lang)} · {p.contractMonths} {t("months")}</p></div>
         <LinesList lines={q.quote.lines} />
         <Card className="space-y-1.5 p-3.5 text-sm">
           <R l={t("monthly_charge")} r={inr(p.monthly)} /><R l={`${t("gst_18")}`} r={inr(p.gstMonthly)} />
           <R l={t("setup_charges")} r={inr(p.setup)} /><R l={`${t("gst_18")} · ${t("setup_charges")}`} r={inr(p.gstSetup)} />
           <hr className="my-1" /><R l={t("total_today")} r={inr(p.firstPayment)} bold />
-          <div className="pt-1 text-[11px] text-muted-foreground">{t("go_live")}: {fmtDate(q.schedule.date, lang)} · {t("indicative")}</div>
+          <div className="pt-1 text-xs text-muted-foreground">{t("go_live")}: {fmtDate(q.schedule.date, lang)} · {t("indicative")}</div>
         </Card>
 
         <Card className="space-y-2 p-3.5">
@@ -185,7 +185,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         </Card>
 
         <Card className="space-y-2 p-3.5">
-          <div className="flex items-center gap-2 text-sm font-semibold"><PenLine className="size-4 text-primary" />{t("esign")}{phase !== "review" && <span className="ml-auto flex items-center gap-1 text-xs font-medium text-success"><CheckCircle2 className="size-3.5" />{t("signed")}</span>}</div>
+          <div className="flex items-center gap-2 text-sm font-semibold"><PenLine className="size-4" />{t("esign")}{phase !== "review" && <span className="ml-auto flex items-center gap-1 text-xs font-medium text-success"><CheckCircle2 className="size-3.5" />{t("signed")}</span>}</div>
           {phase === "review" && signStep === "idle" && (
             <>
               <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हम आपका ऑर्डर फ़ॉर्म PDF बनाएँगे। आप उसे पढ़कर अपने वेरिफाई किए हुए नंबर पर आए कोड से साइन करेंगे।" : "We'll prepare your order form as a PDF. You read it, then sign with a code texted to your verified number."}</p>
@@ -195,7 +195,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
           {phase === "review" && signStep !== "idle" && order && (
             <div className="space-y-2.5">
               <a className="block text-sm font-medium text-primary underline" target="_blank" rel="noreferrer" href={`/api/orders/${order.id}/esign?t=${order.token}`}>{(lang === "hi" || lang === "mr") ? "ऑर्डर फ़ॉर्म (PDF) खोलकर पढ़ें" : "Open and read the order form (PDF)"}</a>
-              {docHash && <p className="break-all font-mono text-[10px] text-muted-foreground">SHA-256 {docHash}</p>}
+              {docHash && <p className="break-all font-mono text-xs text-muted-foreground">SHA-256 {docHash}</p>}
               <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />{(lang === "hi" || lang === "mr") ? "मैंने फ़ॉर्म पढ़ लिया है और इस ऑर्डर के लिए सहमत हूँ।" : "I have read the order form and agree to this order."}</label>
               {signStep === "prepared" && <Button disabled={busy || !agreed} onClick={sendSignCode}>{(lang === "hi" || lang === "mr") ? "साइन करने के लिए कोड भेजें" : "Text me a code to sign"}</Button>}
               {signStep === "sent" && (
@@ -212,7 +212,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
 
         {phase !== "review" && (
           <Card className="space-y-3 p-3.5">
-            <div className="flex items-center gap-2 text-sm font-semibold"><QrCode className="size-4 text-primary" />{rzTest ? ((lang === "hi" || lang === "mr") ? "ऑनलाइन भुगतान करें" : "Pay online") : t("pay_upi")}</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><QrCode className="size-4" />{rzTest ? ((lang === "hi" || lang === "mr") ? "ऑनलाइन भुगतान करें" : "Pay online") : t("pay_upi")}</div>
             <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "टेस्ट मोड — असली पैसे नहीं कटेंगे। Netbanking चुनें → कोई भी बैंक → Success।" : "TEST MODE — no real money moves. Choose Netbanking → any bank → Success (or Failure to see a failed payment)."}</p>
             {split.offered && phase !== "pending" && (
               <div role="radiogroup" aria-label={hiL ? "भुगतान का तरीका" : "How to pay"} className="space-y-2">
@@ -231,7 +231,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card"><div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-3">
-        <div><div className="text-[11px] text-muted-foreground">{t("total_today")}</div><div className="text-xl font-extrabold leading-none">{inr(phase === "review" ? p.firstPayment : payNow)}</div></div>
+        <div><div className="text-xs text-muted-foreground">{t("total_today")}</div><div className="text-xl font-extrabold leading-none">{inr(phase === "review" ? p.firstPayment : payNow)}</div></div>
         {phase === "review" ? <Button size="lg" className="flex-1" disabled variant="outline">{(lang === "hi" || lang === "mr") ? "पहले ऑर्डर साइन करें" : "Sign your order to continue"}</Button>
           : <Button size="lg" className="flex-1" disabled={busy} onClick={pay}>{phase === "failed" ? t("retry") : t("pay_now")}</Button>}
       </div></div>

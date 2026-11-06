@@ -31,13 +31,13 @@ export function PackageCompare({ options, lang, busy, onChoose }: { options: Pac
     <Card className="space-y-3 p-3">
       <div>
         <div className="text-sm font-semibold">{hi ? "पैकेज की तुलना करें" : "Compare packages"}</div>
-        <p className="text-[11px] text-muted-foreground">{hi ? "तीनों पैकेज आपकी लोकेशन, स्टाफ और GST के नियमों पर खरे हैं।" : "All three pass the same eligibility rules for your city, staff and GST."}</p>
+        <p className="text-xs text-muted-foreground">{hi ? "तीनों पैकेज आपकी लोकेशन, स्टाफ और GST के नियमों पर खरे हैं।" : "All three pass the same eligibility rules for your city, staff and GST."}</p>
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(0,1fr))] gap-x-1.5 text-xs" role="table" aria-label={hi ? "पैकेज तुलना" : "Package comparison"}>
         <div role="columnheader" />
         {options.map((o) => (
           <div key={o.id} role="columnheader" className={cn("min-w-0 rounded-t-lg px-0.5 pt-2 text-center", o.id === "recommended" && "bg-accent")}>
-            <div className="break-words text-[11px] font-semibold leading-tight sm:text-xs">{L(NAME[o.id])}</div>
+            <div className="break-words text-xs font-semibold leading-tight sm:text-xs">{L(NAME[o.id])}</div>
             {o.current && <Badge variant="secondary" className="mt-0.5 h-4 px-1 text-[9px]">{hi ? "अभी चुना" : "Selected"}</Badge>}
           </div>
         ))}
@@ -55,13 +55,13 @@ export function PackageCompare({ options, lang, busy, onChoose }: { options: Pac
         <div />
         {options.map((o) => (
           <div key={o.id} className={cn("rounded-b-lg px-1 pb-2 pt-1.5", o.id === "recommended" && "bg-accent")}>
-            <Button size="sm" className="h-7 w-full px-1 text-[11px]" variant={o.current ? "secondary" : o.id === "recommended" ? "default" : "outline"} disabled={busy || o.current} onClick={() => onChoose(o.id)}>
+            <Button size="sm" className="h-7 w-full px-1 text-xs" variant={o.current ? "secondary" : o.id === "recommended" ? "default" : "outline"} disabled={busy || o.current} onClick={() => onChoose(o.id)}>
               {o.current ? (hi ? "चुना" : "Chosen") : hi ? "चुनें" : "Choose"}
             </Button>
           </div>
         ))}
       </div>
-      <ul className="space-y-1 text-[11px] text-muted-foreground">
+      <ul className="space-y-1 text-xs text-muted-foreground">
         {options.map((o) => (
           <li key={o.id}><b className="text-foreground">{L(NAME[o.id])}:</b> {L(FIT[o.id])}
             {o.drops.length > 0 && <> · {hi ? "इसमें नहीं" : "leaves out"} {o.drops.map((d) => short(d, lang)).join(", ")}</>}

@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -16,6 +15,7 @@ export function DemoDrawer() {
   const { t, lang, setLang } = useI18n();
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState<{ id: string; label: string; mode: string; detail: string }[]>([]);
+  useEffect(() => { const f = () => setOpen(true); window.addEventListener("ud-open-demo", f); return () => window.removeEventListener("ud-open-demo", f); }, []);
   useEffect(() => { if (open) api<{ services: typeof services }>("GET", "/api/status").then((r) => setServices(r.services)).catch(() => {}); }, [open]);
 
   async function reset() {
@@ -26,10 +26,6 @@ export function DemoDrawer() {
   }
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label={t("demo_title")}
-        className="fixed right-2 top-[calc(4.4rem+env(safe-area-inset-top,0px))] z-40 flex items-center gap-1.5 rounded-full border bg-card p-2 text-xs font-medium shadow-md hover:bg-accent sm:bottom-4 sm:left-4 sm:right-auto sm:top-auto sm:px-3 sm:py-2">
-        <FlaskConical className="size-3.5 text-primary" /><span className="hidden sm:inline">Demo</span>
-      </button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="w-[88vw] max-w-sm overflow-y-auto">
           <SheetHeader><SheetTitle>{t("demo_title")}</SheetTitle><SheetDescription>Phone OTP is real (2Factor SMS). Payments run on Razorpay test mode (no real money). Signatures are not live yet.</SheetDescription></SheetHeader>
@@ -38,9 +34,9 @@ export function DemoDrawer() {
               <h3 className="mb-2 font-medium">What is live right now</h3>
               <ul className="space-y-1.5">
                 {services.map((s) => (
-                  <li key={s.id} className="rounded-lg border bg-card p-2 text-xs">
+                  <li key={s.id} className="rounded-2xl border bg-card p-2 text-xs">
                     <div className="flex items-center justify-between gap-2"><span className="font-medium">{s.label}</span>
-                      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", s.mode === "live" ? "bg-success/15 text-success" : s.mode === "simulated" ? "bg-warning/15 text-warning" : "bg-destructive/10 text-destructive")}>{s.mode === "live" ? "LIVE" : s.mode === "simulated" ? "SIMULATED" : "NOT CONFIGURED"}</span></div>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", s.mode === "live" ? "bg-success/15 text-success" : s.mode === "simulated" ? "bg-warning/15 text-warning" : "bg-destructive/10 text-destructive")}>{s.mode === "live" ? "LIVE" : s.mode === "simulated" ? "SIMULATED" : "NOT CONFIGURED"}</span></div>
                     <div className="mt-0.5 text-muted-foreground">{s.detail}</div>
                   </li>
                 ))}
@@ -50,7 +46,7 @@ export function DemoDrawer() {
               <h3 className="mb-2 font-medium">{t("demo_personas")}</h3>
               <div className="space-y-2">
                 {PERSONAS.map((p) => (
-                  <Link key={p.id} href={`/advisor?persona=${p.id}`} onClick={() => setOpen(false)} className="block rounded-lg border bg-card p-2.5 hover:border-primary">
+                  <Link key={p.id} href={`/advisor?persona=${p.id}`} onClick={() => setOpen(false)} className="block rounded-2xl border bg-card p-2.5 hover:border-primary">
                     <div className="font-medium">{p.title[(lang === "hi" || lang === "mr") ? "hi" : "en"]}</div>
                     <div className="text-xs text-muted-foreground">{p.blurb[(lang === "hi" || lang === "mr") ? "hi" : "en"]}</div>
                   </Link>

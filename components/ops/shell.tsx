@@ -43,14 +43,14 @@ export function OpsShell({ children }: { children: React.ReactNode }) {
   if (!staff) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   const nav = NAV.filter((n) => (n.roles as readonly string[]).includes(staff.role));
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="dense flex min-h-screen flex-col md:flex-row">
       <aside className="border-b bg-card md:w-56 md:border-b-0 md:border-r">
         <div className="flex items-center justify-between gap-2 p-3 md:block md:space-y-4 md:p-4">
           <Link href="/ops"><Logo /></Link>
           <nav className="flex gap-1 overflow-x-auto md:flex-col" aria-label="Operations">
             {nav.map((n) => {
               const active = n.href === "/ops" ? path === "/ops" : path.startsWith(n.href);
-              return <Link key={n.href} href={n.href} className={cn("flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm", active ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-muted")}><n.icon className="size-4" />{n.label}</Link>;
+              return <Link key={n.href} href={n.href} className={cn("flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm", active ? "bg-foreground font-semibold text-background" : "text-muted-foreground hover:bg-muted")}><n.icon className="size-4" />{n.label}</Link>;
             })}
           </nav>
           <div className="hidden space-y-2 border-t pt-3 text-xs md:block">

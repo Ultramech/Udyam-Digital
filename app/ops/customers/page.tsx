@@ -41,7 +41,7 @@ export default function Customers() {
         {!rows ? <Skeleton className="h-64" /> : shown.length === 0 ? <Card className="p-6 text-center text-sm text-muted-foreground">No customers match. Run a demo journey from the customer app to create one.</Card> : (
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[820px] text-sm">
-              <thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Business", "Segment", "City", "Status", "Orders", "MRR", "Owner", "Last activity"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead><tr className="text-left text-[11px] text-muted-foreground">{["Business", "Segment", "City", "Status", "Orders", "MRR", "Owner", "Last activity"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>
                 {shown.map((r) => (
                   <>
@@ -58,9 +58,9 @@ export default function Customers() {
                     {open === r.id && (
                       <tr key={`${r.id}-d`} className="border-t bg-muted/30"><td colSpan={8} className="px-3 py-3">
                         <div className="grid gap-3 md:grid-cols-3 text-xs">
-                          <div><div className="mb-1 font-semibold uppercase tracking-wide text-muted-foreground">Orders</div>{r.orders.length ? r.orders.map((o) => <div key={o.id}>{o.id} · {o.stage} · {inr(o.monthly)}/mo · KYC {o.kyc} · pay {o.payment}</div>) : "—"}<Link href="/ops/orders" className="mt-1 block text-primary underline">Orders board →</Link></div>
-                          <div><div className="mb-1 font-semibold uppercase tracking-wide text-muted-foreground">Leads</div>{r.leads.length ? r.leads.map((l) => <Link key={l.id} href={`/ops/leads/${l.id}`} className="block text-primary underline">{l.id} · {l.status} · {l.level}</Link>) : "—"}</div>
-                          <div><div className="mb-1 font-semibold uppercase tracking-wide text-muted-foreground">Support</div>{r.tickets.length ? r.tickets.map((t) => <div key={t.id}>{t.id} · {t.category} · {t.status}</div>) : "—"}<Link href="/ops/support" className="mt-1 block text-primary underline">Support queue →</Link></div>
+                          <div><div className="mb-1 font-semibold text-muted-foreground">Orders</div>{r.orders.length ? r.orders.map((o) => <div key={o.id}>{o.id} · {o.stage} · {inr(o.monthly)}/mo · KYC {o.kyc} · pay {o.payment}</div>) : "—"}<Link href="/ops/orders" className="mt-1 block text-primary underline">Orders board →</Link></div>
+                          <div><div className="mb-1 font-semibold text-muted-foreground">Leads</div>{r.leads.length ? r.leads.map((l) => <Link key={l.id} href={`/ops/leads/${l.id}`} className="block text-primary underline">{l.id} · {l.status} · {l.level}</Link>) : "—"}</div>
+                          <div><div className="mb-1 font-semibold text-muted-foreground">Support</div>{r.tickets.length ? r.tickets.map((t) => <div key={t.id}>{t.id} · {t.category} · {t.status}</div>) : "—"}<Link href="/ops/support" className="mt-1 block text-primary underline">Support queue →</Link></div>
                         </div>
                       </td></tr>
                     )}

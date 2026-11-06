@@ -64,7 +64,7 @@ export default function CatalogueAdmin() {
         {rows && (
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[960px] text-sm">
-              <thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Product", "Rules (locked)", "Published band", "Indicative ₹/mo", "Setup ₹", "Install days", "Paused", "Reason", ""].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead><tr className="text-left text-[11px] text-muted-foreground">{["Product", "Rules (locked)", "Published band", "Indicative ₹/mo", "Setup ₹", "Install days", "Paused", "Reason", ""].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>
                 {shown.map((p) => {
                   const d = draft(p);
@@ -90,7 +90,7 @@ export default function CatalogueAdmin() {
         <Card className="overflow-x-auto p-0">
           <div className="border-b p-3 text-sm font-semibold">Change history</div>
           {history.length === 0 ? <div className="p-3 text-sm text-muted-foreground">No changes yet — the catalogue matches the published CSV.</div> : (
-            <table className="w-full text-sm"><thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["When", "Who", "Product", "Field", "From → to", "Reason"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+            <table className="w-full text-sm"><thead><tr className="text-left text-[11px] text-muted-foreground">{["When", "Who", "Product", "Field", "From → to", "Reason"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{history.map((h) => <tr key={h.id} className="border-t"><td className="px-3 py-1.5 text-xs">{fmtTime(h.at)}</td><td className="px-3">{h.by}</td><td className="px-3">{h.productId}</td><td className="px-3">{FIELD[h.field]}</td><td className="px-3">{String(h.from)} → <b>{String(h.to)}</b></td><td className="px-3 text-xs text-muted-foreground">{h.note}</td></tr>)}</tbody></table>
           )}
         </Card>

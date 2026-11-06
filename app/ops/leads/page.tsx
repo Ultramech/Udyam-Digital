@@ -55,7 +55,7 @@ function Inner() {
         ) : (
           <Card className="overflow-x-auto p-0">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">{["Business", "Segment", "City", "Source", "Stage", hist ? "Why it dropped" : "Why a person", hist ? "Score" : "₹ / month", "GST", hist ? "Priority" : "Owner", "Next action"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead><tr className="text-left text-[11px] text-muted-foreground">{["Business", "Segment", "City", "Source", "Stage", hist ? "Why it dropped" : "Why a person", hist ? "Score" : "₹ / month", "GST", hist ? "Priority" : "Owner", "Next action"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>
                 {data.rows.map((r) => (
                   <tr key={r.id} className="border-t hover:bg-muted/40">

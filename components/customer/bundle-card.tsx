@@ -21,18 +21,18 @@ export function LinesList({ lines, showPrice = true }: { lines: Line[]; showPric
   const priced = useMemo(() => priceLines(lines), [lines]);
   const groups = groupLines(priced.lines);
   return (
-    <ul className="divide-y rounded-lg border bg-card">
+    <ul className="divide-y rounded-2xl border bg-card">
       {groups.map((g) => {
         const p = getProduct(g.productId);
         return (
           <li key={g.productId} className="flex items-start gap-3 p-3">
-            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><ProductIcon id={g.productId} /></span>
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground"><ProductIcon id={g.productId} /></span>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium leading-snug">{plainName(g.productId, lang)}{p.unit !== "per account" && g.qty > 1 ? <span className="ml-1 text-muted-foreground">× {g.qty}</span> : null}</div>
               <div className="text-xs text-muted-foreground">{plainBenefit(g.productId, lang)}</div>
-              {g.sites > 1 && <div className="mt-0.5 text-[11px] text-muted-foreground">{g.sites} {(lang === "hi" || lang === "mr") ? "लोकेशन" : "locations"} · {plainUnit(p.unit, lang)}</div>}
+              {g.sites > 1 && <div className="mt-0.5 text-xs text-muted-foreground">{g.sites} {(lang === "hi" || lang === "mr") ? "लोकेशन" : "locations"} · {plainUnit(p.unit, lang)}</div>}
             </div>
-            {showPrice && <div className="shrink-0 text-right text-sm font-medium">{inr(g.monthly)}<div className="text-[10px] font-normal text-muted-foreground">{(lang === "hi" || lang === "mr") ? "/ माह" : "/ mo"}</div></div>}
+            {showPrice && <div className="shrink-0 text-right text-sm font-medium">{inr(g.monthly)}<div className="text-xs font-normal text-muted-foreground">{(lang === "hi" || lang === "mr") ? "/ माह" : "/ mo"}</div></div>}
           </li>
         );
       })}
@@ -48,15 +48,15 @@ export function DecisionTrace({ rec }: { rec: Recommendation }) {
   const icon = { pass: "✓", fail: "✕", info: "•", add: "+", warn: "!" } as const;
   const tone = { pass: "text-success", fail: "text-destructive", info: "text-muted-foreground", add: "text-primary", warn: "text-warning" } as const;
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-2xl border bg-card">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 p-3 text-left text-sm font-medium">
-        <span className="flex items-center gap-2"><ListChecks className="size-4 text-primary" />{(lang === "hi" || lang === "mr") ? "मैंने कैसे तय किया" : "How I decided"}</span>
+        <span className="flex items-center gap-2"><ListChecks className="size-4" />{(lang === "hi" || lang === "mr") ? "मैंने कैसे तय किया" : "How I decided"}</span>
         <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
         <ol className="space-y-1 border-t p-3 text-xs">
           {rows.map((r, i) => <li key={i} className="flex gap-2"><span className={cn("w-3 shrink-0 text-center font-bold", tone[r.status])}>{icon[r.status]}</span><span>{r.text}</span></li>)}
-          <li className="pt-1 text-[11px] text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हर कीमत और हर पात्रता नियम कोड से तय होता है — AI सिर्फ़ आपकी बात समझता और समझाता है।" : "Every price and eligibility rule is decided by code — the AI only understands you and explains."}</li>
+          <li className="pt-1 text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हर कीमत और हर पात्रता नियम कोड से तय होता है — AI सिर्फ़ आपकी बात समझता और समझाता है।" : "Every price and eligibility rule is decided by code — the AI only understands you and explains."}</li>
         </ol>
       )}
     </div>
@@ -81,7 +81,7 @@ export function BundleCard({ rec, profile, onBuy, busy }: { rec: Recommendation;
   if (!rec.lines.length) {
     return (
       <Card className="space-y-3 border-warning/40 p-4">
-        <div className="flex items-center gap-2 font-semibold"><UserRound className="size-4 text-primary" />{t("human_note")}</div>
+        <div className="flex items-center gap-2 font-semibold"><UserRound className="size-4" />{t("human_note")}</div>
         {rec.escalation.reasons.map((r) => <p key={r} className="text-sm">{ruleReason({ code: r }, lang)}</p>)}
         <DecisionTrace rec={rec} />
       </Card>
@@ -124,7 +124,7 @@ export function BundleCard({ rec, profile, onBuy, busy }: { rec: Recommendation;
           <section>
             <h4 className="mb-1.5 text-sm font-semibold">{t("not_included")}</h4>
             <ul className="space-y-1.5 text-sm">
-              {exclusions.map((e) => <li key={e.productId + e.code} className="rounded-lg border bg-card p-2.5"><span className="font-medium">{plainName(e.productId, lang)}</span><div className="text-xs text-muted-foreground">{ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang).replace(plainName(e.productId, lang), "").trim() || ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang)}</div></li>)}
+              {exclusions.map((e) => <li key={e.productId + e.code} className="rounded-2xl border bg-card p-2.5"><span className="font-medium">{plainName(e.productId, lang)}</span><div className="text-xs text-muted-foreground">{ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang).replace(plainName(e.productId, lang), "").trim() || ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang)}</div></li>)}
             </ul>
           </section>
         )}
@@ -143,11 +143,11 @@ export function BundleCard({ rec, profile, onBuy, busy }: { rec: Recommendation;
         )}
 
         <DecisionTrace rec={rec} />
-        <p className="text-[11px] text-muted-foreground">{t("indicative")}</p>
+        <p className="text-xs text-muted-foreground">{t("indicative")}</p>
         {onBuy && !hard && (
           <Button size="lg" className="w-full" onClick={onBuy} disabled={busy}>{t("customise_buy")}</Button>
         )}
-        {rec.escalation.level !== "none" && <Badge variant="outline" className="text-[11px]">{(lang === "hi" || lang === "mr") ? "आपकी जानकारी विशेषज्ञ को भेज दी गई है" : "Your details have been shared with a specialist"}</Badge>}
+        {rec.escalation.level !== "none" && <Badge variant="outline" className="text-xs">{(lang === "hi" || lang === "mr") ? "आपकी जानकारी विशेषज्ञ को भेज दी गई है" : "Your details have been shared with a specialist"}</Badge>}
       </div>
     </Card>
   );

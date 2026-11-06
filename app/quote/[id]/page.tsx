@@ -28,6 +28,7 @@ import { GstinHelp } from "@/components/customer/gst-help";
 import { CallbackRequest } from "@/components/customer/callback-request";
 import { PackageCompare } from "@/components/customer/package-compare";
 import { MaturityCard } from "@/components/customer/maturity-card";
+import { Collapse } from "@/components/customer/kit";
 
 export default function QuotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -71,16 +72,20 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
   return (
     <CustomerShell step={2}>
       <div className="space-y-4 pb-32">
-        <div className="flex items-start justify-between gap-3">
-          <div><h1 className="text-xl font-bold">{t("quote_title")}</h1><p className="text-sm text-muted-foreground">{bundleName(quote.bundleId, lang)}</p></div>
-          <Badge variant="secondary" className="shrink-0 gap-1"><CalendarClock className="size-3" />{fmtDate(schedule.date, lang)}</Badge>
-        </div>
+        <h1 className="sr-only">{t("quote_title")}</h1>
+        <section aria-label={t("quote_title")} className="rounded-3xl bg-foreground p-5 text-background">
+          <div className="text-sm font-medium opacity-70">{bundleName(quote.bundleId, lang)}</div>
+          <div className="mt-2 flex items-baseline gap-2"><span className="price-xl">{inr(pricing.monthly)}</span><span className="text-sm opacity-70">{t("per_month")}</span></div>
+          <p className="mt-1 text-sm opacity-70">{t("gst_extra")}, {pricing.setup ? `${inr(pricing.setup)} ${t("setup_once")}` : t("free")}, {pricing.contractMonths} {t("months")}</p>
+          <div className="mt-4 flex items-center justify-between border-t border-background/20 pt-3 text-sm"><span className="opacity-70">{t("go_live")}</span><span className="num font-semibold">{fmtDate(schedule.date, lang)}</span></div>
+          <button type="button" onClick={() => setOpen(true)} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">{t("breakdown")}</button>
+        </section>
 
-        {v.issues.length > 0 && <Card className="flex gap-2 border-destructive/40 bg-destructive/5 p-3 text-sm"><TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" /><div>{v.issues.slice(0, 3).map((i, k) => <div key={k}>{ruleReason({ code: i.code, params: i.params, productId: i.productId }, lang)}</div>)}</div></Card>}
+        {v.issues.length > 0 && <Card className="flex flex-row gap-2 border-destructive/40 bg-destructive/5 p-3 text-sm"><TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" /><div>{v.issues.slice(0, 3).map((i, k) => <div key={k}>{ruleReason({ code: i.code, params: i.params, productId: i.productId }, lang)}</div>)}</div></Card>}
 
         {/* locations */}
         {(sites > 1 || quote.bundleId === "allshops") && (
-          <Card className="flex items-center justify-between p-3">
+          <Card className="flex flex-row items-center justify-between p-3">
             <div className="text-sm font-medium">{t("f_sites")}</div>
             <div className="flex items-center gap-2">
               <Button size="icon" variant="outline" aria-label="Remove a location" disabled={busy || sites <= 1} onClick={() => edit({ type: "removeSite", siteIndex: sites - 1 })}><Minus className="size-3.5" /></Button>
@@ -92,8 +97,8 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
 
         {/* included */}
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold">{t("included")}</h2>
-          <ul className="divide-y rounded-lg border bg-card">
+          <h2 className="text-base font-bold">{t("included")}</h2>
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
             {groups.map((g) => {
               const p = getProduct(g.productId);
               const perSiteUnit = p.unit === "per site";
@@ -102,7 +107,7 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
               const each = g.sites > 1 ? first.qty : g.qty;
               return (
                 <li key={g.productId} className="flex items-start gap-3 p-3">
-                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-primary"><ProductIcon id={g.productId} /></span>
+                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-foreground"><ProductIcon id={g.productId} /></span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium leading-snug">{plainName(g.productId, lang)}</div>
                     <div className="text-xs text-muted-foreground">{inr(first.unitPrice)} {plainUnit(p.unit, lang)}{g.sites > 1 ? ` · ${g.sites} ${t("sites_n")}` : ""}{p.setup ? ` · ${inr(p.setup)} ${t("setup_once")}` : ""}</div>
@@ -111,11 +116,11 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
                         <Button size="icon-sm" variant="outline" aria-label="Fewer" disabled={busy || each <= 1} onClick={() => edit({ type: "setQty", productId: g.productId, qty: each - 1 })}><Minus className="size-3" /></Button>
                         <span className="w-6 text-center text-sm font-medium" aria-live="polite">{each}</span>
                         <Button size="icon-sm" variant="outline" aria-label="More" disabled={busy || each >= 100} onClick={() => edit({ type: "setQty", productId: g.productId, qty: each + 1 })}><Plus className="size-3" /></Button>
-                        {g.sites > 1 && <span className="text-[11px] text-muted-foreground">{(lang === "hi" || lang === "mr") ? "प्रति लोकेशन" : "per location"}</span>}
+                        {g.sites > 1 && <span className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "प्रति लोकेशन" : "per location"}</span>}
                       </div>
                     )}
                   </div>
-                  <div className="shrink-0 text-right"><div className="text-sm font-semibold">{inr(g.monthly)}</div><div className="text-[10px] text-muted-foreground">{(lang === "hi" || lang === "mr") ? "/ माह" : "/ mo"}</div>
+                  <div className="shrink-0 text-right"><div className="text-sm font-semibold">{inr(g.monthly)}</div><div className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "/ माह" : "/ mo"}</div>
                     {!connectivity && g.productId !== "P07" && <Button size="icon-sm" variant="ghost" aria-label={t("remove")} disabled={busy} onClick={() => edit({ type: "remove", productId: g.productId })}><Trash2 className="size-3.5 text-muted-foreground" /></Button>}
                   </div>
                 </li>
@@ -127,14 +132,14 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
         {/* add-ons */}
         {addons.length > 0 && (
           <section className="space-y-2">
-            <div className="flex items-center justify-between"><h2 className="text-sm font-semibold">{t("add_ons")}</h2><Link href={`/catalogue?quote=${id}`} className="text-xs text-primary underline-offset-4 hover:underline">{(lang === "hi" || lang === "mr") ? "सभी सेवाएँ देखें" : "Browse all services"}</Link></div>
+            <div className="flex items-center justify-between"><h2 className="text-base font-bold">{t("add_ons")}</h2><Link href={`/catalogue?quote=${id}`} className="text-xs text-primary underline-offset-4 hover:underline">{(lang === "hi" || lang === "mr") ? "सभी सेवाएँ देखें" : "Browse all services"}</Link></div>
             <ul className="space-y-1.5">
               {addons.map((c) => {
                 const p = getProduct(c.productId);
                 return (
-                  <li key={c.productId} className="flex items-center gap-3 rounded-lg border bg-card p-2.5">
-                    <ProductIcon id={c.productId} className="size-4 text-primary" />
-                    <div className="min-w-0 flex-1"><div className="text-sm font-medium leading-snug">{plainName(c.productId, lang)}</div><div className="text-[11px] text-muted-foreground">{plainBenefit(c.productId, lang)} · {inr(p.priceMin)} {plainUnit(p.unit, lang)}</div></div>
+                  <li key={c.productId} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
+                    <ProductIcon id={c.productId} className="size-5 shrink-0" />
+                    <div className="min-w-0 flex-1"><div className="text-sm font-medium leading-snug">{plainName(c.productId, lang)}</div><div className="text-xs text-muted-foreground">{plainBenefit(c.productId, lang)} · {inr(p.priceMin)} {plainUnit(p.unit, lang)}</div></div>
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => edit({ type: "add", productId: c.productId })}><Plus className="mr-1 size-3" />{t("add")}</Button>
                   </li>
                 );
@@ -145,50 +150,53 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
 
         {/* unavailable, with reasons */}
         {unavailable.length > 0 && (
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold">{t("unavailable")}</h2>
-            <ul className="space-y-1.5">
+          <Collapse title={`${t("unavailable")} (${unavailable.length})`}>
+            <ul className="space-y-2">
               {unavailable.map((c) => (
-                <li key={c.productId} className="rounded-lg border border-dashed bg-muted/40 p-2.5 opacity-90">
+                <li key={c.productId} className="rounded-2xl border border-dashed bg-muted/40 p-3">
                   <div className="text-sm font-medium text-muted-foreground">{plainName(c.productId, lang)}</div>
-                  <div className="text-[11px] text-muted-foreground">{c.reason && ruleReason({ code: c.reason.code, params: c.reason.params, productId: c.productId }, lang)}</div>
+                  <div className="text-xs text-muted-foreground">{c.reason && ruleReason({ code: c.reason.code, params: c.reason.params, productId: c.productId }, lang)}</div>
                 </li>
               ))}
             </ul>
-          </section>
+          </Collapse>
         )}
 
         <GstinHelp counterfactuals={v.counterfactuals} lang={lang} />
 
-        <PackageCompare options={v.packages ?? []} lang={lang} busy={busy}
-          onChoose={(pid) => patch({ op: "alternative", id: pid === "basic" ? "lighter" : pid === "premium" ? "fuller" : "recommended" })} />
-
-        {/* budget mode */}
-        <Card className="space-y-3 p-3">
-          <div className="text-sm font-semibold">{t("budget_mode")}</div>
-          <div className="flex gap-2">
-            <Input inputMode="numeric" placeholder="1500" aria-label={t("budget_label")} value={budget} onChange={(e) => setBudget(e.target.value.replace(/\D/g, ""))} />
-            <Button disabled={busy || !budget} onClick={() => patch({ op: "budget", amount: Number(budget) })}>{t("budget_apply")}</Button>
-            {quote.profile.budget && <Button variant="ghost" disabled={busy} onClick={() => { setBudget(""); patch({ op: "budget", amount: null }); }}>{t("budget_clear")}</Button>}
-          </div>
-          {v.budget && <p className={`text-xs ${v.budget.met ? "text-success" : "text-warning"}`}>{ruleReason({ code: v.budget.met ? "BUDGET_MET" : "BUDGET_NOT_MET", params: { target: v.budget.target, min: v.budget.minPossible } }, lang)}{v.budget.removed.length > 0 && ` (${(lang === "hi" || lang === "mr") ? "हटाया" : "removed"}: ${v.budget.removed.map((r) => plainName(r, lang).split(" (")[0]).join(", ")})`}</p>}
-        </Card>
+        <h2 className="pt-2 text-base font-bold">{t("qc_more")}</h2>
+        <div className="space-y-2.5">
+          <Collapse title={t("qc_compare")}>
+            <PackageCompare options={v.packages ?? []} lang={lang} busy={busy}
+              onChoose={(pid) => patch({ op: "alternative", id: pid === "basic" ? "lighter" : pid === "premium" ? "fuller" : "recommended" })} />
+          </Collapse>
+          <Collapse title={t("qc_budget")}>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input inputMode="numeric" placeholder="1500" aria-label={t("budget_label")} value={budget} onChange={(e) => setBudget(e.target.value.replace(/\D/g, ""))} />
+                <Button disabled={busy || !budget} onClick={() => patch({ op: "budget", amount: Number(budget) })}>{t("budget_apply")}</Button>
+                {quote.profile.budget && <Button variant="ghost" disabled={busy} onClick={() => { setBudget(""); patch({ op: "budget", amount: null }); }}>{t("budget_clear")}</Button>}
+              </div>
+              {v.budget && <p className={`text-sm ${v.budget.met ? "text-success" : "text-warning"}`}>{ruleReason({ code: v.budget.met ? "BUDGET_MET" : "BUDGET_NOT_MET", params: { target: v.budget.target, min: v.budget.minPossible } }, lang)}{v.budget.removed.length > 0 && ` (${(lang === "hi" || lang === "mr") ? "हटाया" : "removed"}: ${v.budget.removed.map((r) => plainName(r, lang).split(" (")[0]).join(", ")})`}</p>}
+            </div>
+          </Collapse>
+          {v.maturity && pricing.lines.length > 0 && <Collapse title={t("qc_score")}><MaturityCard m={v.maturity} quoteId={id} lang={lang} /></Collapse>}
+          <Collapse title={t("qc_bill")}><BillCompare quoteId={id} lang={lang} /></Collapse>
+          <Collapse title={t("qc_share")}><SharePlan quoteId={id} lang={lang} /></Collapse>
+          <Collapse title={t("talk_person")}><CallbackRequest conversationId={quote.conversationId} lang={lang} /></Collapse>
+        </div>
         <p className="text-xs text-muted-foreground">{t("indicative")}</p>
-        {v.maturity && pricing.lines.length > 0 && <MaturityCard m={v.maturity} quoteId={id} lang={lang} />}
-        <BillCompare quoteId={id} lang={lang} />
-        <SharePlan quoteId={id} lang={lang} />
-        <CallbackRequest conversationId={quote.conversationId} lang={lang} />
       </div>
 
 
       {/* sticky price bar: one transparent number */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card shadow-[0_-4px_16px_rgba(0,0,0,.06)]">
-        <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-3">
-          <button type="button" onClick={() => setOpen(true)} className="min-w-0 flex-1 text-left" aria-label={t("breakdown")}>
-            <div className="text-2xl font-extrabold leading-none">{inr(pricing.monthly)}<span className="ml-1 text-xs font-medium text-muted-foreground">{t("per_month")}</span></div>
-            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{t("gst_extra")} · {pricing.setup ? `${inr(pricing.setup)} ${t("setup_once")}` : t("free")} · <span className="underline">{t("breakdown")}</span></div>
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 md:px-6">
+          <button type="button" onClick={() => setOpen(true)} className="min-w-0 shrink-0 text-left" aria-label={t("breakdown")}>
+            <div className="num text-2xl font-extrabold leading-none">{inr(pricing.monthly)}<span className="ml-1 text-xs font-medium text-muted-foreground">{t("per_month")}</span></div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("gst_extra")}</div>
           </button>
-          <Button size="lg" onClick={next} disabled={busy || v.issues.length > 0 || hard || !pricing.lines.length}>{t("btn_continue_sites")}</Button>
+          <Button size="lg" className="flex-1" onClick={next} disabled={busy || v.issues.length > 0 || hard || !pricing.lines.length}>{t("continue")}</Button>
         </div>
       </div>
 

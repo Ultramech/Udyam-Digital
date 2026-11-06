@@ -33,11 +33,11 @@ export function CallbackRequest({ conversationId, lang }: { conversationId?: str
     }
     setBusy(false);
   }
-  if (done) return <Card className="flex items-start gap-2 border-success/40 bg-success/5 p-3.5 text-sm" role="status"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /><div>{hi ? `ठीक है — हम ${fmtDate(done.at.slice(0, 10), "hi")}, ${done.window} के बीच ${done.phoneMasked} पर कॉल करेंगे।` : `Done — we'll call ${done.phoneMasked} on ${fmtDate(done.at.slice(0, 10), "en")}, ${done.window}.`}</div></Card>;
+  if (done) return <Card className="flex flex-row items-start gap-2 border-success/40 bg-success/5 p-3.5 text-sm" role="status"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /><div>{hi ? `ठीक है — हम ${fmtDate(done.at.slice(0, 10), "hi")}, ${done.window} के बीच ${done.phoneMasked} पर कॉल करेंगे।` : `Done — we'll call ${done.phoneMasked} on ${fmtDate(done.at.slice(0, 10), "en")}, ${done.window}.`}</div></Card>;
   const chip = (on: boolean) => cn("min-h-11 rounded-lg border px-3 text-sm", on ? "border-primary bg-accent font-medium" : "bg-card");
   return (
     <Card className="space-y-3 p-3.5" aria-labelledby="cb-h">
-      <div className="flex items-center gap-2"><Phone className="size-4 text-primary" /><h2 id="cb-h" className="text-sm font-semibold">{hi ? "किसी व्यक्ति से बात करना चाहते हैं?" : "Prefer to talk to a person?"}</h2></div>
+      <div className="flex items-center gap-2"><Phone className="size-4" /><h2 id="cb-h" className="text-sm font-semibold">{hi ? "किसी व्यक्ति से बात करना चाहते हैं?" : "Prefer to talk to a person?"}</h2></div>
       <div role="radiogroup" aria-label={hi ? "दिन" : "Day"} className="flex flex-wrap gap-2">{days.map((d) => <button key={d} type="button" role="radio" aria-checked={date === d} className={chip(date === d)} onClick={() => setDate(d)}>{fmtDate(d, hi ? "hi" : "en")}</button>)}</div>
       <div role="radiogroup" aria-label={hi ? "समय" : "Time window"} className="flex flex-wrap gap-2">{CALLBACK_WINDOWS.map((w) => <button key={w} type="button" role="radio" aria-checked={win === w} className={chip(win === w)} onClick={() => setWin(w)}>{w}</button>)}</div>
       <Textarea rows={2} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder={hi ? "कुछ बताना हो तो लिखें (वैकल्पिक)" : "Anything we should know? (optional)"} aria-label={hi ? "संदेश" : "Note"} />

@@ -1,7 +1,7 @@
 "use client";
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Database, Hourglass, ShieldCheck, UserCheck } from "lucide-react";
+import { Database, Hourglass, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -38,12 +38,14 @@ export default function ConsentPage({ params }: { params: Promise<{ id: string }
   return (
     <CustomerShell step={4}>
       <div className="space-y-4 pb-28">
-        <div className="flex items-start gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary"><ShieldCheck className="size-5" /></span>
-          <div><h1 className="text-xl font-bold">{t("consent_title")}</h1><p className="text-sm text-muted-foreground">{t("consent_intro")}</p></div></div>
+        <div>
+          <h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("consent_title")}</h1>
+          <p className="mt-1 text-[0.9375rem] text-muted-foreground">{t("consent_intro")}</p>
+        </div>
         {rows.map((r) => (
           <Card key={r.key} className="flex items-start justify-between gap-3 p-3.5">
-            <div className="min-w-0"><div className="flex items-center gap-2 text-sm font-semibold">{r.title}<Badge variant={r.required ? "default" : "secondary"} className="text-[10px]">{r.required ? t("required") : t("optional")}</Badge></div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{r.body}</p></div>
+            <div className="min-w-0"><div className="flex flex-wrap items-center gap-2 text-[0.9375rem] font-bold">{r.title}<Badge variant={r.required ? "outline" : "secondary"} className="text-xs">{r.required ? t("required") : t("optional")}</Badge></div>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{r.body}</p></div>
             <Switch checked={p[r.key]} disabled={r.required} aria-label={r.title} onCheckedChange={(c) => setP((x) => ({ ...x, [r.key]: !!c }))} />
           </Card>
         ))}

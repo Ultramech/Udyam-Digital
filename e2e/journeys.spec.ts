@@ -47,6 +47,7 @@ test.describe("Customer journey (phone)", () => {
     await signInAndSetup(page);
     const qid = await newQuote(page.request, "Dental clinic in Bengaluru, 6 staff, one clinic, GST yes, need email and backup");
     await page.goto(`/quote/${qid}`);
+    await page.getByText("Share with a partner or CA", { exact: true }).click();
     await page.getByRole("button", { name: /Create share link/i }).click();
     const url = await page.getByRole("textbox", { name: "Share link" }).inputValue();
     expect(url).toMatch(/\/p\/[a-z0-9]{12}$/);

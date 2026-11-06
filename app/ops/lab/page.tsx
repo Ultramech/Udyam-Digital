@@ -50,7 +50,7 @@ export default function Lab() {
                 <pre className="overflow-x-auto rounded-lg bg-muted p-2.5 text-xs">{JSON.stringify(t.facts, null, 1)}</pre>
                 {t.missing.length > 0 && <div className="text-xs text-warning">Still missing: {t.missing.join(", ")} — the advisor would ask next.</div>}
                 <div className="rounded-lg bg-secondary p-2.5 text-sm"><div className="mb-0.5 text-[11px] uppercase text-muted-foreground">Advisor reply</div><RichText text={t.reply} /></div></Card>
-              <Card className="flex items-center gap-2 p-3 text-sm">{res!.violations.length === 0 ? <><CheckCircle2 className="size-4 text-success" />0 rule violations in this bundle</> : <><XCircle className="size-4 text-destructive" />{res!.violations.length} violations</>}</Card>
+              <Card className="flex flex-row items-center gap-2 p-3 text-sm">{res!.violations.length === 0 ? <><CheckCircle2 className="size-4 text-success" />0 rule violations in this bundle</> : <><XCircle className="size-4 text-destructive" />{res!.violations.length} violations</>}</Card>
               {testSnippet && <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { navigator.clipboard?.writeText(testSnippet); toast.success("Regression test copied — paste it into tests/rules"); }}><ClipboardCopy className="size-3.5" />Copy as regression test</Button>}
             </div>
             <div>{t.recommendation && t.profile ? <BundleCard rec={t.recommendation} profile={t.profile} /> : <Card className="p-4 text-sm text-muted-foreground">Not enough information for a plan yet.</Card>}</div>

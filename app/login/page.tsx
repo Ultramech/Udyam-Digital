@@ -1,38 +1,113 @@
 "use client";
-import { useEffect } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Smartphone } from "lucide-react";
+import { ArrowLeft, Check, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useI18n } from "@/components/i18n-provider";
 import { CustomerShell } from "@/components/customer/shell";
 import { useVerify } from "@/components/customer/verify";
+import { api, ApiError } from "@/lib/client/api";
 
 /** Only same-site paths are accepted for ?next= (no open redirects). */
-const next = () => { const n = new URLSearchParams(window.location.search).get("next"); return n && n.startsWith("/") && !n.startsWith("//") ? n : "/account"; };
+const next = () => { const n = new URLSearchParams(window.location.search).get("next"); return n && n.startsWith("/") && !n.startsWith("//") ? n : "/"; };
 /** First sign-in (= sign-up) goes through the short profile setup, then back to where they were. */
 const dest = (onboarded: boolean) => (onboarded ? next() : `/account/setup?next=${encodeURIComponent(next())}`);
 
-/** Sign in with your mobile number (SMS code). New numbers get an account automatically. ?next= returns you where you were. */
+const WAIT = 30;
+const pretty = (p: string) => `${p.slice(0, 5)} ${p.slice(5)}`;
+
+/** Sign in or sign up with a mobile number: number, then the 6-digit SMS code, on one screen. The same step creates a new account. */
 function Login() {
   const { lang } = useI18n();
   const hi = lang === "hi" || lang === "mr";
+  const H = (en: string, h: string) => (hi ? h : en);
   const router = useRouter();
-  const { account, ensureVerified } = useVerify();
+  const { account, refresh } = useVerify();
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [wait, setWait] = useState(0);
+  const otpId = useRef<string | null>(null);
+
   useEffect(() => { if (account) router.replace(dest(account.onboarded)); }, [account, router]);
+  useEffect(() => { if (wait <= 0) return; const t = setTimeout(() => setWait((w) => w - 1), 1000); return () => clearTimeout(t); }, [wait]);
+
+  const valid = /^[6-9]\d{9}$/.test(phone);
+  async function send() {
+    if (!valid) { setErr(H("Enter a valid 10-digit mobile number.", "10 अंकों का सही मोबाइल नंबर डालें।")); return; }
+    setBusy(true); setErr(null);
+    try {
+      const r = await api<{ otpId: string }>("POST", "/api/otp", { phone });
+      otpId.current = r.otpId; setSent(true); setCode(""); setWait(WAIT);
+    } catch (e) {
+      const c = e instanceof ApiError ? e.code : "";
+      setErr(c === "OTP_TOO_SOON" ? H("Please wait 30 seconds before asking for another code.", "दूसरा कोड माँगने से पहले 30 सेकंड रुकें।")
+        : c === "OTP_LIMIT" ? H("Too many codes requested. Try again in an hour.", "बहुत ज़्यादा कोड माँगे गए। एक घंटे बाद कोशिश करें।")
+        : H("We couldn't send the code. Please try again.", "कोड नहीं भेज पाए। फिर कोशिश करें।"));
+    }
+    setBusy(false);
+  }
+  const check = useCallback(async (c: string) => {
+    if (!otpId.current) { setSent(false); return; }
+    setBusy(true); setErr(null);
+    try { await api("PUT", "/api/otp", { otpId: otpId.current, code: c }); await refresh(); }
+    catch (e) {
+      const k = e instanceof ApiError ? e.code : "";
+      if (k === "OTP_EXPIRED" || k === "OTP_ATTEMPTS") { setSent(false); setCode(""); setErr(H("That code expired. Ask for a new one.", "वह कोड एक्सपायर हो गया। नया कोड माँगें।")); }
+      else { setErr(k === "WRONG_OTP" ? H("That code isn't right. Check the SMS and try again.", "कोड सही नहीं है। SMS देखकर फिर कोशिश करें।") : H("Something went wrong. Try again.", "कुछ गड़बड़ हुई। फिर कोशिश करें।")); setCode(""); }
+    }
+    setBusy(false);
+  }, [refresh, hi]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
-    <div className="space-y-5 pt-6">
-      <div className="space-y-1 text-center">
-        <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-accent text-primary"><Smartphone className="size-6" /></span>
-        <h1 className="pt-2 text-2xl font-bold">{hi ? "साइन इन करें या अकाउंट बनाएँ" : "Sign in or create an account"}</h1>
-        <p className="text-sm text-muted-foreground">{hi ? "अपना मोबाइल नंबर डालें — हम एक कोड SMS करेंगे। पासवर्ड की ज़रूरत नहीं।" : "Enter your mobile number and we'll text you a code. New here? The same step creates your account — no password needed."}</p>
-      </div>
-      <Button size="lg" className="w-full" onClick={() => ensureVerified()}>{hi ? "मोबाइल नंबर से जारी रखें" : "Continue with mobile number"}</Button>
-      <Card className="flex gap-2.5 p-3.5 text-xs text-muted-foreground">
-        <ShieldCheck className="size-4 shrink-0 text-primary" />
-        <span>{hi ? "आपके ऑर्डर, प्लान और बिज़नेस किसी भी फ़ोन पर दिखेंगे। आप कभी भी अपना डेटा डाउनलोड या डिलीट कर सकते हैं।" : "Your orders, plans and businesses follow you to any phone. You can download or delete your data at any time from My account."}</span>
-      </Card>
-      <p className="text-center text-xs text-muted-foreground">{hi ? "बिना साइन इन के भी प्लान देख सकते हैं — सिर्फ़ ऑर्डर करते समय नंबर चाहिए।" : "You can explore plans without signing in — we only need your number to save or order."}</p>
+    <div className="mx-auto w-full max-w-md pt-4 md:pt-12">
+      <h1 className="text-[1.875rem] font-extrabold leading-tight tracking-tight">{sent ? H("Enter the code", "कोड डालें") : H("Sign in or create an account", "साइन इन करें या अकाउंट बनाएँ")}</h1>
+      <p className="mt-2 text-[0.9375rem] text-muted-foreground">
+        {sent ? <>{H("We sent a 6-digit code to", "6 अंकों का कोड भेजा गया")} <span className="num font-semibold text-foreground">+91 {pretty(phone)}</span></> : H("Your mobile number is all it takes. We text you a code, no password to remember.", "बस आपका मोबाइल नंबर चाहिए। हम कोड SMS करते हैं, पासवर्ड याद नहीं रखना।")}
+      </p>
+
+      {!sent ? (
+        <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <div className="space-y-1.5">
+            <Label htmlFor="login-phone">{H("Mobile number", "मोबाइल नंबर")}</Label>
+            <div className="flex gap-2">
+              <span className="flex h-12 items-center rounded-xl border border-input bg-muted px-3.5 text-base font-semibold" aria-hidden>+91</span>
+              <Input id="login-phone" inputMode="numeric" autoComplete="tel-national" autoFocus maxLength={10} placeholder="98765 43210" value={phone} aria-invalid={!!err}
+                onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setErr(null); }} className="num text-lg tracking-wide" />
+            </div>
+          </div>
+          {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
+          <Button type="submit" size="lg" className="w-full" disabled={busy || phone.length < 10}>{busy ? H("Sending…", "भेज रहे हैं…") : H("Send code", "कोड भेजें")}</Button>
+        </form>
+      ) : (
+        <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); if (code.length === 6) check(code); }}>
+          <div className="space-y-1.5">
+            <Label htmlFor="login-code">{H("6-digit code", "6 अंकों का कोड")}</Label>
+            <Input id="login-code" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="••••••" value={code} aria-invalid={!!err}
+              onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 6); setCode(v); setErr(null); if (v.length === 6) check(v); }} className="num h-14 text-center text-2xl tracking-[0.5em]" />
+          </div>
+          {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
+          <Button type="submit" size="lg" className="w-full" disabled={busy || code.length < 6}>{busy ? H("Checking…", "जाँच हो रही है…") : H("Verify and continue", "वेरिफाई करें और आगे बढ़ें")}</Button>
+          <div className="flex items-center justify-between text-sm">
+            <button type="button" onClick={() => { setSent(false); setCode(""); setErr(null); }} className="inline-flex min-h-11 items-center gap-1.5 font-semibold underline-offset-4 hover:underline"><Pencil className="size-4" />{H("Change number", "नंबर बदलें")}</button>
+            <button type="button" disabled={wait > 0 || busy} onClick={send} className="inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline disabled:text-muted-foreground disabled:no-underline">
+              {wait > 0 ? <span className="num">{H(`Resend in ${wait}s`, `${wait} सेकंड में दोबारा भेजें`)}</span> : H("Resend code", "कोड दोबारा भेजें")}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <ul className="mt-8 space-y-2.5 border-t pt-6 text-sm text-muted-foreground">
+        {[H("A real SMS code. Nobody else can sign in as you.", "असली SMS कोड। आपकी जगह कोई और साइन इन नहीं कर सकता।"), H("Your plans and orders follow you to any phone.", "आपके प्लान और ऑर्डर किसी भी फ़ोन पर दिखेंगे।"), H("Download or delete your data any time from Account.", "अकाउंट से कभी भी अपना डेटा डाउनलोड या डिलीट करें।")].map((x) => (
+          <li key={x} className="flex items-start gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />{x}</li>
+        ))}
+      </ul>
+      <p className="mt-6 text-center"><Link href="/" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />{H("Back to home", "होम पर वापस")}</Link></p>
     </div>
   );
 }

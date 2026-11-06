@@ -21,7 +21,7 @@ export function GstinHelp({ counterfactuals, lang }: { counterfactuals: Counterf
     : ["Open gst.gov.in → Services → Registration → New Registration", "Keep ready: PAN, Aadhaar, proof of business address, bank-account proof", "You get an ARN (application number); the GSTIN is issued once it is approved", "Enter the GSTIN in KYC here — your plan updates by itself"];
   return (
     <Card className="space-y-2.5 border-primary/30 bg-accent/60 p-3.5" aria-labelledby="gst-h">
-      <div className="flex items-center gap-2"><FileText className="size-4 text-primary" /><h2 id="gst-h" className="text-sm font-semibold">{hi ? "GSTIN के बिना कुछ सेवाएँ नहीं मिलतीं" : "A GSTIN would unlock more for you"}</h2></div>
+      <div className="flex items-center gap-2"><FileText className="size-4" /><h2 id="gst-h" className="text-sm font-semibold">{hi ? "GSTIN के बिना कुछ सेवाएँ नहीं मिलतीं" : "A GSTIN would unlock more for you"}</h2></div>
       <p className="text-xs text-muted-foreground">{hi ? "इन सेवाओं के लिए वैध और चालू GSTIN ज़रूरी है:" : "These need a valid, active GSTIN:"}</p>
       <ul className="space-y-1 text-sm">{items.map((i) => <li key={i.id} className="flex justify-between gap-3"><span>{i.name}</span><span className="text-muted-foreground">{hi ? "से " : "from "}{inr(i.price)}{hi ? "/माह" : "/mo"}</span></li>)}</ul>
       <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">{steps.map((s) => <li key={s}>{s}</li>)}</ol>
