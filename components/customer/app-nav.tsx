@@ -1,12 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, FlaskConical, Globe, House, LayoutGrid, LifeBuoy, Package, UserRound, type LucideIcon } from "lucide-react";
+import { ArrowLeft, FlaskConical, Gift, Globe, House, LayoutGrid, Package, UserRound, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { useI18n } from "@/components/i18n-provider";
 import { LANGS } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "./notification-bell";
+import { MenuButton } from "./side-drawer";
+import { SearchLauncher } from "./search-sheet";
+import { useVerify } from "./verify";
 import { TalkToPerson } from "./talk-person";
 
 interface Tab { href: string; key: string; icon: LucideIcon; active: (p: string) => boolean }
@@ -14,7 +17,7 @@ export const TABS: Tab[] = [
   { href: "/", key: "tab_home", icon: House, active: (p) => p === "/" },
   { href: "/catalogue", key: "tab_plans", icon: LayoutGrid, active: (p) => p.startsWith("/catalogue") },
   { href: "/orders", key: "tab_orders", icon: Package, active: (p) => /^\/(orders|track|quote|order)(\/|$)/.test(p) },
-  { href: "/support", key: "tab_help", icon: LifeBuoy, active: (p) => p.startsWith("/support") || p.startsWith("/notifications") },
+  { href: "/rewards", key: "tab_rewards", icon: Gift, active: (p) => p.startsWith("/rewards") },
   { href: "/account", key: "tab_account", icon: UserRound, active: (p) => p.startsWith("/account") },
 ];
 
@@ -67,7 +70,8 @@ export function SideRail({ demo }: { demo: boolean }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-card p-5 md:flex">
       <Link href="/" aria-label="Home" className="px-1"><Logo /></Link>
-      <nav aria-label="Main" className="mt-8 flex-1">
+      <SearchLauncher className="mt-6" />
+      <nav aria-label="Main" className="mt-6 flex-1">
         <ul className="space-y-1">
           {TABS.map((tab) => {
             const on = tab.active(path);
@@ -94,13 +98,17 @@ export function SideRail({ demo }: { demo: boolean }) {
   );
 }
 
-/** Phone top bar on browsing screens. */
+/** Phone top bar on browsing screens: menu, brand, search, notifications and profile. */
 export function BrowseBar() {
+  const { account } = useVerify();
   return (
     <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur md:hidden">
-      <div className="mx-auto flex h-14 max-w-xl items-center justify-between gap-2 px-4">
-        <Link href="/" aria-label="Home"><Logo /></Link>
-        <div className="flex items-center gap-1.5"><LanguageSwitch /><NotificationBell /></div>
+      <div className="mx-auto flex h-14 max-w-xl items-center gap-2 px-3">
+        <MenuButton />
+        <Link href="/" aria-label="Home" className="mr-auto"><Logo /></Link>
+        <SearchLauncher variant="icon" />
+        <NotificationBell />
+        <Link href="/account" aria-label="Account" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{(account?.name?.[0] ?? "").toUpperCase() || <UserRound className="size-4" />}</Link>
       </div>
     </header>
   );

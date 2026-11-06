@@ -44,7 +44,7 @@ function Catalogue() {
   const journey = useJourney();
   const quoteId = sp.get("quote") ?? journey?.quoteId ?? null;
   const [items, setItems] = useState<Item[] | null>(null);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(() => (typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("s") ?? ""));
   const [cat, setCat] = useState<string>("all");
   const [band, setBand] = useState<(typeof PRICE_BANDS)[number]["id"]>("all");
   const [onlyMine, setOnlyMine] = useState(false);

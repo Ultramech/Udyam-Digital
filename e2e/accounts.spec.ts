@@ -74,7 +74,7 @@ test.describe("Customer account", () => {
     await page.getByLabel("Your name").fill("Rakesh K Sharma");
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByText("Saved")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Account" })).toHaveAttribute("aria-current", "page"); // the Account tab is the current place
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Account" })).toHaveAttribute("aria-current", "page"); // the Account tab is the current place
 
     await page.getByRole("button", { name: "Add", exact: true }).first().click();
     await page.getByLabel("Business name").fill("Sharma Wellness Pharmacy");
