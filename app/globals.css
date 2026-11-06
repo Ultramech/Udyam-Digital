@@ -16,8 +16,8 @@
   --color-warning-soft: var(--warning-soft);
   --color-info-soft: var(--info-soft);
   --color-paper: var(--paper);
-  --shadow-card: 0 1px 2px oklch(0.3 0.06 20 / 0.05), 0 10px 28px -14px oklch(0.45 0.14 25 / 0.22);
-  --shadow-lift: 0 2px 4px oklch(0.3 0.06 20 / 0.06), 0 18px 40px -16px oklch(0.45 0.16 25 / 0.35);
+  --shadow-card: 0 1px 2px oklch(0.25 0.04 295 / 0.05), 0 14px 32px -14px oklch(0.3 0.08 300 / 0.17);
+  --shadow-lift: 0 2px 4px oklch(0.25 0.04 295 / 0.06), 0 22px 44px -18px oklch(0.45 0.18 25 / 0.45);
   --color-ink: var(--ink);
   --color-warning: var(--warning);
   --color-info: var(--info);
@@ -61,7 +61,7 @@
 
 :root {
   /* Udyam Digital: warm paper, ink text, one red signal for the single main action per screen. Status colours always mean something. */
-  --paper: oklch(0.992 0.004 20);
+  --paper: oklch(0.984 0.005 295);
   --ink: oklch(0.2 0.012 60);
   --background: var(--paper);
   --foreground: var(--ink);
@@ -71,15 +71,15 @@
   --popover-foreground: var(--ink);
   --primary: oklch(0.56 0.235 27);
   --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.965 0.012 20);
+  --secondary: oklch(0.965 0.008 295);
   --secondary-foreground: var(--ink);
-  --muted: oklch(0.965 0.01 20);
+  --muted: oklch(0.965 0.008 295);
   --muted-foreground: oklch(0.46 0.014 60);
   --accent: oklch(0.958 0.032 20);
-  --accent-foreground: oklch(0.5 0.21 27);
+  --accent-foreground: oklch(0.46 0.2 27);
   --destructive: oklch(0.5 0.2 25);
-  --border: oklch(0.915 0.014 20);
-  --input: oklch(0.86 0.014 20);
+  --border: oklch(0.935 0.008 295);
+  --input: oklch(0.88 0.01 295);
   --ring: oklch(0.55 0.22 27);
   --success: oklch(0.46 0.1 160);
   --success-soft: oklch(0.955 0.035 160);
@@ -149,7 +149,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    background-image: radial-gradient(60rem 28rem at 100% -6rem, oklch(0.95 0.05 20 / 0.9), transparent 70%), radial-gradient(40rem 22rem at -10% 0, oklch(0.97 0.025 20 / 0.8), transparent 70%);
+    background-image: radial-gradient(52rem 26rem at 100% -6rem, oklch(0.96 0.03 300 / 0.9), transparent 70%), radial-gradient(36rem 20rem at -10% 0, oklch(0.975 0.02 20 / 0.8), transparent 70%);
     background-repeat: no-repeat;
     background-attachment: fixed;
     overflow-x: clip;
@@ -167,10 +167,23 @@
 
 /* Airtel red hero surface: used for the one thing to know now (setup progress, price, order status) */
 .hero-red {
+  position: relative;
+  overflow: hidden;
   color: oklch(0.99 0.004 20);
-  background-image: radial-gradient(22rem 14rem at 105% -20%, oklch(1 0 0 / 0.18), transparent 70%), linear-gradient(135deg, oklch(0.6 0.235 27), oklch(0.45 0.2 25));
+  background-image: radial-gradient(22rem 14rem at 105% -20%, oklch(1 0 0 / 0.18), transparent 70%), linear-gradient(135deg, oklch(0.545 0.23 27), oklch(0.42 0.19 25));
   box-shadow: var(--shadow-lift);
 }
+/* the curved light strokes on red cards */
+.hero-red::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 240' fill='none' preserveAspectRatio='xMaxYMid slice'%3E%3Cpath d='M170 260C225 150 300 88 420 66' stroke='white' stroke-opacity='.24' stroke-width='2'/%3E%3Cpath d='M205 260C255 170 322 112 420 98' stroke='white' stroke-opacity='.18' stroke-width='2'/%3E%3Cpath d='M240 260C288 195 342 150 420 134' stroke='white' stroke-opacity='.12' stroke-width='2'/%3E%3Cpath d='M120 260C190 140 290 70 420 40' stroke='white' stroke-opacity='.10' stroke-width='2'/%3E%3C/svg%3E") right center / cover no-repeat;
+}
+.hero-red > * { position: relative; }
+/* the AI advisor: pink fading to lavender */
+.ai-card { background-image: linear-gradient(115deg, oklch(0.975 0.022 20) 0%, oklch(0.97 0.03 300) 62%, oklch(0.955 0.045 305) 100%); border-color: oklch(0.93 0.03 300); }
 /* soft pink panel for "recommended" and call-out cards */
 .surface-tint {
   background-image: linear-gradient(180deg, oklch(0.968 0.03 20), oklch(0.995 0.004 20));

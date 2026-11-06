@@ -108,7 +108,7 @@ export function BrowseBar() {
         <Link href="/" aria-label="Home" className="mr-auto"><Logo /></Link>
         <SearchLauncher variant="icon" />
         <NotificationBell />
-        <Link href="/account" aria-label="Account" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{(account?.name?.[0] ?? "").toUpperCase() || <UserRound className="size-4" />}</Link>
+        <Link href="/account" aria-label="Account" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-accent-foreground ring-1 ring-primary/25">{(account?.name?.[0] ?? "").toUpperCase() || <UserRound className="size-4" />}</Link>
       </div>
     </header>
   );

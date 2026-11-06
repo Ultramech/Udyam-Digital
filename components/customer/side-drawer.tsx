@@ -30,7 +30,7 @@ export function MenuButton({ className }: { className?: string }) {
   const wa = waLink(), tg = tgLink();
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label={t("menu_open")} className={cn("flex size-10 items-center justify-center rounded-full border border-input bg-card", className)}><Menu className="size-5" /></button>
+      <button type="button" onClick={() => setOpen(true)} aria-label={t("menu_open")} className={cn("flex size-11 items-center justify-center rounded-full hover:bg-muted", className)}><Menu className="size-5" /></button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="w-[86vw] max-w-sm gap-0 overflow-y-auto p-0">
           <SheetHeader className="sr-only"><SheetTitle>{t("menu_open")}</SheetTitle><SheetDescription>{t("dr_chat")}</SheetDescription></SheetHeader>
@@ -53,7 +53,7 @@ export function MenuButton({ className }: { className?: string }) {
               <div className="mb-2 text-sm font-bold">{t("dr_chat")}</div>
               <div className="flex flex-wrap gap-2">
                 {wa && <a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#008069] px-3.5 text-sm font-semibold text-[#008069]"><MessageCircle className="size-4" aria-hidden />WhatsApp</a>}
-                {tg && <a href={tg} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#229ED9] px-3.5 text-sm font-semibold text-[#229ED9]"><Send className="size-4" aria-hidden />Telegram</a>}
+                {tg && <a href={tg} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#1A7DAF] px-3.5 text-sm font-semibold text-[#1A7DAF]"><Send className="size-4" aria-hidden />Telegram</a>}
               </div>
             </div>
           )}

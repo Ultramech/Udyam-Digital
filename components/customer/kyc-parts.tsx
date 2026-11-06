@@ -33,7 +33,7 @@ export function CheckList({ checks, slot }: { checks: Check[]; slot?: Slot }) {
       {rows.map((c, i) => {
         const { reason, fix } = kycReason(c.code, c.params, lang);
         return (
-          <li key={i} className="rounded-2xl border bg-card p-3.5 text-[0.9375rem]">
+          <li key={i} className="rounded-2xl border bg-card shadow-card p-3.5 text-[0.9375rem]">
             <div className="mb-1.5"><VerdictChip severity={c.severity} /></div><div className="font-semibold leading-snug">{!slot && c.slot ? `${slotName(c.slot, lang)}: ` : ""}{reason}</div>
             {fix && <div className="mt-1.5 text-sm text-muted-foreground"><b>{t("fix")}:</b> {fix}</div>}
           </li>

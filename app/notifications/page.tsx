@@ -39,7 +39,7 @@ export default function NotificationsPage() {
             <ul className="space-y-2">
               {notes.map((n) => (
                 <li key={n.id}>
-                  <Link href={n.href} className={cn("flex gap-3 rounded-2xl border bg-card p-3 text-sm transition-colors hover:border-primary", unread.has(n.id) && "border-primary/50 bg-accent")}>
+                  <Link href={n.href} className={cn("flex gap-3 rounded-2xl border bg-card shadow-card p-3 text-sm transition-colors hover:border-primary", unread.has(n.id) && "border-primary/50 bg-accent")}>
                     <span aria-hidden className="text-base">{ICON[n.kind] ?? "💬"}</span>
                     <div className="min-w-0 flex-1"><div className="whitespace-pre-wrap">{n.text}</div><div className="mt-0.5 text-xs text-muted-foreground">{n.orderName ? `${n.orderName} · ` : ""}{fmtDate(n.date, lang)}{unread.has(n.id) ? ` · ${hi ? "नया" : "new"}` : ""}</div></div>
                   </Link>

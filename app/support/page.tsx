@@ -135,7 +135,7 @@ export default function SupportPage() {
         {/* FAQs */}
         <section className="space-y-2">
           <h2 className="text-sm font-semibold">{H("Common questions", "आम सवाल")}</h2>
-          <div className="divide-y rounded-2xl border bg-card">
+          <div className="divide-y rounded-2xl border bg-card shadow-card">
             {FAQ.map((f) => (
               <div key={f.id}>
                 <button type="button" className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm font-medium" aria-expanded={openFaq === f.id} onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>

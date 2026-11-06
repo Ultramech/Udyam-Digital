@@ -49,7 +49,7 @@ function FactsPanel({ facts, onEdit }: { facts: Facts; onEdit: () => void }) {
   const known = rows.filter(([, v]) => v);
   if (!known.length) return null;
   return (
-    <details className="group rounded-2xl border bg-card">
+    <details className="group rounded-2xl border bg-card shadow-card">
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-2.5 [&::-webkit-details-marker]:hidden">
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold">{t("facts_title")}</span>

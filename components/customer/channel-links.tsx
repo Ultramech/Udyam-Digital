@@ -20,7 +20,7 @@ export function ChannelLinks({ lang, prefill, className = "" }: { lang: string; 
     <div className={className}>
       <div className="flex flex-wrap gap-2">
         {WA && <a href={waLink(prefill)!} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-[#008069] px-3 text-sm font-medium text-[#008069] hover:bg-[#008069]/5"><MessageCircle className="size-4" />{hi ? "WhatsApp पर" : "On WhatsApp"}</a>}
-        {TG && <a href={tgLink(prefill)!} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-[#229ED9] px-3 text-sm font-medium text-[#229ED9] hover:bg-[#229ED9]/5"><Send className="size-4" />{hi ? "Telegram पर" : "On Telegram"}</a>}
+        {TG && <a href={tgLink(prefill)!} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-[#1A7DAF] px-3 text-sm font-medium text-[#1A7DAF] hover:bg-[#1A7DAF]/5"><Send className="size-4" />{hi ? "Telegram पर" : "On Telegram"}</a>}
       </div>
       {WA && WA_JOIN && (
         <p className="mt-1.5 text-xs text-muted-foreground">

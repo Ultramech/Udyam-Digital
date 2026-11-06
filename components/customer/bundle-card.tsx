@@ -21,7 +21,7 @@ export function LinesList({ lines, showPrice = true }: { lines: Line[]; showPric
   const priced = useMemo(() => priceLines(lines), [lines]);
   const groups = groupLines(priced.lines);
   return (
-    <ul className="divide-y rounded-2xl border bg-card">
+    <ul className="divide-y rounded-2xl border bg-card shadow-card">
       {groups.map((g) => {
         const p = getProduct(g.productId);
         return (
@@ -48,7 +48,7 @@ export function DecisionTrace({ rec }: { rec: Recommendation }) {
   const icon = { pass: "✓", fail: "✕", info: "•", add: "+", warn: "!" } as const;
   const tone = { pass: "text-success", fail: "text-destructive", info: "text-muted-foreground", add: "text-primary", warn: "text-warning" } as const;
   return (
-    <div className="rounded-2xl border bg-card">
+    <div className="rounded-2xl border bg-card shadow-card">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 p-3 text-left text-sm font-medium">
         <span className="flex items-center gap-2"><ListChecks className="size-4" />{(lang === "hi" || lang === "mr") ? "मैंने कैसे तय किया" : "How I decided"}</span>
         <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
@@ -124,7 +124,7 @@ export function BundleCard({ rec, profile, onBuy, busy }: { rec: Recommendation;
           <section>
             <h4 className="mb-1.5 text-sm font-semibold">{t("not_included")}</h4>
             <ul className="space-y-1.5 text-sm">
-              {exclusions.map((e) => <li key={e.productId + e.code} className="rounded-2xl border bg-card p-2.5"><span className="font-medium">{plainName(e.productId, lang)}</span><div className="text-xs text-muted-foreground">{ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang).replace(plainName(e.productId, lang), "").trim() || ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang)}</div></li>)}
+              {exclusions.map((e) => <li key={e.productId + e.code} className="rounded-2xl border bg-card shadow-card p-2.5"><span className="font-medium">{plainName(e.productId, lang)}</span><div className="text-xs text-muted-foreground">{ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang).replace(plainName(e.productId, lang), "").trim() || ruleReason({ code: e.code, params: e.params, productId: e.productId }, lang)}</div></li>)}
             </ul>
           </section>
         )}

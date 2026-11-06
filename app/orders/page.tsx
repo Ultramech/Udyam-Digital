@@ -40,7 +40,7 @@ function Orders() {
           <SectionTitle>{t("orders_active")}</SectionTitle>
           <div className="space-y-3">
             {active.map((o) => (
-              <Link key={o.id} href={`/track/${o.id}?t=${o.token}`} className="block rounded-2xl border bg-card p-4 transition-colors hover:bg-muted/60">
+              <Link key={o.id} href={`/track/${o.id}?t=${o.token}`} className="block rounded-2xl border bg-card shadow-card p-4 transition-colors hover:bg-muted/60">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0"><div className="truncate text-base font-bold">{o.bundle}</div><div className="truncate text-sm text-muted-foreground">{o.businessName}</div></div>
                   <OrderStatus stage={o.stage} payment={o.payment} />

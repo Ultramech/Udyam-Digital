@@ -34,9 +34,9 @@ export function SearchLauncher({ variant = "bar", className }: { variant?: "bar"
   return (
     <>
       {variant === "icon" ? (
-        <button type="button" onClick={() => setOpen(true)} aria-label={t("search_title")} className={cn("flex size-10 items-center justify-center rounded-full border border-input bg-card", className)}><Search className="size-[1.125rem]" /></button>
+        <button type="button" onClick={() => setOpen(true)} aria-label={t("search_title")} className={cn("flex size-11 items-center justify-center rounded-full hover:bg-muted", className)}><Search className="size-[1.125rem]" /></button>
       ) : (
-        <button type="button" onClick={() => setOpen(true)} className={cn("flex h-12 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-left text-[0.9375rem] text-muted-foreground shadow-card", className)}>
+        <button type="button" onClick={() => setOpen(true)} className={cn("flex h-12 w-full items-center gap-3 rounded-2xl border bg-card shadow-card px-4 text-left text-[0.9375rem] text-muted-foreground shadow-card", className)}>
           <Search className="size-5 shrink-0" aria-hidden />{t("search_ph")}
         </button>
       )}
@@ -49,7 +49,7 @@ export function SearchLauncher({ variant = "bar", className }: { variant?: "bar"
             {services.length > 0 && <h3 className="mb-2 mt-2 text-sm font-bold text-muted-foreground">{t("search_services")}</h3>}
             <ul className="space-y-2">
               {services.map((p) => (
-                <li key={p.id}><button type="button" onClick={() => go(`/catalogue?s=${encodeURIComponent(plainName(p.id, lang).split(" (")[0])}`)} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border bg-card px-3.5 py-2.5 text-left hover:border-primary">
+                <li key={p.id}><button type="button" onClick={() => go(`/catalogue?s=${encodeURIComponent(plainName(p.id, lang).split(" (")[0])}`)} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border bg-card shadow-card px-3.5 py-2.5 text-left hover:border-primary">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary"><ProductIcon id={p.id} className="size-5" /></span>
                   <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{plainName(p.id, lang)}</span><span className="block truncate text-sm text-muted-foreground">{t("exp_from")} {inr(p.priceMin)}{t("per_month")}</span></span>
                   <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
@@ -59,7 +59,7 @@ export function SearchLauncher({ variant = "bar", className }: { variant?: "bar"
             {pages.length > 0 && <h3 className="mb-2 mt-5 text-sm font-bold text-muted-foreground">{t("search_pages")}</h3>}
             <ul className="space-y-2">
               {pages.map((p) => (
-                <li key={p.href}><button type="button" onClick={() => go(p.href)} className="flex min-h-14 w-full items-center gap-3 rounded-2xl border bg-card px-3.5 text-left hover:border-primary"><p.icon className="size-5 text-primary" aria-hidden /><span className="flex-1 font-semibold">{t(p.key)}</span><ChevronRight className="size-5 text-muted-foreground" aria-hidden /></button></li>
+                <li key={p.href}><button type="button" onClick={() => go(p.href)} className="flex min-h-14 w-full items-center gap-3 rounded-2xl border bg-card shadow-card px-3.5 text-left hover:border-primary"><p.icon className="size-5 text-primary" aria-hidden /><span className="flex-1 font-semibold">{t(p.key)}</span><ChevronRight className="size-5 text-muted-foreground" aria-hidden /></button></li>
               ))}
             </ul>
           </div>

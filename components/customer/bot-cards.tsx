@@ -18,14 +18,14 @@ export function BotCards() {
   if (!wa && !tg) return null;
   const cards = [
     wa && { url: wa, icon: MessageCircle, title: t("bot_wa"), sub: t("bot_wa_d"), tone: "text-[#008069]" },
-    tg && { url: tg, icon: Send, title: t("bot_tg"), sub: t("bot_tg_d"), tone: "text-[#229ED9]" },
+    tg && { url: tg, icon: Send, title: t("bot_tg"), sub: t("bot_tg_d"), tone: "text-[#1A7DAF]" },
   ].filter(Boolean) as { url: string; icon: typeof Send; title: string; sub: string; tone: string }[];
   return (
     <section aria-label={t("bot_title")}>
       <h2 className="mb-2.5 text-base font-bold">{t("bot_title")}</h2>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
         {cards.map((c) => (
-          <a key={c.title} href={c.url} target="_blank" rel="noreferrer" className="flex items-center gap-4 rounded-3xl border bg-card p-4 shadow-card transition-colors hover:border-primary">
+          <a key={c.title} href={c.url} target="_blank" rel="noreferrer" className="flex items-center gap-4 rounded-3xl border bg-card shadow-card p-4 shadow-card transition-colors hover:border-primary">
             <Qr url={c.url} label={`${c.title} QR`} />
             <span className="min-w-0"><span className={`flex items-center gap-2 text-lg font-extrabold ${c.tone}`}><c.icon className="size-5" aria-hidden />{c.title}</span><span className="mt-1 block text-sm text-muted-foreground">{c.sub}</span><span className="mt-1 block text-xs text-muted-foreground">{t("bot_scan")}</span></span>
           </a>

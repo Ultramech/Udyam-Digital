@@ -39,7 +39,7 @@ function Rewards() {
           const total = e.id === "referral" ? e.coins * (e.count ?? 0) : e.coins;
           return (
             <li key={e.id}>
-              <Link href={HREF[e.id]} className={cn("flex min-h-16 items-center gap-3 rounded-2xl border bg-card px-4 py-3 shadow-card", e.done && "bg-success-soft")}>
+              <Link href={HREF[e.id]} className={cn("flex min-h-16 items-center gap-3 rounded-2xl border bg-card shadow-card px-4 py-3 shadow-card", e.done && "bg-success-soft")}>
                 {e.done ? <Check className="size-6 shrink-0 text-success" aria-hidden /> : <Circle className="size-6 shrink-0 text-muted-foreground/60" aria-hidden />}
                 <span className="min-w-0 flex-1"><span className="block font-semibold">{t(`earn_${e.id}`)}</span><span className="block text-sm text-muted-foreground">{e.done ? t("rw_done") : t("rw_todo")}{e.id === "referral" && e.count ? ` ×${e.count}` : ""}</span></span>
                 <b className={cn("num text-lg", e.done ? "text-success" : "text-primary")}>+{e.done ? total : e.coins}</b>

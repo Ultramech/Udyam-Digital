@@ -20,6 +20,7 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
           <span className="text-[1.375rem] font-extrabold lowercase tracking-tight text-primary">airtel</span>
           <span aria-hidden className="h-6 w-px bg-border" />
           <span className="text-[1.25rem] font-extrabold tracking-tight">SYNC</span>
+          <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground">Business</span>
         </span>
       )}
     </span>

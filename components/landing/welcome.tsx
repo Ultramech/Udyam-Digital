@@ -29,21 +29,21 @@ export function AdvisorBox({ signedIn, className }: { signedIn: boolean; classNa
   const [q, setQ] = useState("");
   const go = (text: string) => { window.location.assign(advisorHref(signedIn, text)); };
   return (
-    <section aria-labelledby="adv-box" className={cn("surface-tint rounded-3xl border p-5 shadow-card md:p-6", className)}>
+    <section aria-labelledby="adv-box" className={cn("ai-card rounded-3xl border p-5 shadow-card md:p-6", className)}>
       <div className="flex items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-primary"><Sparkles className="size-6" aria-hidden /></span>
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-card"><Sparkles className="size-6" aria-hidden /></span>
         <div className="min-w-0">
           <h2 id="adv-box" className="text-lg font-extrabold leading-tight">{t("ld_adv_title")}</h2>
           <p className="mt-0.5 text-[0.9375rem] text-muted-foreground">{t("ld_adv_sub")}</p>
         </div>
       </div>
       <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); go(q.trim()); }}>
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ld_adv_ph")} aria-label={t("ld_adv_ask")} maxLength={300} className="bg-card" />
-        <Button type="submit" size="icon-lg" aria-label={t("ld_adv_ask")}><ArrowRight className="size-5" /></Button>
+        <div className="relative min-w-0 flex-1"><Sparkles className="pointer-events-none absolute left-3.5 top-3.5 size-5 text-primary" aria-hidden /><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ld_adv_ph")} aria-label={t("ld_adv_ask")} maxLength={300} className="border-white bg-white pl-11 shadow-card" /></div>
+        <Button type="submit" size="icon-lg" aria-label={t("ld_adv_ask")} className="shadow-lift"><ArrowRight className="size-5" /></Button>
       </form>
       <div className="mt-3 flex flex-wrap gap-2">
         {[["ld_try1", "ld_try1_q"], ["ld_try2", "ld_try2_q"]].map(([label, query]) => (
-          <button key={label} type="button" onClick={() => go(t(query))} className="min-h-11 rounded-full border border-input bg-card px-4 text-sm font-medium transition-colors hover:border-primary hover:text-primary">{t(label)}</button>
+          <button key={label} type="button" onClick={() => go(t(query))} className="min-h-11 rounded-full bg-white px-4 text-sm font-medium shadow-card transition-colors hover:text-primary">{t(label)}</button>
         ))}
       </div>
     </section>
@@ -72,10 +72,10 @@ export function BundleCards({ signedIn }: { signedIn: boolean }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((c) => (
-        <article key={c.id} className={cn("flex flex-col rounded-3xl border bg-card p-5 shadow-card", c.popular && "surface-tint")}>
+        <article key={c.id} className={cn("flex flex-col rounded-3xl border bg-card shadow-card p-5 shadow-card", c.popular && "surface-tint")}>
           <div className="flex items-start justify-between gap-2">
             <span className="flex size-11 items-center justify-center rounded-2xl bg-accent text-primary"><ProductIcon id={c.items[0]} className="size-6" /></span>
-            {c.popular && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary">{t("ld_popular")}</span>}
+            {c.popular && <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">{t("ld_popular")}</span>}
           </div>
           <h3 className="mt-4 text-lg font-extrabold">{bundleName(c.id, lang)}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{bundleTagline(c.id, lang)}</p>
@@ -119,7 +119,7 @@ export function Welcome() {
       {/* hero */}
       <section className="grid grid-cols-[minmax(0,1fr)] items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:gap-10">
         <div>
-          <span className="inline-flex items-center rounded-full border border-primary/25 bg-accent px-3.5 py-1.5 text-sm font-semibold text-primary">{t("ld_pill")}</span>
+          <span className="inline-flex items-center rounded-full border border-primary/25 bg-accent px-3.5 py-1.5 text-sm font-semibold text-accent-foreground">{t("ld_pill")}</span>
           <h1 className="mt-5 text-[2.625rem] font-extrabold leading-[1.02] tracking-tight md:text-[3.75rem]">{t("ld_h1a")}<br /><span className="text-primary">{t("ld_h1b")}</span></h1>
           <p className="mt-5 max-w-lg text-[1.0625rem] leading-relaxed text-muted-foreground">{t("ld_sub")}</p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -150,7 +150,7 @@ export function Welcome() {
         <h2 className="mb-5 text-center text-[1.625rem] font-extrabold md:text-3xl">{t("ld_cat_title")}</h2>
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cats.map(({ icon: I, k, d }) => (
-            <Link key={k} href={advisorHref(false)} className="group flex flex-col rounded-3xl border bg-card p-5 shadow-card transition-shadow hover:shadow-lift">
+            <Link key={k} href={advisorHref(false)} className="group flex flex-col rounded-3xl border bg-card shadow-card p-5 shadow-card transition-shadow hover:shadow-lift">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-primary"><I className="size-6" aria-hidden /></span>
               <h3 className="mt-4 text-lg font-extrabold">{t(k)}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t(d)}</p>
@@ -166,9 +166,9 @@ export function Welcome() {
         <p className="mt-1 text-center text-muted-foreground">{t("ld_how_sub")}</p>
         <ol className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-3">
           {steps.map(({ icon: I, a, b }, i) => (
-            <li key={a} className="relative rounded-3xl border bg-card p-5 shadow-card">
+            <li key={a} className="relative rounded-3xl border bg-card shadow-card p-5 shadow-card">
               <div className="flex items-center gap-3">
-                <span className="num flex size-9 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-primary">{i + 1}</span>
+                <span className="num flex size-9 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-accent-foreground">{i + 1}</span>
                 <I className="size-7 text-primary" aria-hidden />
               </div>
               <h3 className="mt-4 font-extrabold">{t(a)}</h3>
@@ -225,7 +225,7 @@ export function Welcome() {
         <p className="mt-0.5 text-sm text-muted-foreground">{t("persona_note")}</p>
         <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {PERSONAS.map((p) => (
-            <Link key={p.id} href={`/login?next=${encodeURIComponent(`/advisor?persona=${p.id}`)}`} className="flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 shadow-card transition-colors hover:border-primary">
+            <Link key={p.id} href={`/login?next=${encodeURIComponent(`/advisor?persona=${p.id}`)}`} className="flex items-center gap-3 rounded-2xl border bg-card shadow-card px-4 py-3 shadow-card transition-colors hover:border-primary">
               <div className="min-w-0 flex-1"><div className="truncate text-[0.9375rem] font-semibold">{p.title[lang === "hi" || lang === "mr" ? "hi" : "en"]}</div><div className="truncate text-sm text-muted-foreground">{p.blurb[lang === "hi" || lang === "mr" ? "hi" : "en"]}</div></div>
               <ArrowRight className="size-4 shrink-0 text-primary" aria-hidden />
             </Link>

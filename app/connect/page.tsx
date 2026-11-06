@@ -20,7 +20,7 @@ export default async function ConnectPage() {
       : ["Scan and say hi.", "Tell the advisor about your business in your own words, in English or Hindi."],
   });
   if (tg) cards.push({
-    title: "Telegram", color: "#229ED9", url: `https://t.me/${tg}`,
+    title: "Telegram", color: "#1A7DAF", url: `https://t.me/${tg}`,
     steps: ["Scan and tap Start — no join step.", "Describe your business; share your contact when asked to see your orders."],
   });
   if (base) cards.push({ title: "Web app", color: "#E40000", url: base, steps: ["Advisor, quote, KYC, e-sign, payment and tracker — on your phone."] });

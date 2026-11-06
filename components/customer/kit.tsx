@@ -52,7 +52,7 @@ export function StageTrack({ stage, className }: { stage: string | null; classNa
 /** A tappable row: icon, two lines, chevron. The standard list item across the app. */
 export function Row({ href, icon, title, sub, right, className }: { href: string; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; right?: React.ReactNode; className?: string }) {
   return (
-    <Link href={href} className={cn("flex min-h-16 items-center gap-3 rounded-2xl border bg-card px-4 py-3 transition-colors hover:bg-muted/60", className)}>
+    <Link href={href} className={cn("flex min-h-16 items-center gap-3 rounded-2xl border bg-card shadow-card px-4 py-3 transition-colors hover:bg-muted/60", className)}>
       {icon ? <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">{icon}</span> : null}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[0.9375rem] font-semibold">{title}</span>
@@ -78,7 +78,7 @@ export function Empty({ title, sub, action }: { title: string; sub?: string; act
 /** A section that stays closed until you want it, so secondary tools never crowd the main decision. Cards inside are flattened (no card in a card). */
 export function Collapse({ title, children, defaultOpen }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   return (
-    <details open={defaultOpen} className="group rounded-2xl border bg-card">
+    <details open={defaultOpen} className="group rounded-2xl border bg-card shadow-card">
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[0.9375rem] font-bold [&::-webkit-details-marker]:hidden">
         {title}<ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
       </summary>

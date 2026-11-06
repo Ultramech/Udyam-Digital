@@ -98,7 +98,7 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
         {/* included */}
         <section className="space-y-2">
           <h2 className="text-base font-bold">{t("included")}</h2>
-          <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card">
             {groups.map((g) => {
               const p = getProduct(g.productId);
               const perSiteUnit = p.unit === "per site";
@@ -132,12 +132,12 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
         {/* add-ons */}
         {addons.length > 0 && (
           <section className="space-y-2">
-            <div className="flex items-center justify-between"><h2 className="text-base font-bold">{t("add_ons")}</h2><Link href={`/catalogue?quote=${id}`} className="text-xs text-primary underline-offset-4 hover:underline">{(lang === "hi" || lang === "mr") ? "सभी सेवाएँ देखें" : "Browse all services"}</Link></div>
+            <div className="flex items-center justify-between"><h2 className="text-base font-bold">{t("add_ons")}</h2><Link href={`/catalogue?quote=${id}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline">{(lang === "hi" || lang === "mr") ? "सभी सेवाएँ देखें" : "Browse all services"}</Link></div>
             <ul className="space-y-1.5">
               {addons.map((c) => {
                 const p = getProduct(c.productId);
                 return (
-                  <li key={c.productId} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
+                  <li key={c.productId} className="flex items-center gap-3 rounded-2xl border bg-card shadow-card p-3">
                     <ProductIcon id={c.productId} className="size-5 shrink-0" />
                     <div className="min-w-0 flex-1"><div className="text-sm font-medium leading-snug">{plainName(c.productId, lang)}</div><div className="text-xs text-muted-foreground">{plainBenefit(c.productId, lang)} · {inr(p.priceMin)} {plainUnit(p.unit, lang)}</div></div>
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => edit({ type: "add", productId: c.productId })}><Plus className="mr-1 size-3" />{t("add")}</Button>

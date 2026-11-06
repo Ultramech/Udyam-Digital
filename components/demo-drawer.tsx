@@ -34,7 +34,7 @@ export function DemoDrawer() {
               <h3 className="mb-2 font-medium">What is live right now</h3>
               <ul className="space-y-1.5">
                 {services.map((s) => (
-                  <li key={s.id} className="rounded-2xl border bg-card p-2 text-xs">
+                  <li key={s.id} className="rounded-2xl border bg-card shadow-card p-2 text-xs">
                     <div className="flex items-center justify-between gap-2"><span className="font-medium">{s.label}</span>
                       <span className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", s.mode === "live" ? "bg-success/15 text-success" : s.mode === "simulated" ? "bg-warning/15 text-warning" : "bg-destructive/10 text-destructive")}>{s.mode === "live" ? "LIVE" : s.mode === "simulated" ? "SIMULATED" : "NOT CONFIGURED"}</span></div>
                     <div className="mt-0.5 text-muted-foreground">{s.detail}</div>
@@ -46,7 +46,7 @@ export function DemoDrawer() {
               <h3 className="mb-2 font-medium">{t("demo_personas")}</h3>
               <div className="space-y-2">
                 {PERSONAS.map((p) => (
-                  <Link key={p.id} href={`/advisor?persona=${p.id}`} onClick={() => setOpen(false)} className="block rounded-2xl border bg-card p-2.5 hover:border-primary">
+                  <Link key={p.id} href={`/advisor?persona=${p.id}`} onClick={() => setOpen(false)} className="block rounded-2xl border bg-card shadow-card p-2.5 hover:border-primary">
                     <div className="font-medium">{p.title[(lang === "hi" || lang === "mr") ? "hi" : "en"]}</div>
                     <div className="text-xs text-muted-foreground">{p.blurb[(lang === "hi" || lang === "mr") ? "hi" : "en"]}</div>
                   </Link>
