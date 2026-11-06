@@ -1,20 +1,21 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Award, ArrowRight, CalendarDays, Check, ChevronDown, ChevronRight, Circle, Info, MapPin, TrendingUp, Gauge, Gift, Headset, Layers, LayoutGrid, ReceiptText, ShoppingBag, Store, UserRoundCheck, Users, Wifi } from "lucide-react";
+import { Award, ArrowRight, ChevronDown, ChevronRight, Circle, Info, MapPin, TrendingUp, Gauge, Gift, Headset, Layers, LayoutGrid, ReceiptText, ShoppingBag, Store, UserRoundCheck, Users, Wifi } from "lucide-react";
 import { AvailabilityCheck } from "@/components/customer/availability-check";
 import { OrderStatus, Row, SectionTitle } from "@/components/customer/kit";
 import { BotCards } from "@/components/customer/bot-cards";
 import { SearchLauncher } from "@/components/customer/search-sheet";
 import { AdvisorBox, advisorHref, useBundleSamples, Welcome } from "@/components/landing/welcome";
 import { CustomerShell } from "@/components/customer/shell";
+import { PromoCarousel } from "@/components/customer/promo-carousel";
+import { CuratedTrain } from "@/components/customer/curated-train";
 import { TalkToPerson } from "@/components/customer/talk-person";
 import { useVerify } from "@/components/customer/verify";
 import { ProductIcon } from "@/components/brand";
 import { useI18n } from "@/components/i18n-provider";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { bundleName, bundleTagline } from "@/lib/i18n/bundles";
 import { api, useJourney } from "@/lib/client/api";
 import { useRewards } from "@/lib/client/use-rewards";
 import { CATALOGUE } from "@/lib/catalogue";
@@ -65,7 +66,6 @@ function Dashboard({ name }: { name: string | null }) {
   const pct = Math.round((done.filter(Boolean).length / done.length) * 100);
   const next = live ? "next_live" : !order ? (quoteId ? "next_review" : "next_choose") : order.payment !== "success" ? "next_pay" : !done[2] ? "next_kyc" : "next_wait";
   const href = order ? `/track/${order.id}?t=${order.token}` : quoteId ? `/quote/${quoteId}` : "/advisor";
-  const steps = ["step_profile", "step_plan", "step_kyc", "step_pay", "step_live"];
   const tiles = [
     { href: "/advisor", icon: ShoppingBag, k: "home_t_buy" }, { href: "/orders", icon: Layers, k: "home_t_orders" },
     { href: "/support", icon: Headset, k: "home_t_support" }, { href: "/catalogue", icon: LayoutGrid, k: "q_plans" },
@@ -94,24 +94,8 @@ function Dashboard({ name }: { name: string | null }) {
 
       <SearchLauncher />
 
-      {!me ? <Skeleton className="h-44 rounded-3xl" /> : (
-        <Link href={href} aria-label={t("setup_pct").replace("{n}", String(pct))} className="hero-red block rounded-3xl p-5 transition-transform active:scale-[0.99]">
-          <div className="text-[1.125rem] font-extrabold leading-snug">{t("setup_pct").replace("{n}", String(pct))}</div>
-          <div className="mt-3 flex items-center gap-3">
-            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} /></div>
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/50 bg-white/15"><ArrowRight className="size-5" aria-hidden /></span>
-          </div>
-          <ol className="mt-5 flex" aria-hidden>
-            {steps.map((k, i) => (
-              <li key={k} className="relative flex-1 text-center text-xs font-semibold">
-                {i > 0 && <span className={cn("absolute left-[calc(-50%+0.875rem)] right-[calc(50%+0.875rem)] top-[0.6rem] h-px", done[i - 1] && done[i] ? "bg-white" : "bg-white/40")} />}
-                <span className={cn("relative mx-auto flex size-5 items-center justify-center rounded-full border-2", done[i] ? "border-white bg-white text-primary" : "border-white/70")}>{done[i] && <Check className="size-3" strokeWidth={3.5} />}</span>
-                <span className={cn("mt-2 block", done[i] ? "font-bold" : "font-medium")}>{t(k)}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-4 flex items-center gap-2 text-[0.9375rem]"><CalendarDays className="size-[1.125rem] shrink-0" aria-hidden />{t(next)}{order && !live ? ` ${t("home_goes_live")}: ${fmtDate(order.goLive, lang)}` : ""}</p>
-        </Link>
+      {!me ? <Skeleton className="h-48 rounded-3xl" /> : (
+        <PromoCarousel setup={live ? null : { pct, href, next: `${t(next)}${order ? ` ${t("home_goes_live")}: ${fmtDate(order.goLive, lang)}` : ""}` }} />
       )}
 
       <section aria-label={t("home_quick")} className="grid grid-cols-4 gap-2.5">
@@ -169,20 +153,7 @@ function Dashboard({ name }: { name: string | null }) {
 
       <section>
         <SectionTitle action={<Link href="/catalogue" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary">{t("view_all")}<ArrowRight className="size-4" aria-hidden /></Link>}>{t("cur_title")}</SectionTitle>
-        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
-          {samples.map((c, i) => (
-            <article key={c.id} className={cn("flex w-64 shrink-0 snap-start flex-col rounded-3xl border bg-card shadow-card p-4 shadow-card", i === 0 && "surface-tint")}>
-              {i === 0 && <span className="mb-3 w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-primary">{profileFor ? t("cur_for").replace("{type}", profileFor) : t("ld_popular")}</span>}
-              <h3 className="text-lg font-extrabold">{bundleName(c.id, lang)}</h3>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{bundleTagline(c.id, lang)}</p>
-              <ul className="mt-3 space-y-1.5 text-sm">{c.items.slice(0, 3).map((p) => <li key={p} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />{plainName(p, lang)}</li>)}</ul>
-              <div className="mt-auto flex items-end justify-between gap-2 pt-4">
-                <div><div className="text-xs text-muted-foreground">{t("ld_from")}</div><div className="num text-xl font-extrabold leading-none">{inr(c.price)}</div><div className="text-xs text-muted-foreground">{c.perSite ? t("ld_per_loc") : t("per_month")}</div></div>
-                <Link href={advisorHref(true)} className="inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">{t("cur_view")}</Link>
-              </div>
-            </article>
-          ))}
-        </div>
+        <CuratedTrain samples={samples} href={advisorHref(true)} badge={profileFor ? t("cur_for").replace("{type}", profileFor) : t("ld_popular")} />
       </section>
 
       <section>
