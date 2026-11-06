@@ -16,7 +16,9 @@ export const GET = route(async () => {
     user: { id: u.id, name: u.name, email: u.email, phoneMasked: mask(u.phone), lang: u.lang, profileType: u.profileType, onboarded: !!u.onboardedAt, notifyWhatsapp: u.notifyWhatsapp, notifySms: u.notifySms, notifyEmail: u.notifyEmail, marketingOptIn: u.marketingOptIn, createdAt: u.createdAt, lastLoginAt: u.lastLoginAt },
     businesses: bs.map((b) => ({ ...b, gstin: b.gstin ? maskGstin(b.gstin) : null })),
     sessions: sessions.map((s) => ({ ...s, current: s.id === u.sessionId })),
-    orders: rec.orders.map((o) => ({ id: o.id, token: o.token, businessName: o.businessName, businessId: o.businessId ?? null, bundle: bundleName(o.bundleId, u.lang as "en"), stage: o.cancelled ? "CANCELLED" : o.stage ?? null, payment: o.payment.status, kycStatus: o.kycStatus, monthly: o.totals.monthly, goLive: o.goLive, createdAt: o.createdAt })),
+    orders: rec.orders.map((o) => ({ id: o.id, token: o.token, businessName: o.businessName, businessId: o.businessId ?? null, bundle: bundleName(o.bundleId, u.lang as "en"), stage: o.cancelled ? "CANCELLED" : o.stage ?? null, payment: o.payment.status, kycStatus: o.kycStatus, monthly: o.totals.monthly, goLive: o.goLive, createdAt: o.createdAt,
+      bundleId: o.bundleId, services: new Set((o.items?.length ? o.items : o.lines).map((x) => x.productId)).size, city: o.profile?.city ?? null,
+      activatedAt: o.stageDates?.ACTIVATED ?? null, cancelledAt: o.cancelled?.at ?? null })),
     quotes: rec.quotes.map((q) => ({ id: q.id, bundle: bundleName(q.bundleId, u.lang as "en"), orderId: q.orderId ?? null, createdAt: q.createdAt })),
     tickets: rec.tickets.map((t) => ({ id: t.id, status: t.status, category: t.category, orderId: t.orderId ?? null, updatedAt: t.updatedAt })),
   });

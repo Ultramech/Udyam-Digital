@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Award, ArrowRight, ChevronDown, ChevronRight, Circle, Info, MapPin, TrendingUp, Gauge, Gift, Headset, Layers, LayoutGrid, ReceiptText, ShoppingBag, Store, UserRoundCheck, Users, Wifi } from "lucide-react";
+import { Award, ArrowRight, ChevronDown, ChevronRight, MapPin, TrendingUp, Gauge, Gift, Headset, Layers, LayoutGrid, ReceiptText, ShoppingBag, Store, UserRoundCheck, Users, Wifi } from "lucide-react";
 import { AvailabilityCheck } from "@/components/customer/availability-check";
 import { OrderStatus, Row, SectionTitle } from "@/components/customer/kit";
 import { BotCards } from "@/components/customer/bot-cards";
@@ -10,6 +10,7 @@ import { AdvisorBox, advisorHref, useBundleSamples, Welcome } from "@/components
 import { CustomerShell } from "@/components/customer/shell";
 import { PromoCarousel } from "@/components/customer/promo-carousel";
 import { CuratedTrain } from "@/components/customer/curated-train";
+import { CoinsCard } from "@/components/customer/coins-card";
 import { TalkToPerson } from "@/components/customer/talk-person";
 import { useVerify } from "@/components/customer/verify";
 import { ProductIcon } from "@/components/brand";
@@ -72,7 +73,6 @@ function Dashboard({ name }: { name: string | null }) {
     { href: "#fibre", icon: Wifi, k: "q_fibre" }, { href: quoteId ? `/quote/${quoteId}` : "/advisor", icon: ReceiptText, k: "q_bill" },
     { href: "/rewards", icon: Gift, k: "q_rewards" }, { href: live && order ? `/track/${order.id}?t=${order.token}` : "/rewards", icon: Users, k: "q_refer" },
   ];
-  const todo = (rewards?.entries ?? []).filter((e) => !e.done && e.id !== "live" && e.id !== "profile").slice(0, 3);
   const maturity = view?.maturity;
   const cats = ["all", ...new Set(CATALOGUE.map((p) => p.category))].slice(0, 6);
   const seen = new Set<string>();
@@ -106,29 +106,7 @@ function Dashboard({ name }: { name: string | null }) {
         ))}
       </section>
 
-      {rewards && (
-        <section aria-label={t("coins_title")}>
-          <Link href="/rewards" className="block rounded-3xl bg-card p-4 shadow-card transition-transform active:scale-[0.99]">
-            <div className="flex items-center gap-2"><h2 className="text-lg font-extrabold">{t("coins_title")}</h2><Info className="size-4 text-muted-foreground" aria-hidden /><ChevronRight className="ml-auto size-5 text-muted-foreground" aria-hidden /></div>
-            <div className="mt-3 flex items-center gap-3.5">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_28%,#FFE9A8,#F4B52E_55%,#C98A0B)] text-xl font-extrabold text-[#7A4B00] shadow-[inset_0_-3px_0_rgba(0,0,0,.12),0_6px_14px_-6px_rgba(201,138,11,.7)]" aria-hidden>U</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2.5"><span className="num text-[2.25rem] font-extrabold leading-none">{rewards.balance}</span><span className="rounded-full bg-[#FFF1CC] px-3 py-1 text-xs font-bold text-[#7A4B00]">{t(`tier_${rewards.tier}`)}</span></div>
-                <p className="mt-1 text-sm text-muted-foreground">{t("coins_sub")}</p>
-              </div>
-            </div>
-            {rewards.next ? (
-              <div className="mt-4"><div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={rewards.next.pct}><div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(rewards.next.pct, 4)}%` }} /></div>
-                <p className="mt-2 text-sm text-muted-foreground">{t("coins_togo").replace("{n}", String(rewards.next.toGo)).replace("{tier}", t(`tier_${rewards.next.tier}`))}</p></div>
-            ) : <p className="mt-3 text-sm text-muted-foreground">{t("coins_top")}</p>}
-            {todo.length > 0 && (
-              <ul className="mt-3 space-y-2 border-t pt-3 text-[0.9375rem]">
-                {todo.slice(0, 2).map((e) => <li key={e.id} className="flex items-center gap-2.5"><Circle className="size-[1.125rem] text-muted-foreground/60" aria-hidden /><span className="flex-1">{t(`earn_${e.id}`)}</span><b className="num text-primary">+{e.coins}</b></li>)}
-              </ul>
-            )}
-          </Link>
-        </section>
-      )}
+      {rewards && <CoinsCard rewards={rewards} />}
 
       <section aria-label={t("growth_title")}>
         <SectionTitle action={quoteId ? <Link href={`/quote/${quoteId}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary">{t("growth_roadmap")}</Link> : undefined}>{t("growth_title")}</SectionTitle>

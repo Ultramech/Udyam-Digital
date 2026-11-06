@@ -103,39 +103,54 @@
   --sidebar-ring: oklch(0.55 0.22 27);
 }
 
+/* Dark: deep warm charcoal surfaces, the same Airtel red (a touch brighter so it reads on dark), status colours kept meaningful. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  color-scheme: dark;
+  --background: oklch(0.16 0.008 20);
+  --foreground: oklch(0.96 0.004 85);
+  --card: oklch(0.215 0.01 20);
+  --card-foreground: oklch(0.96 0.004 85);
+  --popover: oklch(0.235 0.01 20);
+  --popover-foreground: oklch(0.96 0.004 85);
+  --primary: oklch(0.63 0.22 27);
+  --primary-foreground: oklch(0.99 0.003 85);
+  --secondary: oklch(0.27 0.012 20);
+  --secondary-foreground: oklch(0.96 0.004 85);
+  --muted: oklch(0.27 0.012 20);
+  --muted-foreground: oklch(0.74 0.012 60);
+  --accent: oklch(0.3 0.06 25);
+  --accent-foreground: oklch(0.88 0.08 25);
+  --destructive: oklch(0.7 0.19 22);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.65 0.2 27);
+  --success: oklch(0.76 0.13 160);
+  --success-soft: oklch(0.3 0.05 160);
+  --warning: oklch(0.82 0.12 80);
+  --warning-soft: oklch(0.32 0.05 80);
+  --info: oklch(0.76 0.1 245);
+  --info-soft: oklch(0.3 0.04 245);
+  --chart-1: oklch(0.65 0.2 27);
+  --chart-2: oklch(0.76 0.13 160);
+  --chart-3: oklch(0.76 0.1 245);
+  --chart-4: oklch(0.82 0.12 80);
+  --chart-5: oklch(0.7 0.01 60);
+  --sidebar: oklch(0.19 0.008 20);
+  --sidebar-foreground: oklch(0.96 0.004 85);
+  --sidebar-primary: oklch(0.96 0.004 85);
+  --sidebar-primary-foreground: oklch(0.19 0.008 20);
+  --sidebar-accent: oklch(0.27 0.012 20);
+  --sidebar-accent-foreground: oklch(0.96 0.004 85);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.65 0.2 27);
 }
+/* light-only surfaces written as literal colours: map them onto the dark tokens */
+.dark body { background-image: radial-gradient(52rem 26rem at 100% -6rem, oklch(0.3 0.08 20 / 0.45), transparent 70%), radial-gradient(36rem 20rem at -10% 0, oklch(0.26 0.06 300 / 0.35), transparent 70%); }
+.dark .bg-white { background-color: var(--card); }
+.dark .bg-white\/80, .dark .bg-white\/60, .dark .bg-white\/50 { background-color: oklch(0.26 0.02 20 / 0.85); }
+.dark .bg-\[\#FFF1CC\] { background-color: oklch(0.33 0.06 80); }
+.dark .text-\[\#7A4B00\] { color: oklch(0.88 0.1 85); }
+.dark .mix-blend-multiply { mix-blend-mode: normal; opacity: 0.92; }
 
 @layer base {
   * {
@@ -189,6 +204,8 @@
   background-image: linear-gradient(180deg, oklch(0.968 0.03 20), oklch(0.995 0.004 20));
   border-color: oklch(0.88 0.06 22);
 }
+.dark .ai-card { background-image: linear-gradient(115deg, oklch(0.25 0.04 20) 0%, oklch(0.24 0.04 300) 62%, oklch(0.23 0.05 305) 100%); border-color: oklch(0.34 0.05 300); }
+.dark .surface-tint { background-image: linear-gradient(180deg, oklch(0.27 0.06 22), oklch(0.215 0.01 20)); border-color: oklch(0.38 0.08 22); }
 /* keeps long marketing rows from touching the viewport edge on phones */
 .page-gutter { padding-inline: max(1rem, env(safe-area-inset-left)); }
 

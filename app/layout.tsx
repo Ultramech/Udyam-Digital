@@ -3,6 +3,7 @@ import { Geist_Mono, Noto_Sans_Devanagari, Noto_Sans_Tamil, Plus_Jakarta_Sans } 
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/components/i18n-provider";
 import { CatalogueSync } from "@/components/catalogue-sync";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
@@ -19,11 +20,13 @@ export const viewport: Viewport = { themeColor: "#F7F4EE", width: "device-width"
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${geistMono.variable} ${deva.variable} ${tamil.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${geistMono.variable} ${deva.variable} ${tamil.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <I18nProvider>{children}</I18nProvider>
-        <Toaster position="top-center" richColors />
-        <CatalogueSync />
+        <ThemeProvider>
+          <I18nProvider>{children}</I18nProvider>
+          <Toaster position="top-center" richColors />
+          <CatalogueSync />
+        </ThemeProvider>
       </body>
     </html>
   );
