@@ -56,14 +56,14 @@ export const TABLES: Record<Kind, { table: string; cols: Record<string, Extract>
 
 // ---- connection + migrations ---------------------------------------------------------------------------------------
 type G = typeof globalThis & { __udyamDb?: Promise<Client> };
-export const databaseUrl = () => process.env.DATABASE_URL || "file:.data/udyam.db"; // `||`: an empty DATABASE_URL= line falls back
+export const databaseUrl = () => (process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL) || "file:.data/udyam.db"; // `||`: an empty DATABASE_URL= line falls back; TURSO_* are the names the Vercel Turso integration sets
 export const migrationsFolder = () => join(process.cwd(), "drizzle");
 
 /** Migrates on first use (see autoMigrate); where it doesn't (Vercel), verifies the schema exists and fails with a clear message. */
 async function init(): Promise<Client> {
   const url = databaseUrl();
   if (url.startsWith("file:")) mkdirSync(".data", { recursive: true });
-  const c = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
+  const c = createClient({ url, authToken: (process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN) || undefined });
   if (url.startsWith("file:")) await c.execute("PRAGMA foreign_keys = ON");
   if (autoMigrate()) await migrate(drizzle(c), { migrationsFolder: migrationsFolder() });
   else {

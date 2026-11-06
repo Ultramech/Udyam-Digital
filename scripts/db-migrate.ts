@@ -8,14 +8,14 @@ import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { mkdirSync } from "node:fs";
 
-const url = process.env.DATABASE_URL || "file:.data/udyam.db";
+const url = (process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL) || "file:.data/udyam.db";
 if (process.env.VERCEL && url.startsWith("file:")) {
   console.error("DATABASE_URL is not set (or points at a local file) on Vercel — serverless disks don't persist. Set it to your Turso URL.");
   process.exit(1);
 }
 (async () => {
   if (url.startsWith("file:")) mkdirSync(".data", { recursive: true });
-  const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
+  const client = createClient({ url, authToken: (process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN) || undefined });
   await migrate(drizzle(client), { migrationsFolder: "drizzle" });
   const r = await client.execute("SELECT count(*) AS n FROM __drizzle_migrations");
   console.log(`migrations applied to ${url.replace(/\/\/.*@/, "//***@").split("?")[0]} — ${r.rows[0].n} total`);

@@ -8,7 +8,7 @@ import { TABLES, databaseUrl, db, type Kind } from "../lib/db/store";
 
 (async () => {
   await db(); // runs migrations first (dev)
-  const c = createClient({ url: databaseUrl(), authToken: process.env.DATABASE_AUTH_TOKEN || undefined });
+  const c = createClient({ url: databaseUrl(), authToken: (process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN) || undefined });
   const has = await c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='docs'");
   if (!has.rows.length) { console.log("No legacy `docs` table — nothing to import."); return; }
   const rows = await c.execute("SELECT kind, id, data, created_at, updated_at FROM docs");

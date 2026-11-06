@@ -9,13 +9,13 @@ const has = (k: string) => !!process.env[k]?.trim();
 
 export function checkEnv(env: "production" | "development" = process.env.NODE_ENV === "production" ? "production" : "development"): EnvReport {
   const errors: string[] = [], warnings: string[] = [];
-  const db = process.env.DATABASE_URL?.trim() ?? "";
+  const db = (process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL)?.trim() ?? "";
   if (env === "production") {
     // On Vercel the disk is wiped between invocations, so a local file can't hold data. On your own server (or an evaluator's
     // laptop running `npm start`) the default file database is fine.
     if ((!db || db.startsWith("file:")) && process.env.VERCEL) errors.push("DATABASE_URL must point at a persistent libSQL database (e.g. libsql://<db>.turso.io) — Vercel's disk is wiped.");
     else if (!db || db.startsWith("file:")) warnings.push("Using the local file database (.data/udyam.db) — fine on a single server; use Turso for Vercel or several instances.");
-    if (db.startsWith("libsql://") && !has("DATABASE_AUTH_TOKEN")) errors.push("DATABASE_AUTH_TOKEN is required for Turso.");
+    if (db.startsWith("libsql://") && !has("DATABASE_AUTH_TOKEN") && !has("TURSO_AUTH_TOKEN")) errors.push("DATABASE_AUTH_TOKEN is required for Turso.");
     if (!has("PUBLIC_BASE_URL")) warnings.push("PUBLIC_BASE_URL not set — links in SMS/WhatsApp/Telegram messages and webhooks fall back to the Vercel URL.");
     if (!has("CRON_SECRET")) warnings.push("CRON_SECRET not set — the daily housekeeping job (reminders, stuck-order sweep) will refuse to run.");
     if (process.env.DEMO_MODE !== "false" && !has("ADMIN_EMAIL")) warnings.push("DEMO_MODE is on and no ADMIN_EMAIL — only demo staff accounts can sign in. Fine for judging, not for real use.");

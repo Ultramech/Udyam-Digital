@@ -1,0 +1,13 @@
+# local build output, test servers and machine-local state never go to Vercel
+.next
+.next-*
+node_modules
+.data
+.env*
+!.env.example
+*.db
+.tmp-*
+test-results
+playwright-report
+.playwright-mcp
+coverage
