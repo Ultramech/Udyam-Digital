@@ -1,6 +1,8 @@
 # Deploying Udyam Digital (Vercel + Turso)
 
 > **Live deployment:** https://udyam-digital-kappa.vercel.app (Vercel project `udyam-digital`, Turso database `udyam-digital-db` provisioned through the Vercel Marketplace; health at `/api/health`).
+>
+> **Auto-deploy:** the Vercel project is linked to this GitHub repo. A push to `main` redeploys production; other branches get protected preview deployments.
 > Deploy from this folder with `vercel deploy --prod` (`.vercelignore` keeps local build output out of the upload). The Vercel Turso integration sets
 > `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN`; the app accepts those names as well as `DATABASE_URL` / `DATABASE_AUTH_TOKEN`.
 
