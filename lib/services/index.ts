@@ -1,17 +1,19 @@
 /**
- * Service interfaces (MASTER_PLAN G3). Every external dependency is behind one of these with a deterministic mock,
- * so the whole demo runs with no API keys and no network. Swap an implementation here without touching callers.
+ * Where each external dependency lives. Every one is a real service that fails closed (503) when its key is missing —
+ * nothing is faked in a running app:
  *
- *   AdvisorService   → lib/advisor/{orchestrator (rules), claude (optional extraction)}
- *   OCRService       → lib/kyc/ocr.ts            (cached specimens → Claude vision → offline)
- *   GSTINService     → lib/kyc/registry.ts       (mock registry backed by mock_gstin_registry.csv)
- *   UdyamService     → lib/kyc/registry.ts       (mock registry backed by mock_udyam_registry.csv)
- *   FeasibilityService, OTPService, PaymentService, ESignService, NotificationService → below / lib/store/orders.ts
+ *   Advisor          → lib/advisor/{orchestrator + rules engine (decides), llm.ts → Gemini (understands and explains)}
+ *   Document reading → lib/kyc/ocr.ts            (Gemini vision; sharpness gate; checksum + registry repair)
+ *   GSTIN / Udyam    → lib/kyc/registry.ts       (the case's supplied registries — the case specifies mocked lookups)
+ *   OTP              → lib/otp (2Factor SMS)      Payments → lib/services/razorpay.ts (Razorpay)
+ *   e-Sign           → lib/esign (PDF + SHA-256 + SMS OTP)   Feasibility → lib/feasibility (ops coverage + India Post)
+ *   Chat             → lib/channels (Meta WhatsApp Cloud API, Twilio, Telegram)
  */
 import "server-only";
 
 export interface PaymentService { outcome(requested: "success" | "fail" | "pending"): "success" | "fail" | "pending" }
-export const mockPayments: PaymentService = { outcome: (r) => r };
+/** Automated-test seam only (ALLOW_TEST_VERIFY=1, never in production): lets the journey script choose a payment outcome. */
+export const testPaymentOutcome: PaymentService = { outcome: (r) => r };
 
 export const isValidIndianMobile = (p: string) => /^[6-9]\d{9}$/.test(p.replace(/\s|-|\+91/g, ""));
 export const cleanPhone = (p: string) => p.replace(/\s|-|\+91/g, "");

@@ -67,7 +67,7 @@ app/                customer screens (/, /advisor, /quote, /order/[id]/{sites,co
 app/api/            advisor, quote, feasibility, consent, kyc, orders, ops/*, lab, mock/{gstin,udyam}
 lib/rules/          the engine: normalise · eligibility · pricing/GST/schedule · recommend · quote editing · counterfactuals
 lib/kyc/            identifiers (mod-36 GSTIN, OCR repair) · match · 20+ validators · OCR adapters · registries
-lib/advisor/        deterministic extractor (en/hi) · orchestrator · optional Claude extraction
+lib/advisor/        deterministic extractor (en/hi) · orchestrator · Gemini understanding + grounded answers
 lib/store, lib/db   orders/tracker state machine · libSQL document store · leads, propensity, stats
 data/               the supplied CSVs and KYC images (read-only)       fixtures/   cached extractions + demo docs
 tests/              rules (48) · kyc (33) · advisor (13)                scripts/    data generation + live journey check

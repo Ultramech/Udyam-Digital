@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HttpError, ok, parseBody, route } from "@/lib/api";
 import { loadOrder, orderView } from "@/lib/store/orderAccess";
 import { chase, getOrder, pay, recordSignature } from "@/lib/store/orders";
-import { mockPayments } from "@/lib/services";
+import { testPaymentOutcome } from "@/lib/services";
 
 const Body = z.object({ t: z.string().max(40).optional(), outcome: z.enum(["success", "fail", "pending"]).optional() });
 
@@ -23,7 +23,7 @@ export const POST = route(async (req: Request, { params }: { params: Promise<{ i
     if (!testOnly) throw new HttpError(403, "USE_RAZORPAY");
     if (!o.esign) throw new HttpError(409, "ESIGN_REQUIRED");
     if (o.payment.status === "success") throw new HttpError(409, "ALREADY_PAID");
-    await pay(o.id, mockPayments.outcome(b.outcome ?? "success"));
+    await pay(o.id, testPaymentOutcome.outcome(b.outcome ?? "success"));
   } else if (action === "chase") {
     if (!o.stage) throw new HttpError(409, "ORDER_NOT_PLACED");
     await chase(o.id);
