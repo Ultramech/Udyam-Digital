@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Pencil } from "lucide-react";
+import { ArrowLeft, Check, Pencil, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,8 @@ const next = () => { const n = new URLSearchParams(window.location.search).get("
 const dest = (onboarded: boolean) => (onboarded ? next() : `/account/setup?next=${encodeURIComponent(next())}`);
 
 const WAIT = 30;
+/** One-click demo account (server refuses it when DEMO_MODE=false). */
+const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 const pretty = (p: string) => `${p.slice(0, 5)} ${p.slice(5)}`;
 
 /** Sign in or sign up with a mobile number: number, then the 6-digit SMS code, on one screen. The same step creates a new account. */
@@ -36,6 +38,13 @@ function Login() {
 
   useEffect(() => { if (account) router.replace(dest(account.onboarded)); }, [account, router]);
   useEffect(() => { if (wait <= 0) return; const t = setTimeout(() => setWait((w) => w - 1), 1000); return () => clearTimeout(t); }, [wait]);
+
+  const [demoBusy, setDemoBusy] = useState(false);
+  async function tryDemo() {
+    setDemoBusy(true); setErr(null);
+    try { await api("POST", "/api/demo/signin"); await refresh(); }
+    catch { setErr(H("The demo isn't available right now. Please try again.", "डेमो अभी उपलब्ध नहीं है। फिर कोशिश करें।")); setDemoBusy(false); }
+  }
 
   const valid = /^[6-9]\d{9}$/.test(phone);
   async function send() {
@@ -100,6 +109,16 @@ function Login() {
             </button>
           </div>
         </form>
+      )}
+
+      {DEMO && !sent && (
+        <div className="mt-5">
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span className="h-px flex-1 bg-border" />{H("or", "या")}<span className="h-px flex-1 bg-border" /></div>
+          <Button type="button" size="lg" variant="outline" className="mt-4 w-full" disabled={demoBusy} onClick={tryDemo}>
+            <PlayCircle className="size-5 text-primary" />{demoBusy ? H("Opening demo…", "डेमो खुल रहा है…") : H("Try the demo, no sign-in needed", "डेमो देखें, साइन इन की ज़रूरत नहीं")}
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">{H("Opens a sample account for a pharmacy in Indore.", "इंदौर की एक फ़ार्मेसी का सैंपल अकाउंट खुलता है।")}</p>
+        </div>
       )}
 
       <ul className="mt-8 space-y-2.5 border-t pt-6 text-sm text-muted-foreground">
