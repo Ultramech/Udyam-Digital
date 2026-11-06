@@ -1,0 +1,10 @@
+{
+  "name": "Airtel Business · Udyam Digital",
+  "short_name": "Udyam Digital",
+  "description": "Find the right business bundle, verify in minutes and get activated.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F4",
+  "theme_color": "#E40000",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

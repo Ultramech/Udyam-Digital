@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/test-results/
+/playwright-report/
+/.playwright-mcp/
+/.next-test/
+/.next-build/
+
+# extra build dirs from NEXT_DIST_DIR (test servers, local production builds)
+/.next-*/
+
+# local database, OCR run results and other machine-local state (contains personal data)
+/.data/
+# the env template is safe to share; real env files are not
+!.env.example
+*.db
+*.db-journal
+.tmp-*

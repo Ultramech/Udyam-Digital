@@ -1,0 +1,41 @@
+{
+ "note": "Trained on the supplied synthetic activated customers; features known at activation only (no NPS, no outcome). Correlation, not causation. Illustrative, not production-calibrated.",
+ "n": 368,
+ "churners": 56,
+ "baseRate": 0.152,
+ "aucCv5": 0.625,
+ "liftTopQuartile": 1.5,
+ "features": [
+  "chase_calls",
+  "log_employees",
+  "log_monthly_value",
+  "source:Referral",
+  "source:Channel partner",
+  "short_contract"
+ ],
+ "mean": [
+  3.010869565217386,
+  2.5745609353406316,
+  8.899211219106581,
+  0.1657608695652175,
+  0.22010869565217425,
+  0.008152173913043478
+ ],
+ "sd": [
+  1.1204091373961023,
+  1.3492945340295026,
+  1.0103732672146226,
+  0.3718658409779004,
+  0.414319753029555,
+  0.08992060928138282
+ ],
+ "weights": [
+  0.31350127547513823,
+  -0.22708925408052127,
+  -0.025814768756323193,
+  0.301503966976793,
+  0.18785759916577857,
+  0.14892974451144483
+ ],
+ "intercept": -0.12450914112205896
+}

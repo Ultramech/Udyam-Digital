@@ -1,0 +1,14 @@
+{
+  "K01": { "status": "blocked",  "codes": ["GSTIN_CANCELLED", "FIELD_MISSING"], "note": "GSTIN is Cancelled in the registry; the Udyam certificate's number field is blank" },
+  "K02": { "status": "verified", "codes": [], "note": "Skewed GST scan with an O/0 confusion — readable, repaired by checksum + registry" },
+  "K03": { "status": "verified", "codes": [], "note": "Clean control" },
+  "K04": { "status": "reupload", "codes": ["DOC_BLURRY"], "note": "GST certificate is blurred — retake" },
+  "K05": { "status": "reupload", "codes": ["DOC_MISSING"], "note": "Owner has a Udyam registration but no certificate was provided" },
+  "K06": { "status": "reupload", "codes": ["GSTIN_CHECKSUM"], "note": "GSTIN on the certificate is one digit off the registry record (typo) and fails its checksum" },
+  "K07": { "status": "review",   "codes": ["GST_DOC_REGISTRY_MISMATCH", "NAME_MISMATCH"], "note": "Certificate says 'Prop. Shri Physio Clinic'; trade name and registry say Neelgiri" },
+  "K08": { "status": "verified", "codes": [], "note": "Clean control" },
+  "K09": { "status": "verified", "codes": [], "note": "Clean control" },
+  "K10": { "status": "verified", "codes": [], "note": "Clean control" },
+  "K11": { "status": "reupload", "codes": ["ADDRESS_PROOF_STALE"], "note": "Electricity bill dated 2025-10-31 is older than 90 days before 2026-07-15" },
+  "K12": { "status": "verified", "codes": [], "note": "Clean control" }
+}
