@@ -73,11 +73,11 @@ export default function QuotePage({ params }: { params: Promise<{ id: string }> 
     <CustomerShell step={2}>
       <div className="space-y-4 pb-32">
         <h1 className="sr-only">{t("quote_title")}</h1>
-        <section aria-label={t("quote_title")} className="rounded-3xl bg-foreground p-5 text-background">
+        <section aria-label={t("quote_title")} className="hero-red rounded-3xl p-5">
           <div className="text-sm font-medium opacity-70">{bundleName(quote.bundleId, lang)}</div>
           <div className="mt-2 flex items-baseline gap-2"><span className="price-xl">{inr(pricing.monthly)}</span><span className="text-sm opacity-70">{t("per_month")}</span></div>
           <p className="mt-1 text-sm opacity-70">{t("gst_extra")}, {pricing.setup ? `${inr(pricing.setup)} ${t("setup_once")}` : t("free")}, {pricing.contractMonths} {t("months")}</p>
-          <div className="mt-4 flex items-center justify-between border-t border-background/20 pt-3 text-sm"><span className="opacity-70">{t("go_live")}</span><span className="num font-semibold">{fmtDate(schedule.date, lang)}</span></div>
+          <div className="mt-4 flex items-center justify-between border-t border-white/25 pt-3 text-sm"><span className="opacity-70">{t("go_live")}</span><span className="num font-semibold">{fmtDate(schedule.date, lang)}</span></div>
           <button type="button" onClick={() => setOpen(true)} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">{t("breakdown")}</button>
         </section>
 

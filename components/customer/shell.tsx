@@ -3,7 +3,7 @@ import { usePathname } from "next/navigation";
 import { DemoDrawer } from "@/components/demo-drawer";
 import { needsAccount } from "@/lib/accounts/routes";
 import { cn } from "@/lib/utils";
-import { BrowseBar, FlowBar, PublicBar, SideRail, TabBar } from "./app-nav";
+import { BrowseBar, FlowBar, PublicBar, PublicFooter, SideRail, TabBar } from "./app-nav";
 import { AuthGate } from "./auth-gate";
 import { VerifyProvider, useVerify } from "./verify";
 
@@ -39,9 +39,10 @@ function Frame({ children, step, total, wide }: { children: React.ReactNode; ste
       {tabs && <SideRail demo={DEMO} />}
       <div className={cn("flex min-h-dvh flex-col", tabs && "md:pl-64")}>
         {flow ? <FlowBar step={step} total={total} /> : tabs ? <BrowseBar /> : <PublicBar />}
-        <main className={cn("mx-auto w-full flex-1 px-4 py-5 md:px-8 md:py-8", flow ? (wide ? "max-w-5xl" : "max-w-3xl") : wide ? "max-w-5xl" : tabs ? "max-w-3xl" : "max-w-5xl", tabs && "pb-tabbar md:pb-10", flow && "pb-24")}>
+        <main className={cn("mx-auto w-full flex-1 px-4 py-5 md:px-8 md:py-8", flow ? (wide ? "max-w-5xl" : "max-w-3xl") : wide ? "max-w-5xl" : tabs ? "max-w-3xl" : path === "/login" || path === "/account/setup" ? "max-w-5xl" : "max-w-6xl", tabs && "pb-tabbar md:pb-10", flow && "pb-24")}>
           <AuthGate>{children}</AuthGate>
         </main>
+        {!tabs && !flow && path !== "/login" && path !== "/account/setup" && <PublicFooter />}
         {tabs && <TabBar />}
       </div>
     </>

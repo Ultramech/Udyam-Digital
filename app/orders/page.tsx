@@ -45,7 +45,7 @@ function Orders() {
                   <div className="min-w-0"><div className="truncate text-base font-bold">{o.bundle}</div><div className="truncate text-sm text-muted-foreground">{o.businessName}</div></div>
                   <OrderStatus stage={o.stage} payment={o.payment} />
                 </div>
-                <StageTrack stage={o.stage} className="mt-4 text-foreground" />
+                <StageTrack stage={o.stage} className="mt-4 text-primary" />
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t("home_goes_live")}</span>
                   <span className="num font-semibold">{fmtDate(o.goLive, lang)}</span>

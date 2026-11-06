@@ -1,10 +1,10 @@
 # Design system
 
-Operate mode (see PRODUCT.md). A quiet, paper-and-ink interface where colour means something.
+Operate mode (see PRODUCT.md). v2: a confident Airtel-red super-app look, taken from the reference screens: near-white page with a soft pink wash, red gradient hero cards, pink-tinted icon chips, rounded cards with soft shadow, and a rich marketing landing. (v1, the quiet paper-and-ink version, lives on `main`.)
 
 ## Principles
 1. One screen, one job, one primary action. The single red button on a screen is the thing to do next.
-2. Red is the Airtel signal and is reserved for that primary action. Ink is structure and selection. Green means live, done or success. Amber means waiting. Blue is informational.
+2. Red is the Airtel signal: primary actions, the hero surface, active tabs and icon chips. Ink is text. Green means live, done or success. Amber means waiting. Blue is informational.
 3. Numbers are the content: prices and dates are large, tabular and never decorated.
 4. Sentence case everywhere. No tracked capitals, no eyebrows, no emoji as icons, no product codes.
 5. Minimum 44px touch targets, 16px body text, 12px smallest text.

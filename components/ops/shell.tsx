@@ -50,7 +50,7 @@ export function OpsShell({ children }: { children: React.ReactNode }) {
           <nav className="flex gap-1 overflow-x-auto md:flex-col" aria-label="Operations">
             {nav.map((n) => {
               const active = n.href === "/ops" ? path === "/ops" : path.startsWith(n.href);
-              return <Link key={n.href} href={n.href} className={cn("flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm", active ? "bg-foreground font-semibold text-background" : "text-muted-foreground hover:bg-muted")}><n.icon className="size-4" />{n.label}</Link>;
+              return <Link key={n.href} href={n.href} className={cn("flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm", active ? "bg-accent font-semibold text-primary" : "text-muted-foreground hover:bg-muted")}><n.icon className="size-4" />{n.label}</Link>;
             })}
           </nav>
           <div className="hidden space-y-2 border-t pt-3 text-xs md:block">

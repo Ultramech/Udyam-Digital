@@ -2,17 +2,24 @@ import { Activity, Cloud, Flame, Globe, Hash, Mail, MessageCircle, MessageSquare
 import { productIcon } from "@/lib/catalogue/plain";
 import { cn } from "@/lib/utils";
 
+/** The red Airtel-style swirl mark. Original drawing, not Airtel's trademark artwork. */
+export function Mark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={cn("shrink-0", className ?? "size-9")} aria-hidden>
+      <path d="M8 27c0-12 9-20 21-20 6 0 10 3 10 8 0 6-6 10-14 10-4 0-7-1-9-3 0 6 3 10 10 10 5 0 9-2 12-6l4 3c-4 6-10 9-18 9C15 38 8 34 8 27z" fill="var(--primary)" />
+    </svg>
+  );
+}
+
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <svg viewBox="0 0 96 96" className="size-9 shrink-0" aria-hidden>
-        <rect width="96" height="96" rx="24" fill="var(--primary)" />
-        <path d="M26 58c0-17 11-30 28-30 9 0 15 4 15 11 0 8-8 13-19 13-6 0-10-2-13-5-1 9 4 15 14 15 7 0 13-3 17-8l6 5c-5 7-14 11-24 11-15 0-24-8-24-18z" fill="#fff" />
-      </svg>
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <Mark />
       {!compact && (
-        <span className="flex flex-col leading-none">
-          <span className="text-[1.0625rem] font-extrabold tracking-tight">Udyam Digital</span>
-          <span className="mt-1 text-[0.6875rem] font-medium text-muted-foreground">by Airtel Business</span>
+        <span className="flex items-center gap-2.5 leading-none">
+          <span className="text-[1.375rem] font-extrabold lowercase tracking-tight text-primary">airtel</span>
+          <span aria-hidden className="h-6 w-px bg-border" />
+          <span className="text-[1.25rem] font-extrabold tracking-tight">SYNC</span>
         </span>
       )}
     </span>

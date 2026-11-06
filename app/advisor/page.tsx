@@ -139,7 +139,8 @@ function AdvisorInner() {
     if (!ready || started.current) return; // wait until the chosen language is known, or a Hindi owner gets an English chat
     started.current = true;
     (async () => {
-      const shared = params.get("c") ?? (persona ? undefined : readJourney().conversationId);
+      const typed = params.get("q")?.trim();
+      const shared = params.get("c") ?? (persona || typed ? undefined : readJourney().conversationId);
       if (shared) {
         try {
           const r = await api<{ conversation: { id: string; messages: ChatMsg[]; facts: Facts; stage: string } | null }>("GET", `/api/advisor?id=${shared}`);
@@ -151,6 +152,7 @@ function AdvisorInner() {
           }
         } catch { /* fall through to a fresh conversation */ }
       }
+      if (typed) { await send({ text: typed.slice(0, 1000) }); return; }
       if (persona) { await send({ text: persona.prompt[(lang === "hi" || lang === "mr") ? "hi" : "en"] }); return; }
       await send({});
     })();

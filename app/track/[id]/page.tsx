@@ -84,23 +84,23 @@ function Inner({ id }: { id: string }) {
           <div className="text-sm">{t("order_id")} <b className="font-mono">{o.id}</b> · {bundleName(o.bundleId, lang)}</div><p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "इस पेज को बुकमार्क करें — कॉल करने की ज़रूरत नहीं, यहीं पूरी स्थिति दिखेगी।" : "Bookmark this page — you won't need to call us. Everything is tracked here."}</p></Card>
       )}
 
-      <section aria-label={t("track_title")} className="rounded-3xl bg-foreground p-5 text-background">
+      <section aria-label={t("track_title")} className="hero-red rounded-3xl p-5">
         <h1 className="sr-only">{t("track_title")}</h1>
         <div className="flex items-center justify-between gap-3 text-sm opacity-75"><span className="truncate">{bundleName(o.bundleId, lang)}</span><span className="shrink-0 font-mono text-xs">{o.id}</span></div>
         <div className="mt-3 text-[1.5rem] font-extrabold leading-tight">{o.cancelled ? t("order_cancelled") : done ? t("stage_ACTIVATED") : o.stage ? t(`stage_${o.stage}`) : t("order_unpaid")}</div>
         {!o.cancelled && (
           <>
             <div className="mt-1 text-sm opacity-75">{done ? o.businessName : `${t("expected_by")} ${fmtDate(o.goLive, lang as "en")}`}</div>
-            <StageTrack stage={o.stage ?? null} className="mt-4 text-background" />
+            <StageTrack stage={o.stage ?? null} className="mt-4" />
           </>
         )}
         {!o.stage && !o.cancelled && (
           <>
             <p className="mt-3 text-sm opacity-85">{o.payment.status === "failed" ? t("pay_failed_msg") : o.payment.status === "processing" ? t("pay_pending_msg") : t("pay_to_place")}</p>
-            <Link href={`/order/${o.quoteId}/checkout`} className="mt-4 block"><Button size="lg" className="w-full">{t("pay_now")}</Button></Link>
+            <Link href={`/order/${o.quoteId}/checkout`} className="mt-4 block"><Button size="lg" className="w-full bg-white text-primary hover:bg-white/90">{t("pay_now")}</Button></Link>
           </>
         )}
-        {last && !o.cancelled && <div className="mt-4 border-t border-background/20 pt-3 text-sm opacity-75">{t("last_update")}: {fmtDate(last.at, lang as "en")}</div>}
+        {last && !o.cancelled && <div className="mt-4 border-t border-white/25 pt-3 text-sm opacity-75">{t("last_update")}: {fmtDate(last.at, lang as "en")}</div>}
       </section>
 
       {o.cancelled && <OrderActions o={o} token={token} lang={lang} onChange={load} />}

@@ -16,6 +16,8 @@
   --color-warning-soft: var(--warning-soft);
   --color-info-soft: var(--info-soft);
   --color-paper: var(--paper);
+  --shadow-card: 0 1px 2px oklch(0.3 0.06 20 / 0.05), 0 10px 28px -14px oklch(0.45 0.14 25 / 0.22);
+  --shadow-lift: 0 2px 4px oklch(0.3 0.06 20 / 0.06), 0 18px 40px -16px oklch(0.45 0.16 25 / 0.35);
   --color-ink: var(--ink);
   --color-warning: var(--warning);
   --color-info: var(--info);
@@ -59,25 +61,25 @@
 
 :root {
   /* Udyam Digital: warm paper, ink text, one red signal for the single main action per screen. Status colours always mean something. */
-  --paper: oklch(0.972 0.008 85);
+  --paper: oklch(0.992 0.004 20);
   --ink: oklch(0.2 0.012 60);
   --background: var(--paper);
   --foreground: var(--ink);
-  --card: oklch(0.995 0.003 85);
+  --card: oklch(1 0 0);
   --card-foreground: var(--ink);
-  --popover: oklch(0.995 0.003 85);
+  --popover: oklch(1 0 0);
   --popover-foreground: var(--ink);
-  --primary: oklch(0.55 0.22 27);
+  --primary: oklch(0.56 0.235 27);
   --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.94 0.01 85);
+  --secondary: oklch(0.965 0.012 20);
   --secondary-foreground: var(--ink);
-  --muted: oklch(0.95 0.008 85);
+  --muted: oklch(0.965 0.01 20);
   --muted-foreground: oklch(0.46 0.014 60);
-  --accent: oklch(0.955 0.03 27);
-  --accent-foreground: oklch(0.42 0.16 27);
+  --accent: oklch(0.958 0.032 20);
+  --accent-foreground: oklch(0.5 0.21 27);
   --destructive: oklch(0.5 0.2 25);
-  --border: oklch(0.89 0.01 80);
-  --input: oklch(0.8 0.012 80);
+  --border: oklch(0.915 0.014 20);
+  --input: oklch(0.86 0.014 20);
   --ring: oklch(0.55 0.22 27);
   --success: oklch(0.46 0.1 160);
   --success-soft: oklch(0.955 0.035 160);
@@ -90,7 +92,7 @@
   --chart-3: oklch(0.46 0.1 245);
   --chart-4: oklch(0.5 0.11 70);
   --chart-5: oklch(0.34 0.012 60);
-  --radius: 0.75rem;
+  --radius: 0.875rem;
   --sidebar: oklch(0.995 0.003 85);
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--ink);
@@ -147,6 +149,9 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(60rem 28rem at 100% -6rem, oklch(0.95 0.05 20 / 0.9), transparent 70%), radial-gradient(40rem 22rem at -10% 0, oklch(0.97 0.025 20 / 0.8), transparent 70%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     overflow-x: clip;
     font-size: 1rem;
     line-height: 1.5;
@@ -159,6 +164,20 @@
     outline-offset: 2px;
   }
 }
+
+/* Airtel red hero surface: used for the one thing to know now (setup progress, price, order status) */
+.hero-red {
+  color: oklch(0.99 0.004 20);
+  background-image: radial-gradient(22rem 14rem at 105% -20%, oklch(1 0 0 / 0.18), transparent 70%), linear-gradient(135deg, oklch(0.6 0.235 27), oklch(0.45 0.2 25));
+  box-shadow: var(--shadow-lift);
+}
+/* soft pink panel for "recommended" and call-out cards */
+.surface-tint {
+  background-image: linear-gradient(180deg, oklch(0.968 0.03 20), oklch(0.995 0.004 20));
+  border-color: oklch(0.88 0.06 22);
+}
+/* keeps long marketing rows from touching the viewport edge on phones */
+.page-gutter { padding-inline: max(1rem, env(safe-area-inset-left)); }
 
 /* money and counts line up and read at a glance */
 .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
