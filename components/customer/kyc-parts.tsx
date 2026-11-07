@@ -44,8 +44,10 @@ export function CheckList({ checks, slot }: { checks: Check[]; slot?: Slot }) {
   );
 }
 
-export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel, digilockerHref, onAadhaar }: {
-  slot: Slot; doc?: KycView["docs"][string]; checks: Check[]; busy: boolean; onFile: (f: File) => void; onSample?: () => void; sampleLabel?: string; digilockerHref?: string;
+export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel, onDigilocker, digilockerLabel, onAadhaar }: {
+  slot: Slot; doc?: KycView["docs"][string]; checks: Check[]; busy: boolean; onFile: (f: File) => void; onSample?: () => void; sampleLabel?: string;
+  /** Fetch this document from DigiLocker / EntityLocker (consent is asked for on the way if needed). */
+  onDigilocker?: () => void; digilockerLabel?: string;
   /** Aadhaar offline e-KYC (signatory ID and address proof only): ZIP + the owner's share phrase. */
   onAadhaar?: (f: File, phrase: string) => Promise<boolean>;
 }) {
@@ -71,7 +73,7 @@ export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel
       <div className="flex flex-wrap gap-2">
         <input ref={ref} type="file" accept="image/png,image/jpeg,application/pdf" className="sr-only" aria-label={`${t("upload")} ${t(`doc_${slot}`)}`} onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
         <Button size="sm" variant="outline" disabled={busy} className="gap-1.5" onClick={() => ref.current?.click()}><Upload className="size-3.5" />{doc ? ((lang === "hi" || lang === "mr") ? "दोबारा अपलोड" : "Replace") : t("take_photo")}</Button>
-        {digilockerHref && <a href={digilockerHref} className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium hover:bg-accent">DigiLocker</a>}
+        {onDigilocker && <Button size="sm" variant="outline" disabled={busy} onClick={onDigilocker}>{digilockerLabel ?? "DigiLocker"}</Button>}
         {onSample && <Button size="sm" variant="ghost" disabled={busy} onClick={onSample}>{sampleLabel ?? t("use_sample")}</Button>}
       </div>
       {onAadhaar && <AadhaarOffline busy={busy} onSubmit={onAadhaar} />}

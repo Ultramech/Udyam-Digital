@@ -57,7 +57,10 @@ async function viaProvider(saved: { quoteId: string; slot: Slot; locker?: Locker
     if (saved.locker === "digilocker") {
       // the Aadhaar arrives as XML: keep name, address and the last four digits only
       if (!/xml/i.test(file.mime) && !file.buf.subarray(0, 64).toString("utf8").trimStart().startsWith("<")) return back(saved.quoteId, "none");
-      k.docs[saved.slot] = aadhaarAsDocument(saved.slot as "signatory_id" | "address_proof", readDigilockerAadhaarXml(file.buf.toString("utf8")), "digilocker_aadhaar");
+      const a = readDigilockerAadhaarXml(file.buf.toString("utf8"));
+      k.docs[saved.slot] = aadhaarAsDocument(saved.slot as "signatory_id" | "address_proof", a, "digilocker_aadhaar");
+      // the same consented Aadhaar also answers an address proof that is still outstanding (one trip to DigiLocker, not two)
+      if (saved.slot === "signatory_id" && k.neededSlots.includes("address_proof") && !k.docs.address_proof) k.docs.address_proof = aadhaarAsDocument("address_proof", a, "digilocker_aadhaar");
     } else {
       k.docs[saved.slot] = { ...(await readOrFail(saved.slot, file.buf, file.mime, HttpError)), source: "digilocker" };
     }

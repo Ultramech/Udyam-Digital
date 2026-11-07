@@ -2,13 +2,13 @@
 import Link from "next/link";
 import { Suspense, use, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertTriangle, CalendarClock, Check, HardHat, Headset, PartyPopper, Phone, TriangleAlert } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, FileCheck2, HardHat, Headset, PartyPopper, Phone, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Collapse, SectionTitle, StageTrack } from "@/components/customer/kit";
+import { Collapse, Row, SectionTitle, StageTrack } from "@/components/customer/kit";
 import { ProductIcon } from "@/components/brand";
 import { useI18n } from "@/components/i18n-provider";
 import { CustomerShell } from "@/components/customer/shell";
@@ -116,6 +116,8 @@ function Inner({ id }: { id: string }) {
       )}
 
       {o.payment.balance?.status === "due" && !o.cancelled && <BalanceCard orderId={o.id} token={token} amount={o.payment.balance.amount} lang={lang} onPaid={load} />}
+
+      {!o.cancelled && o.quoteId && <Row href={`/order/${o.quoteId}/kyc`} icon={<FileCheck2 className="size-5" aria-hidden />} title={(lang === "hi" || lang === "mr") ? "दस्तावेज़ और KYC" : "Documents & KYC"} sub={o.kycStatus === "verified" || o.kycStatus === "approved" ? ((lang === "hi" || lang === "mr") ? "सत्यापित · देखें या बदलें" : "Verified · view or replace") : o.kycStatus === "review" ? ((lang === "hi" || lang === "mr") ? "समीक्षा में" : "With a reviewer") : ((lang === "hi" || lang === "mr") ? "खोलें" : "Open")} />}
 
       {/* stages */}
       <Card className="p-4">
