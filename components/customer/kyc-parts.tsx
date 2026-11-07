@@ -45,7 +45,7 @@ export function CheckList({ checks, slot }: { checks: Check[]; slot?: Slot }) {
 }
 
 /** What each document is for, in plain words, so nobody has to wonder why it is being asked for. */
-const DOC_INFO: Record<Slot, { title: [string, string]; why: [string, string] }> = {
+export const DOC_INFO: Record<Slot, { title: [string, string]; why: [string, string] }> = {
   signatory_id: { title: ["Your ID", "आपकी ID"], why: ["Confirms who is signing for the business. Aadhaar, PAN or driving licence.", "बिज़नेस की ओर से कौन साइन कर रहा है, यह पक्का करता है। आधार, PAN या ड्राइविंग लाइसेंस।"] },
   address_proof: { title: ["Shop address proof", "दुकान का पता प्रमाण"], why: ["Confirms where we install. A recent electricity or phone bill (under 90 days), or your Aadhaar.", "हम कहाँ इंस्टॉल करेंगे, यह पक्का करता है। हाल का बिजली या फ़ोन बिल (90 दिन से कम), या आधार।"] },
   gst_certificate: { title: ["GST certificate", "GST सर्टिफिकेट"], why: ["Confirms your GST registration, so GST-linked services can stay in your plan.", "आपका GST रजिस्ट्रेशन पक्का करता है, ताकि GST वाली सेवाएँ प्लान में रहें।"] },
