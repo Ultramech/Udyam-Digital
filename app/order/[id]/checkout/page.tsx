@@ -48,6 +48,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [signCode, setSignCode] = useState("");
   const [signOtpId, setSignOtpId] = useState<string | null>(null);
   const [docHash, setDocHash] = useState<string | null>(null);
+  const [remotePhone, setRemotePhone] = useState("");
+  const [remoteLink, setRemoteLink] = useState<string | null>(null);
 
   useEffect(() => {
     api<{ services: { id: string; mode: string; detail: string }[] }>("GET", "/api/status").then((r) => {
@@ -67,6 +69,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       }
     }).catch(() => toast.error(t("error_generic")));
   }, [id, t]);
+
+  useEffect(() => {
+    if (!order || phase !== "review") return;
+    const poll = window.setInterval(() => {
+      api<{ order: { esign?: unknown } }>("GET", `/api/orders/${order.id}?t=${order.token}`).then((r) => { if (r.order.esign) setPhase("signed"); }).catch(() => {});
+    }, 4000);
+    return () => window.clearInterval(poll);
+  }, [order, phase]);
 
   const explain = (e: unknown) => {
     const code = e instanceof ApiError ? e.code : "";
@@ -126,6 +136,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       else if (c === "OTP_EXPIRED" || c === "OTP_ATTEMPTS") { setSignStep("prepared"); setSignCode(""); toast.error("That code expired. Request a new one."); }
       else explain(e);
     }
+    setBusy(false);
+  }
+
+  async function sendRemoteSign() {
+    if (!order || !/^\d{10}$/.test(remotePhone)) { toast.error("Enter the signatory's 10-digit mobile number."); return; }
+    setBusy(true);
+    try {
+      const r = await api<{ link: string; whatsapp: string }>("POST", `/api/orders/${order.id}/esign`, { t: order.token, step: "remote", signerPhone: remotePhone });
+      setRemoteLink(r.link);
+      window.open(r.whatsapp, "_blank", "noopener,noreferrer");
+    } catch (e) { explain(e); }
     setBusy(false);
   }
 
@@ -205,6 +226,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   <Button disabled={busy || !agreed || signCode.length < 6} onClick={confirmSign}>{(lang === "hi" || lang === "mr") ? "साइन करें" : "Sign order"}</Button>
                 </div>
               )}
+              <div className="space-y-2 border-t pt-3"><div className="text-sm font-semibold">{hiL ? "अधिकृत साइन करने वाले को भेजें" : "Send to an authorised signatory"}</div><p className="text-xs text-muted-foreground">{hiL ? "डायरेक्टर PDF पढ़ेंगे और अपने नंबर पर आए OTP से साइन करेंगे। लिंक 24 घंटे में बंद हो जाएगा।" : "The director reviews the PDF and signs with an OTP sent to their phone. Link expires in 24 hours."}</p><div className="flex gap-2"><Input aria-label="Signatory phone" inputMode="numeric" maxLength={10} placeholder="10-digit mobile" value={remotePhone} onChange={(e) => setRemotePhone(e.target.value.replace(/\D/g, ""))} /><Button variant="outline" disabled={busy || remotePhone.length !== 10} onClick={sendRemoteSign}>Send for remote signature</Button></div>{remoteLink && <p className="break-all text-xs text-muted-foreground">Secure link: {remoteLink} · WhatsApp opened with a draft addressed to the signatory.</p>}</div>
             </div>
           )}
           {phase !== "review" && order && <a className="block text-xs font-medium text-primary underline" target="_blank" rel="noreferrer" href={`/api/orders/${order.id}/esign?t=${order.token}&signed=1`}>{(lang === "hi" || lang === "mr") ? "साइन किया हुआ PDF और सर्टिफ़िकेट" : "Signed PDF with certificate"}</a>}

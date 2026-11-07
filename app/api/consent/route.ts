@@ -7,7 +7,7 @@ import { sessionId } from "@/lib/auth";
 import { saveQuote } from "@/lib/store/quotes";
 import type { ConsentRecord, Session } from "@/lib/store/types";
 
-export const NOTICE_VERSION = "2026-11-v1";
+const NOTICE_VERSION = "2026-11-v1";
 
 const Body = z.object({
   quoteId: z.string().max(40),

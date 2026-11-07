@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { HttpError, ok, parseBody, route } from "@/lib/api";
-import { get, put } from "@/lib/db/store";
+import { get, newToken, put } from "@/lib/db/store";
 import { loadActiveOrder, loadOrder, orderView } from "@/lib/store/orderAccess";
 import { addEvent, getOrder, recordSignature } from "@/lib/store/orders";
 import { confirmOtp, requestOtp } from "@/lib/otp/flow";
@@ -20,7 +20,7 @@ const ip = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0].t
 
 export const POST = route(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const b = await parseBody(req, z.object({ t: z.string().max(40).optional(), step: z.enum(["prepare", "send"]) }));
+  const b = await parseBody(req, z.object({ t: z.string().max(40).optional(), step: z.enum(["prepare", "send", "remote"]), signerPhone: z.string().regex(/^\d{10}$/).optional() }));
   const o = await loadActiveOrder(id, b.t ?? null);
   if (o.esign) throw new HttpError(409, "ALREADY_SIGNED");
   if (!o.phone) throw new HttpError(409, "PHONE_NOT_VERIFIED");
@@ -34,6 +34,13 @@ export const POST = route(async (req: Request, { params }: { params: Promise<{ i
     return ok({ docHash, bytes: pdf.length });
   }
   if (!o.esignDraft) throw new HttpError(409, "PREPARE_FIRST");
+  if (b.step === "remote") {
+    if (!b.signerPhone) throw new HttpError(400, "SIGNER_PHONE_REQUIRED");
+    const token = newToken();
+    await put("share", `remote-esign:${token}`, { orderId: o.id, orderToken: o.token, phone: b.signerPhone, expiresAt: Date.now() + 24 * 60 * 60_000, used: false });
+    const link = `${new URL(req.url).origin}/remote-sign/${token}`;
+    return ok({ link, whatsapp: `https://wa.me/91${b.signerPhone}?text=${encodeURIComponent(`Please review and sign this Airtel SYNC order within 24 hours: ${link}`)}`, expiresInHours: 24 });
+  }
   return ok({ sent: true, otpId: await requestOtp(o.phone, "esign", o.esignDraft.docHash) });
 });
 

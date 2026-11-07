@@ -9,7 +9,7 @@ import { quoteView, saveQuote } from "@/lib/store/quotes";
 
 const Body = z.object({
   quoteId: z.string().max(40),
-  sites: z.array(z.object({ index: z.number().int().min(0).max(499), address: z.string().min(5).max(200), pincode: z.string().regex(/^\d{6}$/, "6-digit pincode") })).min(1).max(50),
+  sites: z.array(z.object({ index: z.number().int().min(0).max(499), address: z.string().min(5).max(200), pincode: z.string().regex(/^\d{6}$/, "6-digit pincode"), preferredWindow: z.enum(["10:00–12:00", "12:00–14:00", "15:00–17:00"]).optional(), closedWeekdays: z.array(z.number().int().min(0).max(6)).max(6).optional() })).min(1).max(50),
 });
 
 /** Runs feasibility separately for every location, then re-prices. AirFiber is used only if the catalogue allows it. */
@@ -30,7 +30,7 @@ export const POST = route(async (req: Request) => {
   q.profile = r.profile;
   q.sites = q.sites.map((s) => {
     const m = b.sites.find((x) => x.index === s.index);
-    return m ? { ...s, address: m.address, pincode: m.pincode, fibreFeasible: feasible[m.index], fibreBasis: detail[m.index].basis, checked: true } : s;
+    return m ? { ...s, address: m.address, pincode: m.pincode, preferredWindow: m.preferredWindow, closedWeekdays: m.closedWeekdays, fibreFeasible: feasible[m.index], fibreBasis: detail[m.index].basis, checked: true } : s;
   });
   q.version++;
   await saveQuote(q);

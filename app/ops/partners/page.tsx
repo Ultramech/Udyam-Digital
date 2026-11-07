@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +15,7 @@ type P = PartnerSummary & { name: string };
 
 export default function Partners() {
   const [d, setD] = useState<P[] | null>(null);
+  const [qr, setQr] = useState<Record<string, string>>({});
   useEffect(() => { api<{ partners: P[] }>("GET", "/api/ops/partners").then((r) => setD(r.partners)).catch(() => setD([])); }, []);
   return (
     <OpsShell>
@@ -21,6 +24,10 @@ export default function Partners() {
         {!d ? <Skeleton className="h-64" /> : d.length === 0 ? <Card className="p-8 text-center text-sm text-muted-foreground">No partner data.</Card> : d.map((p) => (
           <section key={p.partnerId} className="space-y-3" aria-label={p.name}>
             <h2 className="flex items-center gap-2 text-lg font-semibold">{p.name}<Badge variant="outline" className="font-mono text-[10px]">{p.partnerId}</Badge></h2>
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
+              <button className="rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted" onClick={async () => { const link = `${window.location.origin}/?partner=${encodeURIComponent(p.partnerId)}`; const image = await QRCode.toDataURL(link, { width: 256, margin: 2, errorCorrectionLevel: "M" }); setQr((v) => ({ ...v, [p.partnerId]: image })); }}>Generate store counter QR</button>
+              {qr[p.partnerId] && <><Image unoptimized width={128} height={128} className="size-32 rounded bg-white p-1" src={qr[p.partnerId]} alt={`Store counter referral QR for ${p.name}`} /><a className="text-sm font-medium text-primary underline" download={`${p.partnerId}-counter-qr.png`} href={qr[p.partnerId]}>Download QR kit</a><span className="text-xs text-muted-foreground">Opens the advisor with this partner&apos;s referral code.</span></>}
+            </div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
               {([["Leads", p.totals.leads], ["Still open", p.totals.open], ["Paid orders", p.totals.ordersPaid], ["Activated", p.totals.activated], ["Activated MRR", inr(p.totals.mrrActivated)]] as const).map(([l, v]) => (
                 <Card key={l} className="p-3"><div className="text-[11px] uppercase text-muted-foreground">{l}</div><div className="text-xl font-bold">{v}</div></Card>

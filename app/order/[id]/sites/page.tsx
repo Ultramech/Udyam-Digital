@@ -24,12 +24,12 @@ export default function SitesPage({ params }: { params: Promise<{ id: string }> 
   const { t, lang } = useI18n();
   const router = useRouter();
   const [v, setV] = useState<QuoteView | null>(null);
-  const [rows, setRows] = useState<{ address: string; pincode: string }[]>([]);
+  const [rows, setRows] = useState<{ address: string; pincode: string; preferredWindow?: string; closedWeekdays?: number[] }[]>([]);
   const [res, setRes] = useState<SiteRes | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    api<QuoteView>("GET", `/api/quote/${id}`).then((r) => { setV(r); setRows(r.quote.sites.map((s) => ({ address: s.address, pincode: s.pincode }))); });
+    api<QuoteView>("GET", `/api/quote/${id}`).then((r) => { setV(r); setRows(r.quote.sites.map((s) => ({ address: s.address, pincode: s.pincode, preferredWindow: s.preferredWindow, closedWeekdays: s.closedWeekdays }))); });
   }, [id]);
 
   const personaId = v?.quote.attribution.source?.startsWith("demo:") ? v.quote.attribution.source.slice(5) : undefined;
@@ -60,6 +60,8 @@ export default function SitesPage({ params }: { params: Promise<{ id: string }> 
               <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4" />{t("site_n")} {i + 1}</div>
               <div className="space-y-1.5"><Label htmlFor={`a${i}`}>{t("address")}</Label><Input id={`a${i}`} autoComplete="street-address" value={r.address} onChange={(e) => setRows((x) => x.map((y, k) => (k === i ? { ...y, address: e.target.value } : y)))} /></div>
               <div className="space-y-1.5"><Label htmlFor={`p${i}`}>{t("pincode")}</Label><Input id={`p${i}`} inputMode="numeric" maxLength={6} className="w-32" value={r.pincode} onChange={(e) => setRows((x) => x.map((y, k) => (k === i ? { ...y, pincode: e.target.value.replace(/\D/g, "") } : y)))} /></div>
+              <div className="space-y-1.5"><Label htmlFor={`quiet${i}`}>{lang === "hi" || lang === "mr" ? "इंस्टॉलेशन का सुविधाजनक समय" : "Preferred installation window"}</Label><select id={`quiet${i}`} className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={r.preferredWindow ?? ""} onChange={(e) => setRows((x) => x.map((y, k) => k === i ? { ...y, preferredWindow: e.target.value || undefined } : y))}><option value="">{lang === "hi" || lang === "mr" ? "कोई भी समय" : "Any available time"}</option><option value="10:00–12:00">10:00–12:00</option><option value="12:00–14:00">12:00–14:00</option><option value="15:00–17:00">15:00–17:00</option></select></div>
+              <div className="space-y-1.5"><Label htmlFor={`closed${i}`}>{lang === "hi" || lang === "mr" ? "बंद रहने का दिन" : "Closed day"}</Label><select id={`closed${i}`} className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={r.closedWeekdays?.[0] ?? ""} onChange={(e) => setRows((x) => x.map((y, k) => k === i ? { ...y, closedWeekdays: e.target.value === "" ? [] : [Number(e.target.value)] } : y))}><option value="">{lang === "hi" || lang === "mr" ? "कोई नहीं" : "None"}</option>{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((d, n) => <option key={d} value={n}>{d}</option>)}</select></div>
               {out && (
                 <div className={`flex gap-2 rounded-lg p-2.5 text-sm ${out.fibre ? "bg-success/10 text-success" : "bg-accent text-accent-foreground"}`}>
                   {out.fibre ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> : <Radio className="mt-0.5 size-4 shrink-0" />}

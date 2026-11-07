@@ -29,7 +29,7 @@ export async function setEngineerActive(id: string, active: boolean) {
 }
 
 /** Free slots for an order over the next 5 working days after the schedule start (Sundays excluded). */
-export async function availableSlots(o: Pick<Order, "profile" | "stageDates">): Promise<{ date: string; window: string }[]> {
+export async function availableSlots(o: Pick<Order, "profile" | "stageDates" | "sites">): Promise<{ date: string; window: string }[]> {
   const eng = (await listEngineers()).filter((e) => covers(e, o.profile.city));
   if (!eng.length) return [];
   const bookings = new Set((await list<Booking & { id?: string }>("booking", { limit: 5000 })).map((b) => bookingId(b.engineerId, b.date, b.window)));
@@ -37,7 +37,10 @@ export async function availableSlots(o: Pick<Order, "profile" | "stageDates">): 
   const out: { date: string; window: string }[] = [];
   for (let d = 1; d <= 5; d++) {
     const date = addBusinessDays(start, d);
-    for (const w of WINDOWS) if (eng.some((e) => !bookings.has(bookingId(e.id, date, w)))) out.push({ date, window: w });
+    const weekday = new Date(`${date}T12:00:00`).getDay();
+    if (o.sites?.some((site) => site.closedWeekdays?.includes(weekday))) continue;
+    const prefs = o.sites?.map((site) => site.preferredWindow).filter((x): x is string => !!x) ?? [];
+    for (const w of WINDOWS) if ((!prefs.length || prefs.every((pref) => pref === w)) && eng.some((e) => !bookings.has(bookingId(e.id, date, w)))) out.push({ date, window: w });
   }
   return out;
 }

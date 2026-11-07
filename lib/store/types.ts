@@ -14,7 +14,7 @@ export interface Quote {
   notices: Ref[]; version: number; attribution: Attribution; sites: SiteInfo[]; consentId?: string; kycId?: string; orderId?: string;
   createdAt: number;
 }
-export interface SiteInfo { index: number; address: string; pincode: string; fibreFeasible?: boolean; fibreBasis?: "ops_coverage" | "post_office" | "policy"; checked: boolean }
+export interface SiteInfo { index: number; address: string; pincode: string; fibreFeasible?: boolean; fibreBasis?: "ops_coverage" | "post_office" | "policy"; checked: boolean; preferredWindow?: string; closedWeekdays?: number[] }
 
 export type LeadStatus = "new" | "assigned" | "callback" | "quoted" | "converted" | "closed";
 export interface Lead {
