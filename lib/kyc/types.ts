@@ -48,6 +48,8 @@ export interface KycInput {
   today: string;
   entered: { gstin?: string | null; udyam?: string | null; siteAddress?: string | null };
   claimsUdyam: boolean;
+  /** The signed-in owner or director's own name, when it is worth comparing with the ID (see lib/store/kyc.ts). */
+  holderName?: string | null;
   docs: Partial<Record<Slot, ExtractedDoc>>;
   lookups: {
     gst: (gstin: string) => GstRecord | undefined;
