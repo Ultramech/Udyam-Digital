@@ -93,6 +93,27 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
     } catch (e) { toast.error(e instanceof ApiError && e.code === "DOCUMENT_READER_UNAVAILABLE" ? ((lang === "hi" || lang === "mr") ? "दस्तावेज़ पढ़ने की सेवा अभी उपलब्ध नहीं है। थोड़ी देर बाद कोशिश करें।" : "Document reading isn't available right now. Please try again shortly.") : e instanceof ApiError && e.status === 415 ? ((lang === "hi" || lang === "mr") ? "सिर्फ़ PNG/JPG फोटो या PDF अपलोड करें।" : "Please upload a PNG/JPG photo or a PDF.") : e instanceof ApiError && e.status === 413 ? ((lang === "hi" || lang === "mr") ? "फ़ाइल 5 MB से छोटी होनी चाहिए।" : "The file must be under 5 MB.") : e instanceof ApiError && e.code === "SAME_FILE_AGAIN" ? ((lang === "hi" || lang === "mr") ? "यह वही फ़ाइल है जिसमें पहले समस्या थी — कृपया नई फोटो लें।" : "That's the same file that had a problem before — please take a new photo.") : t("error_generic")); }
     setBusy(false);
   }
+  /** Aadhaar offline e-KYC: ZIP + share phrase, verified on the server against UIDAI's key. Returns true when it was accepted. */
+  async function aadhaar(slot: Slot, f: File, phrase: string): Promise<boolean> {
+    setBusy(true);
+    try {
+      const fd = new FormData(); fd.set("slot", slot); fd.set("file", f); fd.set("phrase", phrase);
+      const res = await fetch(`/api/kyc/${id}/aadhaar`, { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new ApiError(res.status, data.error ?? "ERROR");
+      setK(data.kyc);
+      setQ(await api<QuoteView>("GET", `/api/quote/${id}`));
+      toast.success("Aadhaar verified with UIDAI's digital signature.");
+      return true;
+    } catch (e) {
+      const c = e instanceof ApiError ? e.code : "";
+      toast.error(c === "AADHAAR_WRONG_PHRASE" ? "That share phrase doesn't open the file. Check it and try again."
+        : c === "AADHAAR_SIGNATURE_INVALID" ? "This file's UIDAI signature doesn't check out, so it can't be used. Download a fresh one."
+        : c === "AADHAAR_NOT_A_ZIP" || c === "AADHAAR_NO_XML" || c === "AADHAAR_NOT_UIDAI_XML" || c === "AADHAAR_MALFORMED" ? "That isn't an Aadhaar offline e-KYC file. Use the ZIP from myaadhaar.uidai.gov.in."
+        : c === "FILE_TOO_LARGE" ? "The file is too large (limit 2 MB)." : t("error_generic"));
+      return false;
+    } finally { setBusy(false); }
+  }
   async function attachSet() {
     setBusy(true);
     for (const slot of SLOTS) {
@@ -170,6 +191,7 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
         <section className="space-y-3">
           {SLOTS.filter(visible).map((s) => (
             <DocSlot key={s} slot={s} doc={k.docs[s]} checks={checks} busy={busy} onFile={(f) => upload(s, f)}
+              onAadhaar={s === "signatory_id" || s === "address_proof" ? (f, phrase) => aadhaar(s, f, phrase) : undefined}
               onSample={() => api<{ kyc: KycView; quote: QuoteView }>("POST", `/api/kyc/${id}`, { action: "specimen", applicant: set, slot: s }).then((r) => { setK(r.kyc); setQ(r.quote); }).catch(() => toast.info((lang === "hi" || lang === "mr") ? "इस सेट में यह दस्तावेज़ नहीं है।" : `Sample set ${set} has no document for this slot.`))}
               sampleLabel={`${t("use_sample")} (${set})`} digilockerHref={dl ? `/api/digilocker/start?quoteId=${id}&slot=${s}` : undefined} />
           ))}
