@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Udyam Digital architecture</title>
+<style>
+  html,body{margin:0;background:#fff;font-family:Helvetica,Arial,sans-serif;color:#16110f}
+  .page{width:1680px;padding:28px 36px 20px;box-sizing:border-box}
+  h1{font-size:30px;margin:0;letter-spacing:-.5px} h1 b{color:#E40000}
+  .sub{font-size:15px;color:#5b5552;margin:6px 0 10px}
+  svg{display:block;width:100%;height:auto}
+  .cap{font-size:13px;color:#5b5552;margin-top:6px}
+</style></head><body><div class="page">
+<h1>Udyam Digital · on Airtel SYNC — <b>rules decide, AI explains</b></h1>
+<div class="sub">Next.js app on Vercel. Price, eligibility, KYC verdicts and order state come from deterministic, tested code. Gemini only reads words and pages and writes the explanation — and every number it writes is checked against the engine.</div>
+<figure style="margin:0">
+<svg viewBox="0 0 1610 1000" role="img" aria-label="Architecture: four channels feed a server-only Next.js app on Vercel with four lanes (advisor, KYC, order, ops); external services on the right; Turso data and trust controls at the bottom. Price and eligibility always come from the rules engine.">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b5552"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#E40000"/></marker>
+  </defs>
+  <g font-size="12.5" fill="#16110f">
+
+  <!-- ===== CHANNELS ===== -->
+  <text x="20" y="22" font-size="13" font-weight="700" fill="#5b5552" letter-spacing="1">WHO USES IT</text>
+  <g>
+    <rect x="20" y="40" width="230" height="92" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="35" y="64" font-weight="700" font-size="14">Shop owner's phone</text>
+    <text x="35" y="84">PWA · English, हिंदी, मराठी, தமிழ்</text>
+    <text x="35" y="102">voice in · SMS-OTP login</text>
+    <text x="35" y="120">rewards · referrals · bill compare</text>
+
+    <rect x="20" y="152" width="230" height="74" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="35" y="176" font-weight="700" font-size="14">WhatsApp · Telegram</text>
+    <text x="35" y="196">same advisor + order updates</text>
+    <text x="35" y="214">(signed webhooks)</text>
+
+    <rect x="20" y="246" width="230" height="74" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="35" y="270" font-weight="700" font-size="14">CA / partner / signatory</text>
+    <text x="35" y="290">share link (plan only, no PII)</text>
+    <text x="35" y="308">delegate upload · remote sign</text>
+
+    <rect x="20" y="590" width="230" height="74" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="35" y="614" font-weight="700" font-size="14">Ops staff · field reps</text>
+    <text x="35" y="634">console, role-checked</text>
+    <text x="35" y="652">partner store QR · co-pilot</text>
+  </g>
+  <!-- channel arrows -->
+  <line x1="250" y1="86" x2="318" y2="150" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="258" y="112" font-size="11" fill="#5b5552">chat</text>
+  <line x1="250" y1="189" x2="318" y2="170" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="250" y1="283" x2="318" y2="378" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="262" y="345" font-size="11" fill="#5b5552">uploads</text>
+  <line x1="250" y1="300" x2="318" y2="520" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="256" y="430" font-size="11" fill="#5b5552">views / signs</text>
+  <line x1="250" y1="627" x2="318" y2="682" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ===== SERVER BOUNDARY ===== -->
+  <rect x="322" y="10" width="930" height="772" rx="18" fill="#FBF8F7" stroke="#16110f" stroke-width="1.6" stroke-dasharray="7 5"/>
+  <text x="342" y="34" font-size="13" font-weight="700" fill="#5b5552" letter-spacing="1">VERCEL · NEXT.JS · SERVER-ONLY (keys never reach the browser)</text>
+
+  <!-- Lane 1: advisor loop -->
+  <text x="342" y="66" font-size="15" font-weight="700">1  AI advisor  <tspan fill="#5b5552" font-weight="400" font-size="12.5">must-build 1 · Hindi + regional + English · asks only what's missing</tspan></text>
+  <g>
+    <rect x="342" y="80" width="200" height="110" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="356" y="104" font-weight="700" font-size="14">① Understand</text>
+    <text x="356" y="124">Gemini → structured facts</text>
+    <text x="356" y="142">type, staff, sites, city, GST</text>
+    <text x="356" y="160">JSON schema, range-checked</text>
+    <text x="356" y="178" fill="#5b5552">intents whitelisted</text>
+
+    <rect x="572" y="80" width="210" height="110" rx="12" fill="#FFF1F0" stroke="#E40000" stroke-width="2.2"/>
+    <text x="586" y="104" font-weight="700" font-size="14" fill="#E40000">② Decide · rules engine</text>
+    <text x="586" y="124">catalogue CSV · eligibility</text>
+    <text x="586" y="142">tier · min staff/sites · GSTIN</text>
+    <text x="586" y="160">price + GST · decision trace</text>
+    <text x="586" y="178" font-weight="700" fill="#E40000">single source of truth</text>
+
+    <rect x="812" y="80" width="200" height="110" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="826" y="104" font-weight="700" font-size="14">③ Explain</text>
+    <text x="826" y="124">Gemini words the plan</text>
+    <text x="826" y="142">in his language, from the</text>
+    <text x="826" y="160">engine's result only</text>
+    <text x="826" y="178" fill="#5b5552">why · what would change it</text>
+
+    <rect x="1042" y="80" width="192" height="110" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1056" y="104" font-weight="700" font-size="14">④ Check</text>
+    <text x="1056" y="124">every ₹ and number must</text>
+    <text x="1056" y="142">match the engine — else</text>
+    <text x="1056" y="160">the reply is dropped</text>
+    <text x="1056" y="178" fill="#5b5552">AI down → says so honestly</text>
+  </g>
+  <line x1="542" y1="135" x2="570" y2="135" stroke="#E40000" stroke-width="2" marker-end="url(#r)"/>
+  <line x1="782" y1="135" x2="810" y2="135" stroke="#E40000" stroke-width="2" marker-end="url(#r)"/>
+  <line x1="1012" y1="135" x2="1040" y2="135" stroke="#E40000" stroke-width="2" marker-end="url(#r)"/>
+  <text x="546" y="206" font-size="11" fill="#5b5552">facts</text>
+  <text x="772" y="206" font-size="11" fill="#5b5552">plan + trace</text>
+  <text x="1004" y="206" font-size="11" fill="#5b5552">draft</text>
+
+  <!-- Lane 2: KYC -->
+  <text x="342" y="240" font-size="15" font-weight="700">2  Smart KYC  <tspan fill="#5b5552" font-weight="400" font-size="12.5">must-build 3 · registry first, then only the missing documents</tspan></text>
+  <g>
+    <rect x="342" y="254" width="138" height="96" rx="12" fill="#FFF1F0" stroke="#E40000" stroke-width="1.8"/>
+    <text x="354" y="278" font-weight="700" font-size="13.5" fill="#E40000">DPDP consent</text>
+    <text x="354" y="297">per purpose</text>
+    <text x="354" y="315">marketing off</text>
+    <text x="354" y="333" fill="#5b5552">no consent → 403</text>
+
+    <rect x="496" y="254" width="138" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="508" y="278" font-weight="700" font-size="13.5">Registry lookup</text>
+    <text x="508" y="297">GSTIN mod-36</text>
+    <text x="508" y="315">+ status · Udyam</text>
+    <text x="508" y="333" fill="#5b5552">supplied registries</text>
+
+    <rect x="650" y="254" width="138" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="662" y="278" font-weight="700" font-size="13.5">Missing docs only</text>
+    <text x="662" y="297">upload · DigiLocker</text>
+    <text x="662" y="315">Aadhaar offline ZIP</text>
+    <text x="662" y="333" fill="#5b5552">CA via link</text>
+
+    <rect x="804" y="254" width="138" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="816" y="278" font-weight="700" font-size="13.5">AI reads page</text>
+    <text x="816" y="297">Gemini vision →</text>
+    <text x="816" y="315">fields + legibility</text>
+    <text x="816" y="333" fill="#5b5552">in memory, no image kept</text>
+
+    <rect x="958" y="254" width="138" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="970" y="278" font-weight="700" font-size="13.5">20+ validators</text>
+    <text x="970" y="297">blur · checksum</text>
+    <text x="970" y="315">≤90-day bill · names</text>
+    <text x="970" y="333" fill="#5b5552">cancelled GST</text>
+
+    <rect x="1112" y="254" width="122" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1124" y="278" font-weight="700" font-size="13.5">Verdict</text>
+    <text x="1124" y="297">verified</text>
+    <text x="1124" y="315">re-upload + fix</text>
+    <text x="1124" y="333">review → ops</text>
+  </g>
+  <line x1="480" y1="302" x2="494" y2="302" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="634" y1="302" x2="648" y2="302" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="788" y1="302" x2="802" y2="302" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="942" y1="302" x2="956" y2="302" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="1096" y1="302" x2="1110" y2="302" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <!-- cancelled GST re-quotes through the engine -->
+  <path d="M1027 254 C1027 228 677 232 677 192" fill="none" stroke="#E40000" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#r)"/>
+  <text x="1040" y="222" font-size="11" fill="#E40000" text-anchor="middle" stroke="#FBF8F7" stroke-width="5" paint-order="stroke">cancelled GST → automatic re-quote</text>
+
+  <!-- Lane 3: quote → order -->
+  <text x="342" y="400" font-size="15" font-weight="700">3  Quote → sign → pay → track  <tspan fill="#5b5552" font-weight="400" font-size="12.5">must-builds 2 + 4 · advisor's "Customise &amp; buy" opens the quote</tspan></text>
+  <g>
+    <rect x="342" y="414" width="170" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="354" y="438" font-weight="700" font-size="13.5">Quote</text>
+    <text x="354" y="457">toggle add-ons → engine</text>
+    <text x="354" y="475">re-prices; blocked items</text>
+    <text x="354" y="493" fill="#5b5552">say why · share / PDF</text>
+
+    <rect x="528" y="414" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="540" y="438" font-weight="700" font-size="13.5">Feasibility</text>
+    <text x="540" y="457">pincode (India Post)</text>
+    <text x="540" y="475">+ ops coverage</text>
+    <text x="540" y="493" fill="#5b5552">no fibre → AirFiber</text>
+
+    <rect x="704" y="414" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="716" y="438" font-weight="700" font-size="13.5">e-Sign</text>
+    <text x="716" y="457">order-form PDF</text>
+    <text x="716" y="475">SHA-256 + SMS OTP</text>
+    <text x="716" y="493" fill="#5b5552">bound to the hash</text>
+
+    <rect x="880" y="414" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="892" y="438" font-weight="700" font-size="13.5">Pay</text>
+    <text x="892" y="457">Razorpay order</text>
+    <text x="892" y="475">HMAC + re-read amount</text>
+    <text x="892" y="493" fill="#5b5552">fail → retry</text>
+
+    <rect x="1056" y="414" width="178" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1068" y="438" font-weight="700" font-size="13.5">Order + tracker</text>
+    <text x="1068" y="457">state machine · ETA</text>
+    <text x="1068" y="475">self-booked install slot</text>
+    <text x="1068" y="493" fill="#5b5552">replaces chase calls</text>
+  </g>
+  <line x1="512" y1="462" x2="526" y2="462" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="688" y1="462" x2="702" y2="462" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="864" y1="462" x2="878" y2="462" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="1040" y1="462" x2="1054" y2="462" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <!-- advisor hands off to quote -->
+
+  <!-- Lane 4: ops -->
+  <text x="342" y="566" font-size="15" font-weight="700">4  Ops console  <tspan fill="#5b5552" font-weight="400" font-size="12.5">stretch · back office</tspan></text>
+  <g>
+    <rect x="342" y="580" width="170" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="354" y="604" font-weight="700" font-size="13.5">KYC review queue</text>
+    <text x="354" y="623">score + reasons</text>
+    <text x="354" y="641">approve / correct</text>
+    <text x="354" y="659" fill="#5b5552">masked identifiers</text>
+
+    <rect x="528" y="580" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="540" y="604" font-weight="700" font-size="13.5">Orders board</text>
+    <text x="540" y="623">advance · delay</text>
+    <text x="540" y="641">engineer roster</text>
+    <text x="540" y="659" fill="#5b5552">→ tracker + WhatsApp</text>
+
+    <rect x="704" y="580" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="716" y="604" font-weight="700" font-size="13.5">Leads</text>
+    <text x="716" y="623">propensity score</text>
+    <text x="716" y="641">win-back list</text>
+    <text x="716" y="659" fill="#5b5552">rep co-pilot credit</text>
+
+    <rect x="880" y="580" width="160" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="892" y="604" font-weight="700" font-size="13.5">Insights · playbook</text>
+    <text x="892" y="623">computed from 5,000</text>
+    <text x="892" y="641">leads, ranked by</text>
+    <text x="892" y="659" fill="#5b5552">evidence (not written)</text>
+
+    <rect x="1056" y="580" width="178" height="96" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1068" y="604" font-weight="700" font-size="13.5">Scenario lab · audit</text>
+    <text x="1068" y="623">replay any description</text>
+    <text x="1068" y="641">through the engine</text>
+    <text x="1068" y="659" fill="#5b5552">every action logged</text>
+  </g>
+  <!-- review flows -->
+  <path d="M1173 350 L1173 380 L330 380 L330 610 L340 610" fill="none" stroke="#5b5552" stroke-width="1.4" stroke-dasharray="4 4"/>
+  <polygon points="340,606 348,610 340,614" fill="#5b5552"/>
+  <text x="1168" y="374" font-size="11" fill="#5b5552" text-anchor="end">review cases</text>
+  <path d="M660 580 L660 548 L1145 548 L1145 512" fill="none" stroke="#E40000" stroke-width="1.6" marker-end="url(#r)"/>
+  <text x="900" y="542" font-size="11" fill="#E40000" text-anchor="middle" stroke="#FBF8F7" stroke-width="5" paint-order="stroke">ops advances the same order record → his tracker updates at once</text>
+
+  <!-- data bus -->
+  <line x1="787" y1="676" x2="787" y2="800" stroke="#5b5552" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="796" y="740" font-size="11" fill="#5b5552">every write (typed, zod-validated)</text>
+
+  <!-- ===== EXTERNAL SERVICES ===== -->
+  <text x="1300" y="22" font-size="13" font-weight="700" fill="#5b5552" letter-spacing="1">REAL EXTERNAL SERVICES</text>
+  <g>
+    <rect x="1300" y="40" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="61" font-weight="700" font-size="13.5">Google Gemini</text>
+    <text x="1314" y="79" font-size="12">understand · explain · read pages</text>
+    <text x="1314" y="95" font-size="12">fallback chain · 40 s budget</text>
+    <text x="1314" y="114" font-size="11.5" fill="#E40000">used by ① ③ · KYC read</text>
+    <rect x="1300" y="134" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="155" font-weight="700" font-size="13.5">2Factor.in SMS</text>
+    <text x="1314" y="173" font-size="12">login OTP · signing OTP</text>
+    <text x="1314" y="189" font-size="12">purpose-bound, single use</text>
+    <text x="1314" y="208" font-size="11.5" fill="#E40000">used by sign-in · e-Sign</text>
+    <rect x="1300" y="228" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="249" font-weight="700" font-size="13.5">Sandbox.co.in → DigiLocker</text>
+    <text x="1314" y="267" font-size="12">licensed provider · consent on the</text>
+    <text x="1314" y="283" font-size="12">government screen · + EntityLocker</text>
+    <text x="1314" y="302" font-size="11.5" fill="#E40000">used by KYC: missing docs</text>
+    <rect x="1300" y="322" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="343" font-weight="700" font-size="13.5">UIDAI offline e-KYC</text>
+    <text x="1314" y="361" font-size="12">signed ZIP + share code</text>
+    <text x="1314" y="377" font-size="12">signature verified locally</text>
+    <text x="1314" y="396" font-size="11.5" fill="#E40000">used by KYC: missing docs</text>
+    <rect x="1300" y="416" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="437" font-weight="700" font-size="13.5">India Post pincode API</text>
+    <text x="1314" y="455" font-size="12">real district / post office</text>
+    <text x="1314" y="471" font-size="12">+ ops coverage overrides</text>
+    <text x="1314" y="490" font-size="11.5" fill="#E40000">used by feasibility</text>
+    <rect x="1300" y="510" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="531" font-weight="700" font-size="13.5">Razorpay (test mode)</text>
+    <text x="1314" y="549" font-size="12">checkout · HMAC signature</text>
+    <text x="1314" y="565" font-size="12">amount re-read from Razorpay</text>
+    <text x="1314" y="584" font-size="11.5" fill="#E40000">used by pay</text>
+    <rect x="1300" y="604" width="290" height="84" rx="12" fill="#fff" stroke="#16110f" stroke-width="1.4"/>
+    <text x="1314" y="625" font-weight="700" font-size="13.5">Meta WhatsApp Cloud API</text>
+    <text x="1314" y="643" font-size="12">chat in · updates out</text>
+    <text x="1314" y="659" font-size="12">+ Telegram Bot API · Twilio</text>
+    <text x="1314" y="678" font-size="11.5" fill="#E40000">used by channels · tracker</text>
+    <rect x="1300" y="698" width="290" height="84" rx="12" fill="#F4EFEE" stroke="#16110f" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="1314" y="719" font-weight="700" font-size="13.5">GSTIN / Udyam registries</text>
+    <text x="1314" y="737" font-size="12">case-supplied CSVs</text>
+    <text x="1314" y="753" font-size="12">mocked lookups, as briefed</text>
+    <text x="1314" y="772" font-size="11.5" fill="#E40000">used by KYC: registry</text>
+  </g>
+  <!-- one server-side bus to the services -->
+  <g stroke="#5b5552" stroke-width="1.4" fill="none">
+    <line x1="1252" y1="300" x2="1276" y2="300" marker-end="url(#a)"/>
+    <line x1="1278" y1="82" x2="1278" y2="740"/>
+    <line x1="1278" y1="82" x2="1298" y2="82" marker-end="url(#a)"/>
+    <line x1="1278" y1="176" x2="1298" y2="176" marker-end="url(#a)"/>
+    <line x1="1278" y1="270" x2="1298" y2="270" marker-end="url(#a)"/>
+    <line x1="1278" y1="364" x2="1298" y2="364" marker-end="url(#a)"/>
+    <line x1="1278" y1="458" x2="1298" y2="458" marker-end="url(#a)"/>
+    <line x1="1278" y1="552" x2="1298" y2="552" marker-end="url(#a)"/>
+    <line x1="1278" y1="646" x2="1298" y2="646" marker-end="url(#a)"/>
+    <line x1="1278" y1="740" x2="1298" y2="740" marker-end="url(#a)"/>
+  </g>
+  <text x="1266" y="420" font-size="11" fill="#5b5552" text-anchor="middle" transform="rotate(-90 1266 420)">HTTPS · server-side</text>
+
+  <!-- ===== DATA ===== -->
+  <rect x="342" y="804" width="560" height="88" rx="14" fill="#fff" stroke="#16110f" stroke-width="1.6"/>
+  <text x="358" y="830" font-weight="700" font-size="14.5">Turso (libSQL) — the system of record</text>
+  <text x="358" y="851">accounts · quotes · orders · KYC fields (never images) · consent receipts</text>
+  <text x="358" y="871">audit log · support · rewards — one record read by owner, WhatsApp and ops</text>
+  <rect x="922" y="804" width="312" height="88" rx="14" fill="#F4EFEE" stroke="#16110f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="938" y="830" font-weight="700" font-size="14.5">Supplied data (read-only)</text>
+  <text x="938" y="851">product_catalogue.csv · smb_leads.csv</text>
+  <text x="938" y="871">registries · KYC specimens K01–K12</text>
+
+  <!-- ===== TRUST LAYER ===== -->
+  <rect x="20" y="912" width="1570" height="76" rx="14" fill="#16110f"/>
+  <text x="40" y="940" font-weight="700" font-size="14.5" fill="#fff">Trust layer, enforced in server code</text>
+  <text x="40" y="964" fill="#fff" font-size="13">Consent gate per purpose (KYC · service · DigiLocker · marketing off) · identifiers masked in UI and logs · advisor AI never gets phone or GSTIN; pages reach the vision model only after KYC consent · RBAC + audit</text>
+  <text x="40" y="982" fill="#fff" font-size="13">Signed webhooks (Meta, Twilio, Telegram) · OTP limits (30 s cooldown, 4/h, 5 tries, single use) · fail-closed: a missing key refuses, nothing is faked · one-tap export and delete-my-data</text>
+  </g>
+</svg>
+<figcaption class="cap">Red marks the path that decides money: the rules engine is the only source of price and eligibility; Gemini's facts go in, its draft is checked on the way out. Dashed grey boxes are the case's supplied data (GSTIN/Udyam lookups are mocked, as the brief asks). Today = 2026-07-15 for all date checks.</figcaption>
+</figure>
+</div></body></html>

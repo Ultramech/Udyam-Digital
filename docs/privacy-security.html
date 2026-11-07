@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Privacy and security note</title>
+<style>
+  @page{size:A4;margin:11mm 12mm}
+  html,body{margin:0;font-family:Helvetica,Arial,sans-serif;color:#16110f;font-size:8.6pt;line-height:1.36}
+  h1{font-size:15pt;margin:0 0 1mm;letter-spacing:-.2px} h1 b{color:#E40000}
+  .lede{color:#4a4441;margin:0 0 2.5mm;font-size:8.4pt}
+  h2{font-size:9.6pt;margin:3mm 0 1.2mm;color:#E40000;text-transform:uppercase;letter-spacing:.6px}
+  table{width:100%;border-collapse:collapse;font-size:8pt}
+  th{text-align:left;background:#16110f;color:#fff;padding:1.3mm 1.6mm;font-weight:700}
+  td{padding:1.1mm 1.6mm;border-bottom:.3mm solid #e6dcda;vertical-align:top}
+  tr:nth-child(even) td{background:#fbf8f7}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:0 6mm}
+  ul{margin:0;padding-left:4mm} li{margin:0 0 1mm}
+  b.k{color:#16110f}
+  .gap{background:#fff4f3;border:.3mm solid #f2c9c6;border-radius:2mm;padding:2mm 2.6mm;margin-top:2.5mm;font-size:8pt}
+  .foot{margin-top:2mm;color:#6b6460;font-size:7.4pt}
+</style></head><body>
+<h1>Udyam Digital — <b>privacy &amp; security note</b></h1>
+<p class="lede">A privacy-first prototype built around consent, purpose limitation and data minimisation, in the spirit of India's DPDP Act, 2023. It does
+<b>not</b> claim legal compliance or certification — that needs a formal review. All business records here are synthetic (the case's dataset); the live demo used the team's own phone and Aadhaar with consent.</p>
+
+<h2>What we collect, why, and for how long</h2>
+<table>
+<tr><th style="width:24%">Data</th><th style="width:31%">Purpose</th><th style="width:15%">Required?</th><th>Kept</th></tr>
+<tr><td>Phone number (SMS OTP)</td><td>Account, quote, order, signing, updates</td><td>To buy</td><td>Contract term; erased on delete</td></tr>
+<tr><td>Business profile, site address, pincode</td><td>Plan, feasibility (India Post), installation</td><td>To buy</td><td>Contract term</td></tr>
+<tr><td>GSTIN / Udyam number</td><td>Registry lookup first, so fewer uploads</td><td>If declared</td><td>Masked fields for contract + statutory period</td></tr>
+<tr><td>Uploaded documents</td><td>KYC: read fields, check legibility</td><td>Only what's missing</td><td><b>File never stored</b> — read in memory; extracted fields + SHA-256 only</td></tr>
+<tr><td>DigiLocker / Aadhaar offline e-KYC</td><td>Fetch instead of upload</td><td>Optional, own consent</td><td>Name, address, state, pincode, last 4 digits, birth year — nothing else; token never stored</td></tr>
+<tr><td>Bill photo</td><td>Compare current spend</td><td>Optional</td><td>Photo never stored; the amount only</td></tr>
+<tr><td>Support requests, chats</td><td>Answer questions; context for an agent</td><td>Optional</td><td>Erased on delete; staff see masked context</td></tr>
+<tr><td>Offers &amp; product updates</td><td>Marketing</td><td>Optional, <b>off by default</b></td><td>Until withdrawn</td></tr>
+</table>
+
+<div class="cols">
+<div>
+<h2>Consent and the owner's rights</h2>
+<ul>
+<li><b class="k">Consent before collection, enforced in code.</b> KYC APIs return 403 without a recorded KYC consent; DigiLocker has its own optional purpose; WhatsApp/Telegram updates need the "service" purpose. Each receipt stores id, notice version, purposes and time.</li>
+<li><b class="k">Purpose-bound codes.</b> A login OTP can never sign an order; a signing code is bound to the SHA-256 of the exact PDF shown.</li>
+<li><b class="k">Minimal sharing.</b> Share links show plan and price only — no phone, GSTIN or address. A CA uploads through a delegate link without an account and sees nothing else.</li>
+<li><b class="k">Access, export, erase.</b> Account → "Your data &amp; privacy": download everything as JSON, or delete the account in one tap (profile, businesses, chats, plans, KYC, consent, support). Orders are contract records and are kept anonymised.</li>
+</ul>
+<h2>AI boundaries</h2>
+<ul>
+<li>Gemini (paid API, server-side) gets the owner's words and, after KYC consent, the document pages — never the phone number. Prompts aren't used for model training under Google's paid-tier terms.</li>
+<li>AI output is untrusted input: facts are schema- and range-checked, intents whitelisted, and any number the rules engine didn't produce gets the reply discarded. Price, eligibility and KYC verdicts are deterministic code.</li>
+</ul>
+</div>
+<div>
+<h2>Security controls</h2>
+<ul>
+<li><b class="k">Fail closed.</b> No key → the service refuses (503) instead of pretending: OTP, payments, document reading, channels, DigiLocker. Test shortcuts exist only behind <code>ALLOW_TEST_VERIFY=1</code>, never in production.</li>
+<li><b class="k">Verifiable money and signatures.</b> Razorpay signatures HMAC-checked and the payment re-read (order, exact amount, status). Signed order forms carry the PDF hash, time, masked phone and IP.</li>
+<li><b class="k">Authenticated webhooks.</b> Meta <code>X-Hub-Signature-256</code>, Twilio signature, Telegram secret token — constant-time compare, retries de-duplicated.</li>
+<li><b class="k">Access control.</b> Ops roles enforced server-side and audit-logged; forged staff cookies are refused; tracking links are unguessable tokens; sales credit only from a signed-in staff session.</li>
+<li><b class="k">Abuse limits.</b> OTP: 30 s cooldown, 4 sends/hour, 5 attempts, 5-minute expiry, single use. Chat: 12 messages/minute.</li>
+<li><b class="k">Masking.</b> GSTIN, Udyam, phone and ID numbers masked in UI and logs; logs never hold message text, phone numbers or tokens.</li>
+<li><b class="k">Hosting.</b> Vercel functions pinned to Mumbai (bom1); keys live only in server environment variables; database is Turso (libSQL).</li>
+</ul>
+</div>
+</div>
+
+<div class="gap"><b>Known gaps (honest list) before production:</b> field-level encryption at rest for KYC fields and phone numbers (KMS); an automated retention/purge job (today's daily cron only sends reminders and flags stuck orders); a formal DPIA and DPDP legal review; IP-level rate limiting at the edge; Aadhaar eSign through a licensed ASP (today: IT-Act e-signature, OTP-bound and hashed); live GST/Udyam APIs instead of the supplied registries.</div>
+<p class="foot">Udyam Digital · YTL Hackathon 2026, Enterprise Track A (Airtel SYNC) · code: github.com/Ultramech/Udyam-Digital · live: udyam-digital-kappa.vercel.app</p>
+</body></html>

@@ -9,6 +9,15 @@ All business data is synthetic (supplied hackathon pack). Phone OTP (2Factor SMS
 fibre feasibility (India Post) and installation slots are **real**; prices are **indicative** (catalogue minimum). The Demo drawer shows
 exactly which services are live right now.
 
+## Submission (YTL Hackathon 2026 · Enterprise Track A)
+| Deliverable | Where |
+|---|---|
+| Live prototype | https://udyam-digital-kappa.vercel.app (customer app on a phone; ops console at `/ops`, "Demo Admin") |
+| Demo video (3 min) | submitted on Unstop · shot end-to-end on production with a real phone number, DigiLocker, SMS e-sign and Razorpay test mode |
+| Architecture diagram | [`docs/architecture.png`](docs/architecture.png) · [PDF](docs/architecture.pdf) · notes in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Privacy & security note (1 page) | [`docs/privacy-security.pdf`](docs/privacy-security.pdf) · text in [`docs/PRIVACY_AND_SECURITY.md`](docs/PRIVACY_AND_SECURITY.md) |
+| Business case (≤ 10 slides) | submitted on Unstop |
+
 ## Run it
 > **Evaluators:** `npm install && npm run build && npm start` works on a fresh clone with no cloud accounts (local database, auto-migrated). Vercel + Turso: see **docs/DEPLOYMENT.md**.
 
@@ -34,9 +43,9 @@ Without a key, that feature refuses honestly (the status panel says why); nothin
 
 ## Verify it
 ```bash
-npm test                     # 140+ unit tests: rules engine, 5,000-lead backtest, KYC answer key, advisor conversation, channels
+npm test                     # 270+ unit tests: rules engine, 5,000-lead backtest, KYC answer key, advisor conversation, channels
 npm run typecheck && npm run build
-npm run test:e2e             # 18 browser journeys at phone size (needs the dev server; BASE=… to target another port)
+npm run test:e2e             # 37 browser tests (journeys at phone size, guards, ops) (needs the dev server; BASE=… to target another port)
 NEXT_DIST_DIR=.next-test npx next dev -p 3200   # a second dev server beside yours, e.g. for e2e
 ALLOW_TEST_VERIFY=1 npm run dev   # then, in another terminal:
 npm run check:journey        # live end-to-end API checks across the demo scenarios (uses the test-only OTP/payment seams)
