@@ -89,20 +89,16 @@ function Catalogue() {
     api<{ products: Item[] }>("GET", `/api/catalogue${quoteId ? `?quote=${quoteId}` : ""}`).then((r) => setItems(r.products)).catch(() => setItems([]));
   }, [quoteId]);
   useEffect(load, [load]);
-  // "My location" defaults to the tier of the owner's own business city when we know it
+  // "My location" offers the owner's own city by name; it starts on "Any city" so nothing is hidden until they choose
   useEffect(() => {
-    api<{ businesses: { city: string | null }[] }>("GET", "/api/me").then((m) => {
-      const c = m.businesses[0]?.city ?? null;
-      const tier = c ? cityTier(c) : null;
-      setCity(c);
-      if (tier) setWhere(String(tier) as Where);
-    }).catch(() => {});
+    api<{ businesses: { city: string | null }[] }>("GET", "/api/me").then((m) => setCity(m.businesses[0]?.city ?? null)).catch(() => {});
   }, []);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const max = PRICE_BANDS.find((b) => b.id === band)!.max;
-    const tagTest = TAGS.find((x) => x.id === tag)?.test;
+    // "Only what I can get" (with a plan open): what the rules engine says this business can add, or already has
+    const tagTest = tag === "mine" ? (p: Item) => p.status === "addable" || p.status === "included" : TAGS.find((x) => x.id === tag)?.test;
     const list = (items ?? []).filter((p) =>
       (cat === "all" || p.category === cat) && p.priceMin <= max && (where === "any" || p.tiers.includes(Number(where))) && (!tagTest || tagTest(p)) &&
       (!needle || [plainName(p.id, "en"), plainName(p.id, "hi"), plainBenefit(p.id, "en"), plainBenefit(p.id, lang), p.category].some((s) => s.toLowerCase().includes(needle))));
@@ -181,7 +177,7 @@ function Catalogue() {
               options={[{ v: "rec", l: H("Sort: Recommended", "क्रम: सुझाए गए") }, { v: "low", l: H("Sort: Price low to high", "क्रम: कम से ज़्यादा") }, { v: "high", l: H("Sort: Price high to low", "क्रम: ज़्यादा से कम") }]} />
           </div>
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label={H("Filter by tag", "टैग से छाँटें")}>
-            {[{ id: "all", en: "All", hi: "सभी", kind: "all" as const }, ...TAGS].map((x, i, arr) => (
+            {[{ id: "all", en: "All", hi: "सभी", kind: "all" as const }, ...(quoteId ? [{ id: "mine", en: "Only what I can get", hi: "सिर्फ़ जो मुझे मिल सकता है", kind: "all" as const }] : []), ...TAGS].map((x, i, arr) => (
               <span key={x.id} className="contents">
                 {i > 0 && arr[i - 1].kind !== x.kind && <span className="my-1.5 w-px shrink-0 bg-border" aria-hidden />}
                 <button type="button" onClick={() => setTag(x.id)} aria-pressed={tag === x.id}
@@ -276,7 +272,7 @@ function ServiceRow({ p, lang, busy, comparing, picked, onPick, onAdd }: { p: It
   let action;
   if (comparing) action = <button type="button" onClick={onPick} aria-pressed={picked} aria-label={H(`Compare ${name}`, `${name} की तुलना`)} className={cn(actionCls, picked ? "border-primary bg-primary text-primary-foreground" : "border-primary text-primary hover:bg-accent")}>{picked ? <Check className="size-4" /> : <Plus className="size-4" />}</button>;
   else if (p.status === "included") action = <span className={cn(actionCls, "border-success bg-success-soft text-success")} title={H("In your plan", "आपके प्लान में")}><Check className="size-4" aria-label={H("In your plan", "आपके प्लान में")} /></span>;
-  else if (onAdd) action = <button type="button" onClick={onAdd} disabled={busy} aria-label={H(`Add ${name} to my plan`, `${name} प्लान में जोड़ें`)} className={cn(actionCls, "border-primary text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50")}><Plus className="size-4" /></button>;
+  else if (onAdd) action = <button type="button" onClick={onAdd} disabled={busy} aria-label={H(`Add to my plan: ${name}`, `प्लान में जोड़ें: ${name}`)} className={cn(actionCls, "border-primary text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50")}><Plus className="size-4" /></button>;
   else if (!off) action = <Link href={advisorHref(true, H(`I want ${name.split(" (")[0]}`, `मुझे ${name.split(" (")[0]} चाहिए`))} aria-label={H(`Get ${name}`, `${name} लें`)} className={cn(actionCls, "border-primary text-primary hover:bg-primary hover:text-primary-foreground")}><Plus className="size-4" /></Link>;
 
   return (
@@ -295,6 +291,7 @@ function ServiceRow({ p, lang, busy, comparing, picked, onPick, onAdd }: { p: It
       </div>
       <div className="pl-[3.375rem]">
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+          {p.status === "included" && <span className="inline-flex items-center gap-0.5 rounded-full bg-success px-2 py-0.5 text-[0.625rem] font-bold text-white"><Check className="size-3" />{H("In plan", "प्लान में")}</span>}
           {[TAGS.find((x) => x.kind === "who" && x.test(p)), ...TAGS.filter((x) => (x.id === "free" || x.id === "fast") && x.test(p))].filter(Boolean).map((x) => (
             <span key={x!.id} className={cn("rounded-full px-2 py-0.5 text-[0.625rem] font-bold", x!.kind === "who" ? "bg-accent text-primary" : "bg-success-soft text-success")}>{hi ? x!.hi : x!.en}</span>
           ))}

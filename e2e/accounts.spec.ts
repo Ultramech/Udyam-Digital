@@ -68,30 +68,44 @@ test.describe("Customer account", () => {
   test("signed in: edit profile, add another business + location, see devices, sign out → locked again", async ({ page }) => {
     await signInAndSetup(page);
     await page.goto("/account");
-    await page.getByText("My businesses", { exact: true }).click();
-    await expect(page.getByText("Sharma Medical Store")).toBeVisible(); // created by setup
-    await page.getByText("Profile", { exact: true }).click();
-    await page.getByLabel("Your name").fill("Rakesh K Sharma");
-    await page.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(page.getByText("Saved")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Sharma Medical Store/ })).toBeVisible(); // business header, created by setup
     await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Account" })).toHaveAttribute("aria-current", "page"); // the Account tab is the current place
 
-    await page.getByRole("button", { name: "Add", exact: true }).first().click();
-    await page.getByLabel("Business name").fill("Sharma Wellness Pharmacy");
-    await page.getByLabel("Business type").fill("pharmacy");
-    await page.getByLabel("City").fill("Indore");
-    await page.getByLabel("Staff").fill("2");
-    await page.getByRole("button", { name: "Save business" }).click();
-    await expect(page.getByText("Sharma Wellness Pharmacy")).toBeVisible();
+    // Business profile tile → edit name
+    await page.getByRole("button", { name: "Business profile" }).click();
+    const sheet = page.getByRole("dialog");
+    await sheet.getByLabel("Your name").fill("Rakesh K Sharma");
+    await sheet.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("Saved")).toBeVisible();
 
-    await page.getByText("Signed-in devices", { exact: true }).click();
-    await expect(page.getByText("This device")).toBeVisible();
+    // from there to businesses & locations → add another business
+    await sheet.getByRole("button", { name: "Businesses & locations" }).click();
+    await expect(sheet.getByText("Sharma Medical Store")).toBeVisible();
+    await sheet.getByRole("button", { name: "Add business" }).click();
+    await sheet.getByLabel("Business name").fill("Sharma Wellness Pharmacy");
+    await sheet.getByLabel("Business type").fill("pharmacy");
+    await sheet.getByLabel("City").fill("Indore");
+    await sheet.getByLabel("Staff").fill("2");
+    await sheet.getByRole("button", { name: "Save business" }).click();
+    await expect(sheet.getByText("Sharma Wellness Pharmacy")).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    // Team & access tile → signed-in devices
+    await page.getByRole("button", { name: "Team & access" }).click();
+    await expect(page.getByRole("dialog").getByText("This device")).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    // dark mode switch applies to the whole app
+    await page.getByRole("switch", { name: "Dark mode" }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.getByRole("switch", { name: "Dark mode" }).click();
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
     const exp = await page.request.get("/api/me/export");
     expect(exp.headers()["content-disposition"]).toContain("attachment");
     expect((await exp.json()).businesses.map((b: { name: string }) => b.name)).toEqual(expect.arrayContaining(["Sharma Medical Store", "Sharma Wellness Pharmacy"]));
     await noSideScroll(page);
 
-    await page.getByRole("button", { name: "Sign out" }).first().click();
+    await page.getByRole("button", { name: "Log out" }).click();
     await expect(page).toHaveURL(/\/login/);
     expect((await page.request.get("/api/me")).status()).toBe(401);
   });

@@ -9,11 +9,12 @@ import { join, relative } from "node:path";
 import { needsAccount } from "../lib/accounts/routes";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
-const walk = (d: string): string[] => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
+// forward slashes everywhere, so the route table is the same on Windows as on macOS/Linux
+const walk = (d: string): string[] => readdirSync(d).flatMap((f) => { const p = join(d, f).replace(/\\/g, "/"); return statSync(p).isDirectory() ? walk(p) : [p]; });
 
 // ---- route table from the filesystem ----
 const files = walk("app");
-const toRoute = (f: string) => "/" + relative("app", f).replace(/\/?(page|route)\.tsx?$/, "").replace(/\\/g, "/");
+const toRoute = (f: string) => "/" + relative("app", f).replace(/\\/g, "/").replace(/\/?(page|route)\.tsx?$/, "");
 const pages = files.filter((f) => /\/page\.tsx$/.test(f) || f === "app/page.tsx").map(toRoute).map((r) => (r === "/" ? "/" : r.replace(/\/$/, "")));
 const apis = files.filter((f) => /\/route\.ts$/.test(f)).map(toRoute);
 const all = [...pages, ...apis];

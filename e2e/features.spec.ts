@@ -14,15 +14,24 @@ test.describe("Catalogue (customer)", () => {
   test("browse all 25, search, filter by category, no sideways scroll", async ({ page }) => {
     await signInAndSetup(page);
     await page.goto("/catalogue");
-    await expect(page.getByText("25 services", { exact: true })).toBeVisible();
+    const count = page.locator("#all-h");
+    await expect(count).toContainText("(25)");
+    // the list starts short and opens fully on request
+    await expect(page.locator("#all-services li")).toHaveCount(6);
+    await page.getByRole("button", { name: /Show all 25 services/ }).click();
+    await expect(page.locator("#all-services li")).toHaveCount(25);
     await page.getByRole("textbox", { name: "Search" }).fill("cctv");
     // the camera itself, plus Fixed IP whose benefit is "For CCTV viewing" — search covers benefits, not just names
-    await expect(page.getByText(/^\d+ services?$/)).toHaveText("2 services");
+    await expect(count).toContainText("(2)");
     await expect(page.getByText("Cloud CCTV camera")).toBeVisible();
     await expect(page.getByText("Fixed IP address")).toBeVisible();
     await page.getByRole("textbox", { name: "Search" }).fill("");
-    await page.getByRole("button", { name: "Security" }).click();
-    await expect(page.getByText(/^\d+ services?$/)).toHaveText("3 services");
+    await page.getByRole("button", { name: "Security", exact: true }).click();
+    await expect(count).toContainText("(3)");
+    // tags filter on catalogue facts: every "Free setup" row really has no setup fee
+    await page.getByRole("button", { name: "All", exact: true }).first().click();
+    await page.getByRole("group", { name: "Filter by tag" }).getByRole("button", { name: "Free setup" }).click();
+    await expect(count).toContainText("(13)"); // the catalogue has 13 products with setup = 0
     await noSideScroll(page);
   });
 
@@ -36,8 +45,8 @@ test.describe("Catalogue (customer)", () => {
     await page.getByRole("textbox", { name: "Search" }).fill("bulk sms");
     await expect(page.getByText(/needs a GST number/)).toBeVisible();
     await page.getByRole("textbox", { name: "Search" }).fill("");
-    await page.getByRole("switch").click(); // only what I can get
-    const add = page.getByRole("button", { name: "Add to my plan" }).first();
+    await page.getByRole("button", { name: "Only what I can get" }).click();
+    const add = page.getByRole("button", { name: /^Add to my plan:/ }).first();
     await add.click();
     await expect(page.getByText("Added to your plan")).toBeVisible();
     const view = await (await request.get(`/api/quote/${qid}`)).json();
