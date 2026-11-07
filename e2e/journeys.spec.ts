@@ -27,6 +27,15 @@ test.describe("Customer journey (phone)", () => {
     await noSideScroll(page);
   });
 
+  test("welcome slider advances by itself, loops, and uses the supplied logo", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1, name: /one place/ })).toBeVisible({ timeout: 10000 });
+    const logo = page.locator('img[src*="logo.png"]').first();
+    await expect(logo).toBeVisible();
+    expect(await logo.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+    for (const n of ["2", "3", "1"]) await expect(page.getByRole("tab", { name: n })).toHaveAttribute("aria-selected", "true", { timeout: 9000 });
+  });
+
   test("signed out: every customer page sends you to sign in first, and comes back after", async ({ page }) => {
     for (const path of ["/advisor", "/catalogue", "/quote/QT-AAAAAA", "/support", "/account", "/track/UD-AAAAAA?t=x"]) {
       await page.goto(path);

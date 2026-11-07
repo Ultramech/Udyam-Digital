@@ -2,14 +2,14 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Cloud, FileCheck2, LayoutGrid, Languages, Receipt, ScanSearch, ShieldCheck, Sparkles, Truck, Wifi, type LucideIcon } from "lucide-react";
+import { ArrowRight, Check, Cloud, FileCheck2, LayoutGrid, Languages, Receipt, ScanSearch, ShieldCheck, Sparkles, Truck, Wifi, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitch } from "@/components/customer/app-nav";
-import { ShopIllustration } from "@/components/landing/shop-illustration";
 import { Mark } from "@/components/brand";
 import { cn } from "@/lib/utils";
 import { AuthScreen, Wordmark } from "./parts";
+import { ChatScene, ConnectScene, TrackScene } from "./scenes";
 
 const SEEN = "ud_splash_seen";
 const SPLASH_MS = 2200;
@@ -65,33 +65,77 @@ function Splash({ onSkip, live }: { onSkip: () => void; live: boolean }) {
   );
 }
 
-interface Slide { title: [string, string, string]; sub: string; subHi: string; titleHi: [string, string, string]; items: { icon: LucideIcon; en: string; hi: string }[] }
+const SLIDE_MS = 4800;
+
+interface Item { icon: LucideIcon; en: string; hi: string }
+interface Slide { title: [string, string, string]; titleHi: [string, string, string]; sub: string; subHi: string; items: Item[]; layout: "grid" | "list" | "steps" }
 const SLIDES: Slide[] = [
   {
+    layout: "grid",
     title: ["All your business", "connectivity in", "one place."], titleHi: ["आपके बिज़नेस की", "पूरी कनेक्टिविटी", "एक जगह।"],
-    sub: "Internet, calling, security and more — tailored for your business.", subHi: "इंटरनेट, कॉलिंग, सुरक्षा और बहुत कुछ — आपके बिज़नेस के हिसाब से।",
+    sub: "Internet, calling, security and more, tailored for your business.", subHi: "इंटरनेट, कॉलिंग, सुरक्षा और बहुत कुछ, आपके बिज़नेस के हिसाब से।",
     items: [
-      { icon: Wifi, en: "High-speed internet & calling", hi: "हाई-स्पीड इंटरनेट और कॉलिंग" }, { icon: ShieldCheck, en: "Secure your business", hi: "अपने बिज़नेस को सुरक्षित रखें" },
-      { icon: Cloud, en: "Cloud & productivity tools", hi: "क्लाउड और प्रोडक्टिविटी टूल्स" }, { icon: LayoutGrid, en: "AI-powered recommendations", hi: "AI से सही सुझाव" },
+      { icon: Wifi, en: "High-speed internet & calling", hi: "हाई-स्पीड इंटरनेट और कॉलिंग" }, { icon: ShieldCheck, en: "Secure your business", hi: "बिज़नेस की सुरक्षा" },
+      { icon: Cloud, en: "Cloud & productivity tools", hi: "क्लाउड और प्रोडक्टिविटी" }, { icon: LayoutGrid, en: "AI-powered recommendations", hi: "AI से सही सुझाव" },
     ],
   },
   {
+    layout: "list",
     title: ["One clear price,", "in your own", "language."], titleHi: ["एक साफ़ कीमत,", "आपकी अपनी", "भाषा में।"],
-    sub: "Tell us about your business in Hindi, Marathi, Tamil or English. No product codes, no jargon.", subHi: "अपने बिज़नेस के बारे में हिन्दी, मराठी, तमिल या अंग्रेज़ी में बताइए। कोई प्रोडक्ट कोड या मुश्किल शब्द नहीं।",
+    sub: "Tell us about your business in Hindi, Marathi, Tamil or English.", subHi: "अपने बिज़नेस के बारे में हिन्दी, मराठी, तमिल या अंग्रेज़ी में बताइए।",
     items: [
       { icon: Languages, en: "Chat in your language", hi: "अपनी भाषा में बात करें" }, { icon: Sparkles, en: "A plan picked for your business", hi: "आपके बिज़नेस के लिए चुना प्लान" },
-      { icon: Receipt, en: "One monthly price, GST shown", hi: "एक मासिक कीमत, GST अलग दिखता है" }, { icon: LayoutGrid, en: "Add or remove items any time", hi: "जब चाहें आइटम जोड़ें या हटाएँ" },
+      { icon: Receipt, en: "One monthly price, GST shown", hi: "एक मासिक कीमत, GST अलग दिखता है" },
     ],
   },
   {
-    title: ["Buy, sign and", "track — all on", "your phone."], titleHi: ["फ़ोन पर ही", "खरीदें, साइन करें", "और ट्रैक करें।"],
+    layout: "steps",
+    title: ["Buy, sign and", "track, all on", "your phone."], titleHi: ["फ़ोन पर ही", "खरीदें, साइन करें", "और ट्रैक करें।"],
     sub: "We look up your GST and Udyam first, then ask only for what is missing.", subHi: "हम पहले आपका GST और उद्यम देखते हैं, फिर सिर्फ़ वही माँगते हैं जो कम है।",
     items: [
       { icon: ScanSearch, en: "Instant GST & Udyam lookup", hi: "तुरंत GST और उद्यम जाँच" }, { icon: FileCheck2, en: "Upload documents, we read them", hi: "दस्तावेज़ अपलोड करें, हम पढ़ लेंगे" },
-      { icon: ShieldCheck, en: "Sign with a code, pay securely", hi: "कोड से साइन करें, सुरक्षित भुगतान" }, { icon: Truck, en: "Track installation, no chase calls", hi: "इंस्टॉलेशन ट्रैक करें, कॉल की ज़रूरत नहीं" },
+      { icon: ShieldCheck, en: "Sign with a code, pay securely", hi: "कोड से साइन, सुरक्षित भुगतान" }, { icon: Truck, en: "Track the installation", hi: "इंस्टॉलेशन ट्रैक करें" },
     ],
   },
 ];
+
+/** Same facts, three different layouts, so the slides don't read as one card repeated. */
+function Items({ slide, hi }: { slide: Slide; hi: boolean }) {
+  const text = (it: Item) => (hi ? it.hi : it.en);
+  if (slide.layout === "grid") {
+    return (
+      <ul className="grid grid-cols-2 gap-2.5">
+        {slide.items.map((it) => (
+          <li key={it.en} className="flex flex-col gap-2 rounded-2xl border border-white bg-white/80 p-3 shadow-card">
+            <span className="grid size-9 place-items-center rounded-xl bg-accent text-primary"><it.icon className="size-5" aria-hidden /></span>
+            <span className="text-[0.8125rem] font-semibold leading-snug">{text(it)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (slide.layout === "list") {
+    return (
+      <ul className="space-y-2.5">
+        {slide.items.map((it) => (
+          <li key={it.en} className="flex items-center gap-3 rounded-2xl bg-white/80 px-3.5 py-3 text-[0.9375rem] font-semibold shadow-card">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><it.icon className="size-4" aria-hidden /></span>{text(it)}
+            <Check className="ml-auto size-4 shrink-0 text-success" aria-hidden />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <ol className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+      {slide.items.map((it, n) => (
+        <li key={it.en} className="flex items-center gap-2.5 text-[0.8125rem] font-semibold leading-snug">
+          <span className="num grid size-7 shrink-0 place-items-center rounded-full bg-foreground text-xs font-bold text-background">{n + 1}</span>{text(it)}
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 function Welcome() {
   const { lang } = useI18n();
@@ -99,8 +143,33 @@ function Welcome() {
   const H = (en: string, h: string) => (hi ? h : en);
   const router = useRouter();
   const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [still, setStill] = useState(false); // prefers-reduced-motion: no auto-advance
   const rail = useRef<HTMLDivElement>(null);
-  const goTo = (n: number) => { const el = rail.current; if (el) el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" }); };
+  const goTo = (n: number) => { const el = rail.current; if (el) el.scrollTo({ left: n * el.clientWidth, behavior: still ? "auto" : "smooth" }); };
+
+  useEffect(() => {
+    const q = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setStill(q.matches);
+    const t = setTimeout(sync, 0);
+    q.addEventListener("change", sync);
+    return () => { clearTimeout(t); q.removeEventListener("change", sync); };
+  }, []);
+  // Auto-advance. Any touch, hover or focus pauses it; changing slide (by hand or by timer) restarts the clock.
+  useEffect(() => {
+    if (paused || still) return;
+    const t = setTimeout(() => goTo((i + 1) % SLIDES.length), SLIDE_MS);
+    return () => clearTimeout(t);
+  }, [i, paused, still]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const scenes = [
+    <ConnectScene key="c" label={H("Internet, calling, security and cloud around the Airtel mark", "Airtel मार्क के चारों ओर इंटरनेट, कॉलिंग, सुरक्षा और क्लाउड")} />,
+    <ChatScene key="t" label={H("A Hindi chat with the AI advisor that ends in a plan", "AI सलाहकार से हिन्दी चैट, जो प्लान पर खत्म होती है")}
+      user="मेरी दुकान इंदौर में है, 3 लोग हैं" plan="Dukaan Digital" price={H("One monthly price, GST shown", "एक मासिक कीमत, GST अलग")} />,
+    <TrackScene key="k" label={H("An order tracker: documents verified, signed, installation in progress", "ऑर्डर ट्रैकर: दस्तावेज़ वेरिफाई, साइन, इंस्टॉलेशन जारी")}
+      rows={[H("Documents verified", "दस्तावेज़ वेरिफाई"), H("Order signed", "ऑर्डर साइन"), H("Installation", "इंस्टॉलेशन")]} eta={H("Engineer on the way", "इंजीनियर रास्ते में")} />,
+  ];
+
   return (
     <AuthScreen className="pb-6">
       <div className="flex items-center justify-between">
@@ -110,36 +179,36 @@ function Welcome() {
       </div>
 
       <div ref={rail} onScroll={(e) => { const el = e.currentTarget; setI(Math.round(el.scrollLeft / el.clientWidth)); }}
-        className="-mx-6 mt-6 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)} onPointerDown={() => setPaused(true)} onPointerUp={() => setPaused(false)}
+        onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
+        className="-mx-6 mt-4 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {SLIDES.map((s, n) => (
-          <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col justify-center px-6">
-            <h1 className="text-[2rem] font-extrabold leading-[1.1] tracking-tight">
-              {(hi ? s.titleHi : s.title).map((l, k, a) => <span key={k} className={cn("block", k === a.length - 1 && "text-primary")}>{l}</span>)}
-            </h1>
-            <p className="mt-3 text-[1.0625rem] leading-snug text-foreground/80">{hi ? s.subHi : s.sub}</p>
-            <div className="mx-auto my-4 w-full max-w-[19rem]"><ShopIllustration label={H("An Airtel Business shop", "Airtel Business की दुकान")} /></div>
-            <ul className="space-y-2.5">
-              {s.items.map(({ icon: Icon, en, hi: h }) => (
-                <li key={en} className="flex items-center gap-3 text-[0.9375rem] font-medium">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-primary"><Icon className="size-[1.125rem]" aria-hidden /></span>{hi ? h : en}
-                </li>
-              ))}
-            </ul>
+          <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col justify-start gap-4 px-6 pt-2">
+            {scenes[n]}
+            <div>
+              <h1 className="text-[1.75rem] font-extrabold leading-[1.1] tracking-tight">
+                {(hi ? s.titleHi : s.title).map((l, k, a) => <span key={k} className={cn("block", k === a.length - 1 && "text-primary")}>{l}</span>)}
+              </h1>
+              <p className="mt-2 text-[0.9375rem] leading-snug text-foreground/75">{hi ? s.subHi : s.sub}</p>
+            </div>
+            <Items slide={s} hi={hi} />
           </section>
         ))}
       </div>
 
-      <div className="mt-4 flex justify-center gap-2" role="tablist" aria-label={H("Welcome slides", "वेलकम स्लाइड")}>
+      <div className="mt-3 flex justify-center gap-1.5" role="tablist" aria-label={H("Welcome slides", "वेलकम स्लाइड")}>
         {SLIDES.map((_, n) => (
-          <button key={n} type="button" role="tab" aria-selected={n === i} aria-label={`${n + 1}`} onClick={() => goTo(n)} className="flex size-6 items-center justify-center">
-            <span className={cn("block rounded-full transition-all", n === i ? "h-2.5 w-6 bg-primary" : "size-2.5 bg-foreground/20")} />
+          <button key={n} type="button" role="tab" aria-selected={n === i} aria-label={`${n + 1}`} onClick={() => goTo(n)} className="flex h-6 items-center px-0.5">
+            <span className={cn("relative block h-2 overflow-hidden rounded-full transition-all", n === i ? "w-9 bg-foreground/15" : "w-2.5 bg-foreground/20")}>
+              {n === i && <span key={`${i}-${paused}`} className="ud-fill absolute inset-y-0 left-0 rounded-full bg-primary" style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused || still ? "paused" : "running", ...(still ? { width: "100%" } : null) }} />}
+            </span>
           </button>
         ))}
       </div>
       <Button size="lg" className="mt-3 h-14 w-full rounded-2xl text-lg shadow-lift" onClick={() => router.push("/login")}>
         {H("Get Started", "शुरू करें")}<ArrowRight className="size-5" aria-hidden />
       </Button>
-      <p className="mt-3 text-center text-sm text-muted-foreground">
+      <p className="mt-2 text-center text-sm text-muted-foreground">
         <Link href="/explore" className="inline-flex min-h-11 items-center font-semibold text-foreground underline-offset-4 hover:underline">{H("Explore plans first", "पहले प्लान देखें")}</Link>
       </p>
     </AuthScreen>

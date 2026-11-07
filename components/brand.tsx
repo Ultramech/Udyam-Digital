@@ -1,14 +1,11 @@
+import Image from "next/image";
 import { Activity, Cloud, Flame, Globe, Hash, Mail, MessageCircle, MessageSquare, Network, Package, Phone, PhoneCall, Radio, Receipt, Server, Shield, ShieldCheck, Smartphone, Truck, Video, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { productIcon } from "@/lib/catalogue/plain";
 import { cn } from "@/lib/utils";
 
-/** The red Airtel-style swirl mark. Original drawing, not Airtel's trademark artwork. */
+/** The Airtel mark, from /logo.png (transparent copy of the supplied logo). `white` recolours it for dark or red backgrounds. */
 export function Mark({ className, tone = "red" }: { className?: string; tone?: "red" | "white" }) {
-  return (
-    <svg viewBox="0 0 48 48" className={cn("shrink-0", className ?? "size-9")} aria-hidden>
-      <path d="M8 27c0-12 9-20 21-20 6 0 10 3 10 8 0 6-6 10-14 10-4 0-7-1-9-3 0 6 3 10 10 10 5 0 9-2 12-6l4 3c-4 6-10 9-18 9C15 38 8 34 8 27z" fill={tone === "white" ? "#fff" : "var(--primary)"} />
-    </svg>
-  );
+  return <Image src="/logo.png" alt="" width={216} height={216} priority className={cn("shrink-0 object-contain", className ?? "size-9", tone === "white" && "brightness-0 invert")} />;
 }
 
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {

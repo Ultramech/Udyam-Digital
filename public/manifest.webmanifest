@@ -6,5 +6,5 @@
   "display": "standalone",
   "background_color": "#FAF7F4",
   "theme_color": "#E40000",
-  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+  "icons": [{ "src": "/logo.png", "sizes": "432x432", "type": "image/png", "purpose": "any" }]
 }

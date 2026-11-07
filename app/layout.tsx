@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Udyam Digital · Airtel Business",
   description: "Find the right business bundle, verify in minutes and get activated — on your phone, in your language. (Prototype · synthetic data)",
   manifest: "/manifest.webmanifest",
+  icons: { icon: [{ url: "/logo.png", type: "image/png" }], apple: "/logo.png" },
 };
 export const viewport: Viewport = { themeColor: "#F7F4EE", width: "device-width", initialScale: 1 };
 

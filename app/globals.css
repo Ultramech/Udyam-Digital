@@ -224,3 +224,17 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Start-screen motion: a gentle float, expanding signal rings, a pulsing "in progress" dot and the slider's progress fill. All switched off for reduced motion. */
+@keyframes ud-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes ud-ping { 0% { transform: scale(0.5); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes ud-fill { from { width: 0; } to { width: 100%; } }
+@keyframes ud-pulse-dot { 0%, 100% { box-shadow: 0 0 0 0 oklch(0.56 0.235 27 / 0.5); } 50% { box-shadow: 0 0 0 7px oklch(0.56 0.235 27 / 0); } }
+.ud-float { animation: ud-float 5s ease-in-out infinite; }
+.ud-ping { animation: ud-ping 3.6s ease-out infinite; }
+.ud-pulse { animation: ud-pulse-dot 1.8s ease-in-out infinite; }
+.ud-fill { animation-name: ud-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .ud-float, .ud-ping, .ud-pulse { animation: none; }
+  .ud-fill { animation: none; width: 100%; }
+}

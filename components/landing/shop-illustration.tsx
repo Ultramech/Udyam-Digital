@@ -15,7 +15,7 @@ export function ShopIllustration({ label }: { label: string }) {
       <rect x="56" y="80" width="448" height="18" rx="9" fill="#9E0F1B" />
       {/* sign */}
       <rect x="182" y="126" width="48" height="48" rx="14" fill="#fff" />
-      <path transform="translate(186 130) scale(0.8)" d="M8 27c0-12 9-20 21-20 6 0 10 3 10 8 0 6-6 10-14 10-4 0-7-1-9-3 0 6 3 10 10 10 5 0 9-2 12-6l4 3c-4 6-10 9-18 9C15 38 8 34 8 27z" fill="#D8212C" />
+      <image href="/logo.png" x="188" y="132" width="36" height="36" preserveAspectRatio="xMidYMid meet" />
       <text x="244" y="168" fontSize="46" fontWeight="800" fill="#fff" letterSpacing="-1" fontFamily="inherit">airtel</text>
       {/* awning */}
       {bands.map((i) => (
