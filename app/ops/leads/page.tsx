@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Segmented } from "@/components/ops/kit";
+import { Segmented, Kpi, Panel } from "@/components/ops/kit";
+import { ColumnChart, DonutLegend, HBars, StackBar } from "@/components/ops/charts";
+import { Flame, Target, UserCheck, Wallet } from "lucide-react";
 import { NEXT_ACTION, OpsShell } from "@/components/ops/shell";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -28,10 +30,12 @@ function Inner() {
   const [f, setF] = useState({ segment: "", source: "", stage: "", q: "" });
   const qs = new URLSearchParams({ tab, limit: "100", ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)) }).toString();
   // results remember which query they answer, so switching tab/filter shows a skeleton until the new answer arrives
-  const [loaded, setLoaded] = useState<{ qs: string; total: number; rows: Row[] } | null>(null);
+  type Tally = { label: string; n: number }[];
+  interface Summary { kind: "live" | "historical"; pipeline?: number; needsPerson?: number; withQuote?: number; byStage: Tally; bySource: Tally; byAction?: Tally; expectedValue?: number; bands?: Tally; byReason?: Tally; scoreBuckets?: Tally }
+  const [loaded, setLoaded] = useState<{ qs: string; total: number; rows: Row[]; summary?: Summary } | null>(null);
   const data = loaded?.qs === qs ? loaded : null;
   useEffect(() => {
-    const load = () => api<{ total: number; rows: Row[] }>("GET", `/api/ops/leads?${qs}`).then((r) => setLoaded({ qs, ...r })).catch(() => setLoaded({ qs, total: 0, rows: [] }));
+    const load = () => api<{ total: number; rows: Row[]; summary?: Summary }>("GET", `/api/ops/leads?${qs}`).then((r) => setLoaded({ qs, ...r })).catch(() => setLoaded({ qs, total: 0, rows: [] }));
     load();
     if (tab === "live" || tab === "escalated") { const h = setInterval(load, 5000); return () => clearInterval(h); }
   }, [tab, qs]);
@@ -50,6 +54,39 @@ function Inner() {
           </div>
         )}
         {tab === "winback" && <Card className="bg-accent p-3 text-sm">These leads dropped for reasons a digital journey directly fixes (no time for a visit, slow or confusing quote, paperwork, install delay, payment failure). Ranked by propensity × expected value.</Card>}
+        {data?.summary && data.rows.length > 0 && (() => {
+          const m = data.summary;
+          return m.kind === "live" ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi icon={UserCheck} label="Live leads" value={data.total} />
+                <Kpi icon={Flame} label="Need a person" value={m.needsPerson ?? 0} />
+                <Kpi icon={Target} label="With a priced plan" value={m.withQuote ?? 0} />
+                <Kpi icon={Wallet} label="Pipeline per month" value={inr(m.pipeline ?? 0)} sub="before GST" />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Panel title="Where leads stand"><DonutLegend parts={m.byStage.map((x) => ({ label: x.label, value: x.n }))} centre={String(data.total)} sub="leads" /></Panel>
+                <Panel title="Where they came from"><HBars rows={m.bySource.slice(0, 6).map((x) => ({ label: x.label, value: x.n }))} /></Panel>
+                <Panel title="What to do next"><HBars rows={(m.byAction ?? []).slice(0, 6).map((x) => ({ label: NEXT_ACTION[x.label] ?? x.label, value: x.n }))} /></Panel>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi icon={UserCheck} label={tab === "winback" ? "Win-back leads" : "Leads in view"} value={data.total.toLocaleString("en-IN")} />
+                <Kpi icon={Flame} label="High propensity" value={(m.bands?.find((b) => b.label === "high")?.n ?? 0).toLocaleString("en-IN")} sub="worth a call first" />
+                <Kpi icon={Wallet} label="Expected value" value={inr(m.expectedValue ?? 0)} sub="propensity × monthly value" />
+                <Kpi icon={Target} label="Top drop reason" value={<span className="text-base leading-tight">{m.byReason?.[0]?.label ?? "—"}</span>} sub={m.byReason?.[0] ? `${m.byReason[0].n.toLocaleString("en-IN")} leads` : undefined} />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Panel title="Who to call first" sub="Leads by propensity band."><StackBar parts={(m.bands ?? []).map((b, i) => ({ label: b.label, value: b.n, color: ["var(--success)", "oklch(0.74 0.16 60)", "oklch(0.8 0.02 60)"][i] }))} height={18} />
+                  <div className="mt-5"><div className="mb-1 text-xs font-semibold text-muted-foreground">Score distribution (probability ÷ 10)</div><ColumnChart data={(m.scoreBuckets ?? []).map((b) => ({ label: b.label, value: b.n }))} height={150} /></div></Panel>
+                <Panel title="Why they dropped"><HBars rows={(m.byReason ?? []).slice(0, 6).map((x) => ({ label: x.label, value: x.n }))} empty="These leads did not drop." /></Panel>
+                <Panel title="Where the leads are"><HBars rows={m.byStage.map((x) => ({ label: x.label, value: x.n }))} /></Panel>
+              </div>
+            </div>
+          );
+        })()}
         {!data ? <Skeleton className="h-64" /> : data.rows.length === 0 ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">{hist ? "No leads match these filters." : "No live leads yet. Run a journey in the customer app — escalations and multi-site enquiries land here."}</Card>
         ) : (

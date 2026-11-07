@@ -131,3 +131,102 @@ export function Meter({ value, max = 100, tone = "red" }: { value: number; max?:
   const c = tone === "green" ? "var(--success)" : tone === "amber" ? "var(--warning)" : RED;
   return <span className="block h-2 overflow-hidden rounded-full bg-foreground/[0.07]"><span className="block h-full rounded-full" style={{ width: `${Math.min(100, Math.max(2, (value / max) * 100))}%`, background: c }} /></span>;
 }
+
+/** Brand-led palette for categories: red first, then warm and cool accents that stay distinguishable. */
+export const PALETTE = ["oklch(0.56 0.235 27)", "oklch(0.74 0.16 60)", "oklch(0.5 0.12 160)", "oklch(0.5 0.12 245)", "oklch(0.35 0.012 60)", "oklch(0.8 0.09 25)", "oklch(0.62 0.14 305)"] as const;
+export const colorAt = (i: number) => PALETTE[i % PALETTE.length];
+
+export function Legend({ items }: { items: { label: string; value?: string | number; color: string }[] }) {
+  return (
+    <ul className="space-y-2 text-sm">
+      {items.map((i) => (
+        <li key={i.label} className="flex items-center gap-2.5"><span className="size-3 shrink-0 rounded-full" style={{ background: i.color }} /><span className="min-w-0 truncate text-muted-foreground">{i.label}</span>{i.value !== undefined && <b className="ml-auto pl-2 tabular-nums">{i.value}</b>}</li>
+      ))}
+    </ul>
+  );
+}
+
+/** Donut with its legend beside it; parts are coloured from the palette unless a colour is given. */
+export function DonutLegend({ parts, centre, sub, size = 132 }: { parts: { label: string; value: number; color?: string }[]; centre: string; sub?: string; size?: number }) {
+  const coloured = parts.map((p, i) => ({ ...p, color: p.color ?? colorAt(i) }));
+  return (
+    <div className="flex flex-wrap items-center gap-5">
+      <Donut size={size} centre={centre} sub={sub} parts={coloured} />
+      <div className="min-w-[8rem] flex-1"><Legend items={coloured.map((p) => ({ label: p.label, value: p.value.toLocaleString("en-IN"), color: p.color }))} /></div>
+    </div>
+  );
+}
+
+/** One horizontal bar split into proportional parts (a 100% stack), with a legend underneath. */
+export function StackBar({ parts, height = 14 }: { parts: { label: string; value: number; color?: string }[]; height?: number }) {
+  const total = parts.reduce((s, p) => s + p.value, 0);
+  const coloured = parts.map((p, i) => ({ ...p, color: p.color ?? colorAt(i) }));
+  if (!total) return <div className="py-4 text-center text-sm text-muted-foreground">No data</div>;
+  return (
+    <div>
+      <div className="flex overflow-hidden rounded-full bg-primary/[0.07]" style={{ height }} role="img" aria-label={coloured.map((p) => `${p.label} ${p.value}`).join(", ")}>
+        {coloured.filter((p) => p.value > 0).map((p) => <span key={p.label} title={`${p.label}: ${p.value}`} style={{ width: `${(p.value / total) * 100}%`, background: p.color }} className="first:rounded-l-full last:rounded-r-full" />)}
+      </div>
+      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
+        {coloured.map((p) => <li key={p.label} className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: p.color }} /><span className="text-muted-foreground">{p.label}</span><b className="tabular-nums">{p.value.toLocaleString("en-IN")}</b></li>)}
+      </ul>
+    </div>
+  );
+}
+
+/** Vertical columns for a short ordered series (days, weeks, stages, age buckets). */
+export function ColumnChart({ data, format = (n) => n.toLocaleString("en-IN"), height = 190, highlight }: { data: { label: string; value: number }[]; format?: (n: number) => string; height?: number; highlight?: number }) {
+  const [hover, setHover] = useState<number | null>(null);
+  if (!data.length) return <div className="grid h-32 place-items-center text-sm text-muted-foreground">No data</div>;
+  const W = 420, H = height, L = 8, R = 8, T = 22, B = 34;
+  const max = Math.max(1, ...data.map((d) => d.value));
+  const slot = (W - L - R) / data.length, bw = Math.min(40, slot * 0.62);
+  const every = Math.ceil(data.length / 8);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full select-none" role="img" aria-label={`Column chart: ${data.map((d) => `${d.label} ${d.value}`).join(", ")}`} onMouseLeave={() => setHover(null)}>
+      <line x1={L} x2={W - R} y1={H - B} y2={H - B} stroke="currentColor" className="text-border" />
+      {data.map((d, i) => {
+        const h = Math.max(d.value > 0 ? 3 : 0, (d.value / max) * (H - T - B)), x = L + i * slot + (slot - bw) / 2, y = H - B - h;
+        const on = hover === i || highlight === i;
+        return (
+          <g key={d.label + i} onMouseEnter={() => setHover(i)}>
+            <rect x={L + i * slot} y={T - 6} width={slot} height={H - T - B + 6} fill="transparent" />
+            <rect x={x} y={y} width={bw} height={h} rx={Math.min(8, bw / 2)} fill={RED} opacity={on || hover === null ? 1 : 0.45} />
+            {(on || data.length <= 8) && d.value > 0 && <text x={x + bw / 2} y={y - 6} textAnchor="middle" fontSize="12" fontWeight="700" className="fill-foreground">{format(d.value)}</text>}
+            {(i % every === 0) && <text x={x + bw / 2} y={H - 12} textAnchor="middle" fontSize="11.5" className="fill-muted-foreground">{d.label}</text>}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Half-circle gauge for a score out of `max`. */
+export function Gauge({ value, max = 100, label, tone = "red" }: { value: number; max?: number; label?: string; tone?: "red" | "green" | "amber" }) {
+  const f = Math.min(1, Math.max(0, value / max)), r = 42, len = Math.PI * r;
+  const c = tone === "green" ? "var(--success)" : tone === "amber" ? "var(--warning)" : RED;
+  return (
+    <div className="relative mx-auto w-40">
+      <svg viewBox="0 0 100 58" className="w-full" role="img" aria-label={`${label ?? "Score"} ${value} of ${max}`}>
+        <path d="M8 50A42 42 0 0 1 92 50" fill="none" stroke="currentColor" className="text-primary/[0.1]" strokeWidth="9" strokeLinecap="round" />
+        <path d="M8 50A42 42 0 0 1 92 50" fill="none" stroke={c} strokeWidth="9" strokeLinecap="round" strokeDasharray={`${len * f} ${len}`} />
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 text-center"><div className="text-3xl font-extrabold leading-none tabular-nums">{value}</div>{label && <div className="mt-1 text-[11px] text-muted-foreground">{label}</div>}</div>
+    </div>
+  );
+}
+
+/** A value on a published band: the track is the allowed range, the marker is where the current value sits, the tick is the original. */
+export function BandRange({ min, max, value, original, format = (n) => `₹${n.toLocaleString("en-IN")}` }: { min: number; max: number; value: number; original?: number; format?: (n: number) => string }) {
+  const span = Math.max(1, max - min), pos = (v: number) => `${Math.min(100, Math.max(0, ((v - min) / span) * 100))}%`;
+  return (
+    <div title={`${format(value)} within ${format(min)}–${format(max)}`}>
+      <div className="relative h-2.5 rounded-full bg-primary/[0.1]">
+        <span className="absolute inset-y-0 left-0 rounded-full bg-primary/30" style={{ width: pos(value) }} />
+        {original !== undefined && <span className="absolute -top-1 h-4.5 w-0.5 rounded bg-foreground/50" style={{ left: pos(original) }} />}
+        <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-primary shadow" style={{ left: pos(value) }} />
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground"><span>{format(min)}</span><span>{format(max)}</span></div>
+    </div>
+  );
+}

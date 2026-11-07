@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell, useStaff } from "@/components/ops/shell";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { ColumnChart, StackBar } from "@/components/ops/charts";
+import { Clock, ShieldCheck, UserCheck, Users } from "lucide-react";
 import { api, ApiError } from "@/lib/client/api";
 import { fmtTime } from "@/lib/client/format";
 
@@ -31,6 +34,23 @@ export default function Team() {
     <OpsShell>
       <div className="max-w-4xl space-y-4">
         <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Team</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Staff and partner accounts. New accounts get a temporary password and must set their own at first sign-in. Deactivating or resetting a password ends that person&apos;s sessions immediately.</p></div>
+        {rows && rows.length > 0 && (() => {
+          const ago = (t: number | null) => (t === null ? Infinity : (Date.now() - t) / 86_400_000);
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi icon={Users} label="People" value={rows.length} />
+                <Kpi icon={UserCheck} label="Active" value={rows.filter((r) => r.active).length} />
+                <Kpi icon={Clock} label="Never signed in" value={rows.filter((r) => r.lastLoginAt === null).length} />
+                <Kpi icon={ShieldCheck} label="Demo accounts" value={rows.filter((r) => r.isDemo).length} />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Panel title="Who has which access"><StackBar parts={ROLES.map((role) => ({ label: role, value: rows.filter((r) => r.role === role).length }))} height={18} /></Panel>
+                <Panel title="Last sign-in" sub="How recently people used the console."><ColumnChart height={150} data={[["Today", 0, 1], ["This week", 1, 7], ["This month", 7, 30], ["Older", 30, 1e9]].map(([label, lo, hi]) => ({ label: label as string, value: rows.filter((r) => ago(r.lastLoginAt) >= (lo as number) && ago(r.lastLoginAt) < (hi as number)).length })).concat([{ label: "Never", value: rows.filter((r) => r.lastLoginAt === null).length }])} /></Panel>
+              </div>
+            </div>
+          );
+        })()}
         <Card className="space-y-3 p-4">
           <div className="text-sm font-semibold">Add a person</div>
           <div className="grid gap-2 sm:grid-cols-4">

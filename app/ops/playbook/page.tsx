@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { AlertTriangle, BadgeCheck, Handshake, ListChecks, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HBars, Meter } from "@/components/ops/charts";
-import { Insight, More, PageHeader, Panel, Pill } from "@/components/ops/kit";
+import { InsightList, More, PageHeader, Panel, Pill, useInsights } from "@/components/ops/kit";
 import { OpsShell } from "@/components/ops/shell";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -40,6 +39,7 @@ function cellStyle(v: number | null, avg: number, low: boolean): React.CSSProper
 
 export default function Playbook() {
   const [d, setD] = useState<Data | null>(null);
+  const insights = useInsights("playbook");
   useEffect(() => { api<Data>("GET", "/api/ops/playbook").then(setD).catch(() => {}); }, []);
   const sources = d ? d.segments[0]?.bySource.map((s) => s.source) ?? [] : [];
 
@@ -49,12 +49,6 @@ export default function Playbook() {
         <PageHeader title="Segment & channel playbook" sub="Which customers to go after first, with which bundle and through which channel. Computed from the supplied quarter of leads (synthetic); bundle prices come from the advisor's own rules engine. Evidence, not a forecast." />
         {!d ? <Skeleton className="h-96 rounded-2xl" /> : (
           <>
-            {d.waste && (
-              <Insight icon={AlertTriangle} tone="amber" title="The biggest leak in the file">
-                <b>{d.waste.source}</b> on <b>{d.waste.segment}</b>: {d.waste.leads.toLocaleString("en-IN")} leads, {d.waste.activations} activations ({d.waste.conversion}%), {cac(d.waste.cac)} per activation and {inr(d.waste.spend)} spent this quarter. The average across everything is {cac(d.total.cac)}.
-              </Insight>
-            )}
-
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
               <Panel title="Which segment pays back best" sub="Year-one revenue brought back per ₹1 of acquisition spend = average monthly bundle × 12 × (1 − 6-month churn) ÷ cost per activation. Revenue, not margin.">
                 <HBars rows={d.segments.map((s) => ({ label: s.segment, value: s.firstYearPerRupee ?? 0, note: `${s.conversion}% convert · ${cac(s.cac)}` }))} fmt={(n) => `₹${n}`} />
@@ -104,21 +98,8 @@ export default function Playbook() {
             </div>
 
             <section className="space-y-3">
-              <div><h2 className="text-lg font-extrabold">Signals that change a decision</h2><p className="text-sm text-muted-foreground">Each one computed from the files on every load: leads, the GST registry and the catalogue&apos;s own rules.</p></div>
-              <div className="grid gap-4 lg:grid-cols-2">
-                <Insight icon={Handshake} tone="red" title="Partners are paid on activation, not on retention">
-                  A partner lead that activates costs a median <b>{inr(d.signals.partnerPay.medianCostActivated)}</b>; one that drops costs {inr(d.signals.partnerPay.medianCostDropped)}. The payout is about <b>{d.signals.partnerPay.monthsOfRevenuePaid}× the monthly bundle</b> (field sales: {d.signals.partnerPay.fieldMonthsOfRevenue}×), up to {inr(d.signals.partnerPay.maxPayout)} for one deal, and partner customers churn <b>{d.signals.partnerPay.partnerChurn}%</b> in six months vs {d.signals.partnerPay.restChurn}% for everyone else. Proposal: pay half at activation and half after month 6.
-                </Insight>
-                <Insight icon={Share2} tone="blue" title="Cheap channels leak before anyone speaks to the owner">
-                  {d.signals.leadQuality.slice(0, 3).map((q) => `${q.source}: ${q.lostBeforeContact}% lost as unreachable or a wrong number, ${q.conversion}% convert`).join(" · ")}. The WhatsApp campaign isn&apos;t a bad channel, it captures bad numbers. Here the owner starts the chat, or verifies the number by SMS before a quote is saved.
-                </Insight>
-                <Insight icon={BadgeCheck} tone="green" title="Mis-selling the rules engine prevents">
-                  Of {d.signals.compliance.activations} activations, <b>{d.signals.compliance.nonActiveGstin}</b> went live on a GSTIN the registry marks Cancelled or Suspended, and <b>{d.signals.compliance.ruleBreakingBundles}</b> bundles break the catalogue&apos;s own rules. They churned {d.signals.compliance.churnRuleBreaking}% vs {d.signals.compliance.churnClean}% for clean bundles: a compliance exposure, not a churn driver.
-                </Insight>
-                <Insight icon={ListChecks} tone="amber" title="Read the churn numbers with care">
-                  With &quot;today&quot; fixed at 15 July 2026, a six-month churn flag can&apos;t yet be observed for any of the {d.signals.labels.churnNotYetObservable} activations this quarter, and {d.signals.labels.afterToday} are dated after today. Churn targets are proposals to re-baseline on real data. Regional languages: {d.signals.language.weakest.map((l) => `${l.language} ${l.conversion}%`).join(", ")} vs {d.signals.language.hindiEnglish}% for Hindi/English.
-                </Insight>
-              </div>
+              <div><h2 className="text-lg font-extrabold">Signals that change a decision</h2><p className="text-sm text-muted-foreground">Computed from the leads, the GST registry and the catalogue&apos;s own rules on every load, ranked by how strong the evidence is. A suggested action appears only when the numbers point to one.</p></div>
+              <InsightList data={insights} cols={2} />
             </section>
 
             <More summary="Channels overall (full table)">

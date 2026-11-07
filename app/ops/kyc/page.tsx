@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { ColumnChart, DonutLegend, HBars } from "@/components/ops/charts";
 import { api, ApiError } from "@/lib/client/api";
 import { kycReason, slotName } from "@/lib/i18n/reasons";
 import type { KycView } from "@/lib/store/kycView";
@@ -80,6 +82,27 @@ export default function KycQueue() {
         <div className="flex items-center justify-between"><div><h1 className="flex items-center gap-2 text-[1.75rem] font-extrabold leading-tight tracking-tight"><ClipboardCheck className="size-6 text-primary" />KYC review</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Cases flagged for a person. Your decision appears on the customer&apos;s screen and order tracker.</p></div>
           <Button variant="outline" size="sm" onClick={() => setAll((a) => !a)}>{all ? "Show open only" : "Show all cases"}</Button></div>
         {denied && <Card className="border-destructive/40 bg-destructive/5 p-4 text-sm">Your role can&apos;t review KYC. Sign in as KYC ops or admin.</Card>}
+        {rows && rows.length > 0 && (() => {
+          const flags = new Map<string, { n: number; reason: string }>();
+          for (const r of rows) for (const c of r.checks) if (c.severity !== "info") { const cur = flags.get(c.code) ?? { n: 0, reason: kycReason(c.code, c.params, "en").reason }; cur.n++; flags.set(c.code, cur); }
+          const scored = rows.filter((r) => r.score);
+          const open = rows.filter((r) => !r.review);
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi icon={ClipboardCheck} label="Cases in view" value={rows.length} />
+                <Kpi icon={CheckCircle2} label="Waiting for a decision" value={open.length} />
+                <Kpi icon={CheckCircle2} label="Average review score" value={scored.length ? Math.round(scored.reduce((t, r) => t + (r.score?.score ?? 0), 0) / scored.length) : "—"} sub="out of 100" />
+                <Kpi icon={CheckCircle2} label="Decided" value={rows.length - open.length} />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Panel title="Case outcomes"><DonutLegend centre={String(rows.length)} sub="cases" parts={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value }))} /></Panel>
+                <Panel title="Review scores" sub="A triage signal, not an approval."><ColumnChart height={170} data={["0–19", "20–39", "40–59", "60–79", "80–100"].map((label, i) => ({ label, value: scored.filter((r) => Math.min(4, Math.floor((r.score?.score ?? 0) / 20)) === i).length }))} /></Panel>
+                <Panel title="Most common flags" sub="What sends cases to a person."><HBars rows={[...flags.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, 5).map(([, v]) => ({ label: v.reason, value: v.n }))} empty="No flags raised." /></Panel>
+              </div>
+            </div>
+          );
+        })()}
         {!rows ? <Skeleton className="h-64" /> : rows.length === 0 && !denied ? <Card className="p-8 text-center text-sm text-muted-foreground">Nothing waiting. Run the &ldquo;Dr. Menon&rdquo; or &ldquo;Vindhya Tours&rdquo; demo to create a case.</Card> : rows.map((r) => <Case key={r.id} r={r} onDone={load} />)}
       </div>
     </OpsShell>

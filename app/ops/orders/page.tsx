@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell } from "@/components/ops/shell";
-import { Kpi } from "@/components/ops/kit";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { ColumnChart, StackBar } from "@/components/ops/charts";
 import { CheckCircle2, CreditCard, Package, Truck } from "lucide-react";
 import { api, ApiError } from "@/lib/client/api";
 import { fmtDate, inr } from "@/lib/client/format";
@@ -37,11 +38,25 @@ export default function Orders() {
       <div className="space-y-4">
         <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Orders</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Advance an order and the customer&apos;s tracker, timeline and WhatsApp-style updates change with it. Delays post a proactive message.</p></div>
         {rows && rows.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi icon={Package} label="Orders" value={rows.length} />
-            <Kpi icon={CreditCard} label="Waiting for payment" value={rows.filter((r) => !r.stage).length} />
-            <Kpi icon={Truck} label="In installation" value={rows.filter((r) => r.stage === "INSTALL_SCHEDULED" || r.stage === "INSTALL_IN_PROGRESS").length} />
-            <Kpi icon={CheckCircle2} label="Activated" value={rows.filter((r) => r.stage === "ACTIVATED").length} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <Kpi icon={Package} label="Orders" value={rows.length} />
+              <Kpi icon={CreditCard} label="Waiting for payment" value={rows.filter((r) => !r.stage).length} />
+              <Kpi icon={Truck} label="In installation" value={rows.filter((r) => r.stage === "INSTALL_SCHEDULED" || r.stage === "INSTALL_IN_PROGRESS").length} />
+              <Kpi icon={CheckCircle2} label="Activated" value={rows.filter((r) => r.stage === "ACTIVATED").length} />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+              <Panel title="Orders by stage" sub="Where every order is right now.">
+                <ColumnChart data={COLS.map((c) => ({ label: c.label.replace("install ", "").replace("kyc ", "").slice(0, 9), value: rows.filter((r) => (c.key === "AWAITING" ? !r.stage : r.stage === c.key)).length }))} height={200} />
+              </Panel>
+              <Panel title="Payment and KYC" sub="Counts across all orders.">
+                <div className="space-y-5">
+                  <div><div className="mb-2 text-xs font-semibold text-muted-foreground">Payment</div><StackBar parts={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.payment]: (m[r.payment] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value, color: label === "success" ? "var(--success)" : label === "failed" ? "var(--destructive)" : "oklch(0.74 0.16 60)" }))} /></div>
+                  <div><div className="mb-2 text-xs font-semibold text-muted-foreground">KYC</div><StackBar parts={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.kycStatus]: (m[r.kycStatus] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value, color: ["verified", "approved"].includes(label) ? "var(--success)" : ["blocked", "reupload"].includes(label) ? "var(--destructive)" : "oklch(0.74 0.16 60)" }))} /></div>
+                  <div className="text-xs text-muted-foreground">{rows.filter((r) => r.delayed).length} delayed · {rows.filter((r) => r.balanceDue !== null).length} with a balance due · {rows.reduce((t, r) => t + r.chases, 0)} chase calls in total</div>
+                </div>
+              </Panel>
+            </div>
           </div>
         )}
         {!rows ? <Skeleton className="h-64" /> : rows.length === 0 ? <Card className="p-8 text-center text-sm text-muted-foreground">No orders yet. Complete a customer journey to place one.</Card> : (

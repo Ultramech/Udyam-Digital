@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { OpsShell } from "@/components/ops/shell";
-import { Kpi } from "@/components/ops/kit";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { ColumnChart, DonutLegend } from "@/components/ops/charts";
 import { AlertCircle, CheckCircle2, Inbox, UserX } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { fmtTime, inr } from "@/lib/client/format";
@@ -38,11 +39,19 @@ export default function SupportQueue() {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showResolved} onChange={(e) => setShowResolved(e.target.checked)} />Show resolved</label>
         </div>
         {tickets && tickets.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi icon={Inbox} label="Open requests" value={tickets.filter((t) => t.status !== "resolved").length} />
-            <Kpi icon={AlertCircle} label="High priority" value={tickets.filter((t) => t.status !== "resolved" && t.priority === "high").length} />
-            <Kpi icon={UserX} label="Unassigned" value={tickets.filter((t) => t.status !== "resolved" && !t.assignedTo).length} />
-            <Kpi icon={CheckCircle2} label="Resolved" value={tickets.filter((t) => t.status === "resolved").length} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <Kpi icon={Inbox} label="Open requests" value={tickets.filter((t) => t.status !== "resolved").length} />
+              <Kpi icon={AlertCircle} label="High priority" value={tickets.filter((t) => t.status !== "resolved" && t.priority === "high").length} />
+              <Kpi icon={UserX} label="Unassigned" value={tickets.filter((t) => t.status !== "resolved" && !t.assignedTo).length} />
+              <Kpi icon={CheckCircle2} label="Resolved" value={tickets.filter((t) => t.status === "resolved").length} />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Panel title="What owners ask about" sub="Requests by category."><DonutLegend centre={String(tickets.length)} sub="requests" parts={Object.entries(tickets.reduce<Record<string, number>>((m, t) => ({ ...m, [t.category]: (m[t.category] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value }))} /></Panel>
+              <Panel title="How long open requests have waited" sub="Time since the owner raised them.">
+                <ColumnChart height={170} data={[["< 1 h", 0, 1], ["1–4 h", 1, 4], ["4–24 h", 4, 24], ["1–3 d", 24, 72], ["> 3 d", 72, 1e9]].map(([label, lo, hi]) => ({ label: label as string, value: tickets.filter((t) => t.status !== "resolved" && (Date.now() - t.createdAt) / 3.6e6 >= (lo as number) && (Date.now() - t.createdAt) / 3.6e6 < (hi as number)).length }))} />
+              </Panel>
+            </div>
           </div>
         )}
         {tickets && shown.length === 0 && <Card className="p-4 text-sm text-muted-foreground">No open requests. </Card>}

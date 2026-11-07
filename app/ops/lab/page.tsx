@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { HBars, StackBar } from "@/components/ops/charts";
+import { priceLines } from "@/lib/rules/pricing";
+import { plainName } from "@/lib/catalogue/plain";
+import { Layers, ListChecks, Receipt, Wallet } from "lucide-react";
 import { BundleCard } from "@/components/customer/bundle-card";
 import { RichText } from "@/components/rich-text";
 import { api } from "@/lib/client/api";
@@ -43,6 +48,25 @@ export default function Lab() {
           <div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm">GST override<select className="h-8 rounded-lg border border-input bg-card px-2" value={gst} onChange={(e) => setGst(e.target.value as typeof gst)}><option value="auto">from text</option><option value="yes">has GST</option><option value="no">no GST</option></select></label>
             <Button onClick={() => run()} disabled={busy || text.trim().length < 3} className="gap-1.5"><Play className="size-3.5" />Run scenario</Button></div>
         </Card>
+        {t?.recommendation?.lines.length ? (() => {
+          const rec = t.recommendation!, pr = priceLines(rec.lines);
+          const byProduct = Object.entries(pr.lines.reduce<Record<string, number>>((m, l) => ({ ...m, [l.productId]: (m[l.productId] ?? 0) + l.monthly }), {})).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([id, value]) => ({ label: plainName(id, "en").split(" (")[0], value }));
+          const trace = rec.trace.reduce<Record<string, number>>((m, x) => ({ ...m, [x.status]: (m[x.status] ?? 0) + 1 }), {});
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Kpi icon={Wallet} label="Monthly price" value={`₹${pr.monthly.toLocaleString("en-IN")}`} sub="before GST" />
+                <Kpi icon={Receipt} label="One-time setup" value={`₹${pr.setup.toLocaleString("en-IN")}`} />
+                <Kpi icon={Layers} label="Line items" value={pr.lines.length} />
+                <Kpi icon={ListChecks} label="Rules applied" value={rec.trace.length} sub={`${rec.exclusions.length} product${rec.exclusions.length === 1 ? "" : "s"} excluded`} />
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Panel title="Where the monthly price comes from" sub="By product, before GST."><HBars rows={byProduct} fmt={(n) => `₹${n.toLocaleString("en-IN")}`} /></Panel>
+                <Panel title="How the rules engine decided" sub="Every step it recorded for this business."><StackBar parts={Object.entries(trace).map(([label, value]) => ({ label, value, color: label === "block" ? "var(--destructive)" : label === "warn" ? "oklch(0.74 0.16 60)" : label === "ok" ? "var(--success)" : undefined }))} height={18} /></Panel>
+              </div>
+            </div>
+          );
+        })() : null}
         {t && (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-3">

@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, FileText, Layers, MessageCircle, PhoneCall, ShieldCheck, ShoppingBag, Sparkles, Target, TrendingDown, Users, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarDays, CheckCircle2, FileText, Layers, MessageCircle, PhoneCall, ShoppingBag, Target, Users, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AreaChart, Donut, Funnel, HBars } from "@/components/ops/charts";
-import { ExportButton, Insight, Kpi, More, PageHeader, Panel, Pill } from "@/components/ops/kit";
+import { ExportButton, InsightList, Kpi, More, PageHeader, Panel, Pill, TargetsPanel, useInsights } from "@/components/ops/kit";
 import { OpsShell } from "@/components/ops/shell";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -18,6 +18,7 @@ interface Hist {
 }
 interface Live { conversations: number; advisorRecommended: number; leads: number; escalated: number; quotes: number; kycCases: number; kycClean: number; kycReview: number; orders: number; activated: number; mrr: number; chasesPerOrder: number; escalationRate: number; kycFirstPass: number; conversion: number; avgMonthly: number; referralConversations?: number; referralOrders?: number; copilotLeads?: number }
 interface Cx { journeys: number; medianMinutesToOrder: number; medianAdvisorTurns: number; avgQuoteEdits: number; avgPaymentAttempts: number; kycReviewRate: number; selfServeRate: number; avgHumanTouches: number; dropOff: { step: string; n: number }[] }
+type TargetRow = Parameters<typeof TargetsPanel>[0]["targets"][number];
 interface Trend { label: string; leads: number; conversion: number; avgDays: number | null; cac: number | null }
 
 function GroupTable({ title, rows }: { title: string; rows: Group[] }) {
@@ -31,17 +32,12 @@ function GroupTable({ title, rows }: { title: string; rows: Group[] }) {
 }
 
 export default function Overview() {
-  const [d, setD] = useState<{ historical: Hist; live: Live; cx?: Cx } | null>(null);
+  const [d, setD] = useState<{ historical: Hist; live: Live; cx?: Cx; targets: TargetRow[] } | null>(null);
+  const insights = useInsights("overview");
   const [trend, setTrend] = useState<Trend[]>([]);
-  useEffect(() => { const load = () => api<{ historical: Hist; live: Live; cx?: Cx }>("GET", "/api/ops/overview").then(setD).catch(() => {}); load(); const h = setInterval(load, 6000); return () => clearInterval(h); }, []);
+  useEffect(() => { const load = () => api<{ historical: Hist; live: Live; cx?: Cx; targets: TargetRow[] }>("GET", "/api/ops/overview").then(setD).catch(() => {}); load(); const h = setInterval(load, 6000); return () => clearInterval(h); }, []);
   useEffect(() => { api<{ trend: Trend[] }>("GET", "/api/ops/analytics").then((r) => setTrend(r.trend)).catch(() => {}); }, []); // partners can't read analytics: the sparklines are simply left out
   const spark = (k: keyof Trend) => (trend.length ? trend.map((t) => t[k]).filter((v): v is number => typeof v === "number") : undefined);
-
-  const steepest = useMemo(() => {
-    if (!d) return null;
-    const f = d.historical.funnel;
-    return f.slice(1).map((s, i) => ({ from: f[i].stage, to: s.stage, pct: Math.round((s.leads / f[i].leads) * 100) })).sort((a, b) => a.pct - b.pct)[0];
-  }, [d]);
 
   return (
     <OpsShell>
@@ -121,22 +117,14 @@ export default function Overview() {
               </section>
 
               <section className="space-y-3" aria-label="Key insights">
-                <h2 className="text-lg font-extrabold">Key insights</h2>
-                <div className="grid gap-4 lg:grid-cols-3">
-                  {steepest && <Insight icon={TrendingDown} tone="red" title="The steepest drop is before the quote">{steepest.from} → {steepest.to} keeps only {steepest.pct}% of leads. That is the step the advisor and instant quote are built to fix.</Insight>}
-                  <Insight icon={ShieldCheck} tone="amber" title="The rules engine would have blocked past mis-sales">{h.backtest.ruleViolatingSales} of {h.backtest.activatedSales} activated bundles broke the catalogue&apos;s own rules, and {h.backtest.inactiveGstActivations} went live on a Cancelled or Suspended GSTIN.</Insight>
-                  <Insight icon={Sparkles} tone="green" title={`${h.backtest.winbackPool.toLocaleString("en-IN")} leads are worth winning back`}>They dropped for reasons a digital journey fixes (slow quote, paperwork, no time for a visit). Together about {inr(h.backtest.winbackMonthlyValue)} a month.</Insight>
-                </div>
+                <div className="flex flex-wrap items-center gap-3"><h2 className="text-lg font-extrabold">Key insights</h2><Pill>computed from the data · ranked by strength of evidence</Pill></div>
+                <InsightList data={insights} />
               </section>
 
-              <More summary="Targets, propensity model and breakdowns">
+              <TargetsPanel targets={d.targets} />
+
+              <More summary="Propensity model and breakdowns">
                 <div className="space-y-6">
-                  <div className="overflow-x-auto"><div className="mb-2 flex items-center gap-2 text-sm font-bold">Impact hypothesis <Pill tone="amber">proposed targets, not measured</Pill></div>
-                    <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th className="px-3 py-2 font-semibold">Metric</th><th className="font-semibold">Baseline (dataset)</th><th className="font-semibold">Proposed pilot target</th></tr></thead><tbody>
-                      {[["Lead → activation", `${h.totals.conversion}%`, "12%"], ["Time to activate", `${h.totals.avgDaysToActivate} days`, "≤ 7 days"], ["Blended cost / activation", inr(h.totals.blendedCac), "≤ ₹7,000 (micro ≤ ₹5,000)"], ["Chase calls / order", h.totals.avgChaseCalls, "≤ 0.5"], ["Micro-retail 6-month churn", `${h.bySegment.find((s) => s.key.startsWith("Micro"))?.churn}%`, "≤ 15%"]].map((r) => <tr key={String(r[0])} className="border-t"><td className="px-3 py-2 font-medium">{r[0]}</td><td>{r[1]}</td><td className="font-semibold text-primary">{r[2]}</td></tr>)}
-                    </tbody></table>
-                    <p className="mt-2 text-xs text-muted-foreground">Chase calls correlate with churn in the dataset (1 call → 6%, 5 calls → 28%); we do not claim the tracker causes the difference.</p>
-                  </div>
                   <p className="rounded-2xl bg-[oklch(0.975_0.012_20)] p-4 text-sm"><b>Propensity model.</b> Logistic regression on lead-time features only (no leakage). Held-out AUC <b>{h.model.aucTest}</b>, top-decile lift <b>{h.model.liftTopDecile}×</b> vs a {(h.model.baseRate * 100).toFixed(1)}% base rate. <span className="text-muted-foreground">{h.model.note}</span></p>
                   <GroupTable title="By segment" rows={h.bySegment} /><GroupTable title="By lead source" rows={h.bySource} /><GroupTable title="By language" rows={h.byLanguage} /><GroupTable title="By city tier" rows={h.byTier} />
                 </div>

@@ -157,7 +157,7 @@ test.describe("Ops console: new screens and role gates", () => {
   test("analytics reproduces the case funnel and filters change it", async ({ page }) => {
     await staff(page, "OPS1");
     await page.goto("/ops/analytics");
-    const tile = (label: string) => page.getByText(label, { exact: true }).locator("xpath=following-sibling::div[1]");
+    const tile = (label: string) => page.locator("[data-kpi]").getByText(label, { exact: true }).locator("xpath=following-sibling::div[1]"); // KPI cards only: the targets panel repeats some metric names
     await expect(tile("Leads")).toHaveText("5,000");
     await expect(tile("Lead → activation")).toHaveText("7.4%");
     await expect(tile("Days to activate")).toHaveText("17.6");
@@ -182,6 +182,20 @@ test.describe("Ops console: new screens and role gates", () => {
     await expect(page.getByRole("heading", { name: "The supplied quarter" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Weekly lead → activation" })).toBeVisible();
     await expect(page.getByRole("img", { name: /Line chart, latest/ }).first()).toBeVisible();
+  });
+
+  test("insights are computed from the data: they change with the filters and are staff-only", async ({ page, request }) => {
+    expect((await request.get("/api/ops/insights?scope=analytics")).status()).toBe(401);
+    await staff(page, "OPS1");
+    const get = async (qs: string) => { const r = await (await page.request.get(`/api/ops/insights?scope=analytics${qs}`)).json(); return [...r.insights, ...r.more].map((i: { title: string }) => i.title); };
+    const all = await get(""), micro = await get("&segment=Micro%20retail%20%26%20services");
+    expect(all.length).toBeGreaterThan(4);
+    expect(micro).not.toEqual(all);
+    expect(micro.some((t: string) => /^Micro retail/.test(t) && /convert at/.test(t))).toBe(false); // a one-segment view has no segment outlier
+    // the same findings reach the page
+    await page.goto("/ops/analytics");
+    await expect(page.getByText("Key insights")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(all[0], { exact: true })).toBeVisible();
   });
 
   test("the console works on a phone: no sideways scroll on the main pages", async ({ page }) => {

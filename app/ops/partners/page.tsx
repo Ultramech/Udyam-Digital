@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell } from "@/components/ops/shell";
+import { Panel } from "@/components/ops/kit";
+import { Funnel } from "@/components/ops/charts";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
 import type { PartnerSummary } from "@/lib/leads/partners";
@@ -28,10 +30,16 @@ export default function Partners() {
               <button className="rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted" onClick={async () => { const link = `${window.location.origin}/?partner=${encodeURIComponent(p.partnerId)}`; const image = await QRCode.toDataURL(link, { width: 256, margin: 2, errorCorrectionLevel: "M" }); setQr((v) => ({ ...v, [p.partnerId]: image })); }}>Generate store counter QR</button>
               {qr[p.partnerId] && <><Image unoptimized width={128} height={128} className="size-32 rounded bg-white p-1" src={qr[p.partnerId]} alt={`Store counter referral QR for ${p.name}`} /><a className="text-sm font-medium text-primary underline" download={`${p.partnerId}-counter-qr.png`} href={qr[p.partnerId]}>Download QR kit</a><span className="text-xs text-muted-foreground">Opens the advisor with this partner&apos;s referral code.</span></>}
             </div>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-              {([["Leads", p.totals.leads], ["Still open", p.totals.open], ["Paid orders", p.totals.ordersPaid], ["Activated", p.totals.activated], ["Activated MRR", inr(p.totals.mrrActivated)]] as const).map(([l, v]) => (
-                <Card key={l} className="p-3"><div className="text-[11px] uppercase text-muted-foreground">{l}</div><div className="text-xl font-bold">{v}</div></Card>
-              ))}
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+              <Panel title="From lead to activated" sub="Only paid orders count. Nothing is estimated.">
+                <Funnel stages={[{ stage: "Leads", value: p.totals.leads }, { stage: "Paid orders", value: p.totals.ordersPaid, step: p.totals.leads ? Math.round((p.totals.ordersPaid / p.totals.leads) * 100) : null }, { stage: "Activated", value: p.totals.activated, step: p.totals.ordersPaid ? Math.round((p.totals.activated / p.totals.ordersPaid) * 100) : null }]} />
+              </Panel>
+              <div className="grid grid-cols-2 gap-3 self-start">
+                {([["Leads", p.totals.leads], ["Still open", p.totals.open], ["Paid orders", p.totals.ordersPaid], ["Activated", p.totals.activated]] as const).map(([l, v]) => (
+                  <Card key={l} className="p-4"><div className="text-[11px] uppercase text-muted-foreground">{l}</div><div className="text-2xl font-extrabold tabular-nums">{v}</div></Card>
+                ))}
+                <Card className="col-span-2 p-4"><div className="text-[11px] uppercase text-muted-foreground">Activated MRR</div><div className="text-2xl font-extrabold tabular-nums">{inr(p.totals.mrrActivated)}</div></Card>
+              </div>
             </div>
             <Card className="p-3 text-sm"><p>
               {p.commissionPercent === null

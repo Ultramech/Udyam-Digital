@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell } from "@/components/ops/shell";
-import { Kpi } from "@/components/ops/kit";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { DonutLegend, HBars, StackBar } from "@/components/ops/charts";
 import { Building2, CheckCircle2, UserPlus, Wallet } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { fmtTime, inr } from "@/lib/client/format";
@@ -41,11 +42,19 @@ export default function Customers() {
           <select className={sel} value={city} onChange={(e) => setCity(e.target.value)} aria-label="City"><option value="all">All cities</option>{cities.map((c) => <option key={c} value={c}>{c}</option>)}</select>
         </div>
         {rows && rows.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi icon={Building2} label="Customers" value={rows.length} />
-            <Kpi icon={UserPlus} label="Onboarding" value={rows.filter((r) => r.status === "onboarding").length} />
-            <Kpi icon={CheckCircle2} label="Active" value={rows.filter((r) => r.status === "active").length} />
-            <Kpi icon={Wallet} label="Monthly revenue" value={inr(rows.reduce((t, r) => t + r.mrr, 0))} sub="active, before GST" />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <Kpi icon={Building2} label="Customers" value={rows.length} />
+              <Kpi icon={UserPlus} label="Onboarding" value={rows.filter((r) => r.status === "onboarding").length} />
+              <Kpi icon={CheckCircle2} label="Active" value={rows.filter((r) => r.status === "active").length} />
+              <Kpi icon={Wallet} label="Monthly revenue" value={inr(rows.reduce((t, r) => t + r.mrr, 0))} sub="active, before GST" />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Panel title="By segment"><DonutLegend centre={String(rows.length)} sub="customers" parts={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [SEG[r.segment] ?? r.segment]: (m[SEG[r.segment] ?? r.segment] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value }))} /></Panel>
+              <Panel title="Where they are" sub="Top cities."><HBars rows={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.city]: (m[r.city] ?? 0) + 1 }), {})).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([label, value]) => ({ label, value }))} /></Panel>
+              <Panel title="Journey stage" sub="Prospect to active."><StackBar parts={(["prospect", "onboarding", "active", "cancelled"] as const).map((s) => ({ label: s, value: rows.filter((r) => r.status === s).length, color: ({ prospect: "oklch(0.8 0.02 60)", onboarding: "oklch(0.74 0.16 60)", active: "var(--success)", cancelled: "var(--destructive)" })[s] }))} height={18} />
+                <p className="mt-4 text-xs text-muted-foreground">{rows.filter((r) => r.orders.length > 1).length} customers have more than one order · {rows.filter((r) => r.tickets.some((t) => t.status !== "resolved")).length} have an open support request.</p></Panel>
+            </div>
           </div>
         )}
         {!rows ? <Skeleton className="h-64" /> : shown.length === 0 ? <Card className="p-6 text-center text-sm text-muted-foreground">No customers match. Run a demo journey from the customer app to create one.</Card> : (
@@ -54,8 +63,8 @@ export default function Customers() {
               <thead><tr className="text-left text-[11px] text-muted-foreground">{["Business", "Segment", "City", "Status", "Orders", "MRR", "Owner", "Last activity"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>
                 {shown.map((r) => (
-                  <>
-                    <tr key={r.id} className="cursor-pointer border-t hover:bg-muted/50" onClick={() => setOpen(open === r.id ? null : r.id)}>
+                  <Fragment key={r.id}>
+                    <tr className="cursor-pointer border-t hover:bg-muted/50" onClick={() => setOpen(open === r.id ? null : r.id)}>
                       <td className="px-3 py-2"><div className="font-medium">{r.name}</div>{r.businesses.length > 1 && <div className="text-xs text-muted-foreground">+{r.businesses.length - 1} more business{r.businesses.length > 2 ? "es" : ""}: {r.businesses.slice(1).join(", ")}</div>}<div className="font-mono text-xs text-muted-foreground">{r.phoneMasked}</div></td>
                       <td className="px-3">{SEG[r.segment] ?? r.segment}<div className="text-xs text-muted-foreground">{r.employees} staff · {r.sites} site(s)</div></td>
                       <td className="px-3">{r.city}</td>
@@ -74,7 +83,7 @@ export default function Customers() {
                         </div>
                       </td></tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

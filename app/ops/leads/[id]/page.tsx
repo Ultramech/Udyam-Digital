@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { NEXT_ACTION, OpsShell } from "@/components/ops/shell";
+import { Journey, Panel } from "@/components/ops/kit";
+import { Gauge } from "@/components/ops/charts";
 import { LinesList } from "@/components/customer/bundle-card";
 import { RichText } from "@/components/rich-text";
 import { bundleName } from "@/lib/i18n/bundles";
@@ -42,6 +44,10 @@ export default function LeadDetail({ params }: { params: Promise<{ id: string }>
         <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">{l.business}</h1><div className="font-mono text-xs text-muted-foreground">{l.id} · historical dataset</div></div>
         <Card className="grid grid-cols-2 gap-3 p-4 text-sm md:grid-cols-4">{[["Segment", l.segment], ["City", l.city], ["Source", l.source], ["Reached", l.stage], ["Outcome", l.outcome], ["GSTIN", l.hasGstin ? "Yes" : "No"], ["Turnover", l.turnover], ["People / sites", `${l.employees} / ${l.sites}`]].map(([k, v]) => <div key={k}><div className="text-[11px] uppercase text-muted-foreground">{k}</div><div className="font-medium">{v}</div></div>)}</Card>
         {l.dropReason && <Card className="p-4 text-sm"><div className="text-[11px] uppercase text-muted-foreground">Why it dropped</div><div className="font-medium">{l.dropReason}</div>{l.winback && <Badge className="mt-2">digitally fixable → win-back</Badge>}</Card>}
+        <Panel title="How far this lead got" sub={l.outcome === "Activated" ? "Activated." : `Dropped${l.dropReason ? `: ${l.dropReason}` : ""}.`}>
+          <Journey steps={(() => { const S = ["Lead", "Contacted", "Needs assessed", "Quote accepted", "KYC complete", "Activated"]; const at = S.indexOf(l.stage); return S.map((label, i) => ({ label, state: i < at || (l.outcome === "Activated") ? "done" as const : i === at ? (l.outcome === "Activated" ? "done" as const : "stopped" as const) : "todo" as const })); })()} />
+        </Panel>
+        <Panel title="Propensity" sub="Ranking aid from a class-balanced model, not a calibrated probability."><div className="grid items-center gap-6 sm:grid-cols-[10rem_minmax(0,1fr)]"><Gauge value={Math.round(l.score.probability * 100)} label={`${l.score.band} propensity`} tone={l.score.band === "high" ? "green" : l.score.band === "medium" ? "amber" : "red"} /><ul className="space-y-1.5 text-sm">{l.score.drivers.map((x, i) => <li key={i} className="flex gap-2"><span className={x.direction === "up" ? "text-success" : "text-destructive"}>{x.direction === "up" ? "▲" : "▼"}</span>{x.text}</li>)}</ul></div></Panel>
         <Card className="space-y-2 p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><Sparkles className="size-4 text-primary" />Propensity {Math.round(l.score.probability * 100)} · {l.score.band}</div>
           <ul className="space-y-1">{l.score.drivers.map((x, i) => <li key={i} className="flex gap-2"><span className={x.direction === "up" ? "text-success" : "text-destructive"}>{x.direction === "up" ? "▲" : "▼"}</span>{x.text}</li>)}</ul>
           <div className="text-xs text-muted-foreground">Expected value {inr(l.expectedValue)}/month · priority {inr(l.priority)} · next best action: <b>{NEXT_ACTION[l.nextAction] ?? l.nextAction}</b></div></Card></div></OpsShell>
@@ -60,6 +66,13 @@ export default function LeadDetail({ params }: { params: Promise<{ id: string }>
             {l.assistCredit && <Badge variant="outline">assist credit → {l.assistCredit.to}</Badge>}</div>
         </div>
 
+        <Panel title="Where this journey is" sub="From the advisor chat to an activated order.">
+          <Journey steps={(() => {
+            const flags = [true, !!(l.bundleId || l.monthly), !!d.quote, !!d.kyc && ["verified", "approved"].includes(d.kyc.status) || !!d.kyc?.review, !!d.order, d.order?.payment === "success", d.order?.stage === "ACTIVATED"];
+            const first = flags.findIndex((f) => !f);
+            return ["Advisor chat", "Plan", "Quote", "KYC", "Order", "Paid", "Activated"].map((label, i) => ({ label, state: flags[i] ? "done" as const : i === first ? "current" as const : "todo" as const, note: label === "KYC" && d.kyc && !flags[i] ? d.kyc.status : undefined }));
+          })()} />
+        </Panel>
         <Card className="space-y-1.5 border-primary/30 bg-accent p-4"><div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="size-4 text-primary" />Summary (built from structured facts — it cannot invent anything)</div>
           <ul className="space-y-0.5 text-sm">{d.summary.map((s, i) => <li key={i}>{s}</li>)}</ul>
           <div className="pt-1 text-sm">Next best action: <b>{NEXT_ACTION[d.nextAction] ?? d.nextAction}</b></div></Card>

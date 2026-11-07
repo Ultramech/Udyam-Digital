@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CalendarDays, Layers, Target, TrendingDown, TrendingUp, Users, Wallet } from "lucide-react";
+import { CalendarDays, Layers, Target, TrendingUp, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AreaChart, Donut, Funnel, HBars, Meter } from "@/components/ops/charts";
-import { ExportButton, Insight, Kpi, More, PageHeader, Panel, Pill, selectCls } from "@/components/ops/kit";
+import { ExportButton, InsightList, Kpi, More, PageHeader, Panel, Pill, selectCls, TargetsPanel, useInsights } from "@/components/ops/kit";
 import { OpsShell } from "@/components/ops/shell";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -21,7 +21,7 @@ interface Data {
   churnByBundle: { bundle: string; customers: number; churn: number; avgMonthly: number }[];
   dropReasons: { reason: string; n: number }[];
   retention: { bands: { band: Band; customers: number; actualChurn: number }[]; top: { id: string; business: string; segment: string; source: string; monthly: number; churned: boolean; risk: Risk }[] };
-  targets: { metric: string; baseline: string; target: string; lever: string }[];
+  targets: Parameters<typeof TargetsPanel>[0]["targets"];
   churnModel: { n: number; churners: number; baseRate: number; aucCv5: number; liftTopQuartile: number; note: string };
   liveAtRisk: { id: string; business: string; monthly: number; risk: Risk }[];
 }
@@ -34,6 +34,7 @@ const monthName = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleDateStrin
 export default function Analytics() {
   const [f, setF] = useState<Record<string, string>>({});
   const [d, setD] = useState<Data | null>(null);
+  const insights = useInsights("analytics", f);
   useEffect(() => {
     const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
     api<Data>("GET", `/api/ops/analytics${qs ? `?${qs}` : ""}`).then(setD).catch(() => {});
@@ -41,8 +42,6 @@ export default function Analytics() {
   const sp = (k: "leads" | "conversion" | "avgDays" | "cac" | "churn") => d?.trend.map((t) => t[k]).filter((v): v is number => v !== null);
   const filtered = Object.values(f).some(Boolean);
 
-  const top = d?.revenueByProduct[0];
-  const conv = d?.totals.conversion ?? 0;
   const nps = d?.nps;
 
   return (
@@ -106,18 +105,11 @@ export default function Analytics() {
             </div>
 
             <section className="space-y-3" aria-label="Key insights">
-              <h2 className="text-lg font-extrabold">Key insights</h2>
-              <div className="grid gap-4 lg:grid-cols-3">
-                <Insight icon={TrendingUp} tone="red" title="Activation can improve">Lead → activation is {conv}%. The proposed pilot target is 15%, mostly from the step between needs assessed and quote accepted.</Insight>
-                {top && <Insight icon={Wallet} tone="amber" title={`${top.id} drives the most revenue`}>{top.name} contributes {inr(top.revenue)} a month across {top.customers} activated customers ({Math.round((top.revenue / Math.max(1, d.totals.mrrActivated)) * 100)}% of all activated revenue).</Insight>}
-                <Insight icon={TrendingDown} tone="green" title={d.totals.churn6m > 10 ? "Churn needs attention" : "Churn is within target"}>6-month churn is {d.totals.churn6m}% against a proposed target of 10% or less. Early check-ins on at-risk customers are the lever.</Insight>
-              </div>
+              <div className="flex flex-wrap items-center gap-3"><h2 className="text-lg font-extrabold">Key insights</h2><Pill>{filtered ? "about this view, compared with its own average" : "computed from the data · ranked by strength of evidence"}</Pill></div>
+              <InsightList data={insights} />
             </section>
 
-            <Panel title="Pilot targets (proposed, not results)" sub="Baselines are from the full file, not the filter.">
-              <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground">{["Metric", "Baseline", "Pilot target", "What has to change"].map((h) => <th key={h} className="px-3 py-2 font-semibold">{h}</th>)}</tr></thead>
-                <tbody>{d.targets.map((t) => <tr key={t.metric} className="border-t"><td className="px-3 py-2.5 font-semibold">{t.metric}</td><td className="px-3">{t.baseline}</td><td className="px-3 font-bold text-primary">{t.target}</td><td className="px-3 text-xs text-muted-foreground">{t.lever}</td></tr>)}</tbody></table></div>
-            </Panel>
+            <TargetsPanel targets={d.targets} sub="Baselines are from the full file, not the filter. Targets are proposals, defined once for every page." />
 
             <Panel title="Retention risk at activation" sub={`Logistic model on ${d.churnModel.n} activated customers (${d.churnModel.churners} churned). 5-fold cross-validated AUC ${d.churnModel.aucCv5}, top-quartile lift ${d.churnModel.liftTopQuartile}×. A modest ranking signal for who to call first: correlation, not cause. Features known at activation only (no NPS).`}>
               <div className="grid gap-3 sm:grid-cols-3">

@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getProduct } from "@/lib/catalogue";
 import { churnRisk } from "./churn";
+import { evaluateTargets } from "./targets";
 
 /**
  * Business analytics over the supplied quarter of leads (smb_leads.csv), filterable by segment, city tier, source, language
@@ -24,9 +25,13 @@ export function filterOptions() {
   return { segment: uniq("segment"), tier: uniq("city_tier"), source: uniq("lead_source"), language: uniq("preferred_language"), month: [...new Set(r.map((x) => x.created_date.slice(0, 7)))].sort() };
 }
 
+/** The dataset rows, and the slice a filter selects. Shared with the insight engine so both always look at the same leads. */
+export const datasetRows = data;
+export const sliceRows = (f: Filters) => data().filter((r) => (!f.segment || r.segment === f.segment) && (!f.tier || r.city_tier === f.tier) && (!f.source || r.lead_source === f.source)
+  && (!f.language || r.preferred_language === f.language) && (!f.month || r.created_date.startsWith(f.month)));
+
 export function analytics(f: Filters) {
-  const all = data().filter((r) => (!f.segment || r.segment === f.segment) && (!f.tier || r.city_tier === f.tier) && (!f.source || r.lead_source === f.source)
-    && (!f.language || r.preferred_language === f.language) && (!f.month || r.created_date.startsWith(f.month)));
+  const all = sliceRows(f);
   const act = all.filter((r) => r.outcome === "Activated");
   const reached = (r: Raw) => STAGES.indexOf(r.stage_reached);
   const funnel = STAGES.map((s, i) => ({ stage: s, leads: all.filter((r) => reached(r) >= i).length }))
@@ -108,14 +113,8 @@ export function analytics(f: Filters) {
   };
 }
 
-/** Proposed pilot targets (from the plan), next to the baseline measured in this file. Targets are proposals, not results. */
+/** Proposed pilot targets next to the baseline measured in this file (definitions live in ./targets: one source for every page). */
 export function pilotTargets() {
   const t = analytics({}).totals;
-  return [
-    { metric: "Lead → activation", baseline: `${t.conversion}%`, target: "15%", lever: "Advisor + instant quote at the steepest drop (needs assessed → quote accepted)" },
-    { metric: "Days lead → activation", baseline: `${t.avgDaysToActivate}`, target: "≤ 7 (3 for SIM/AirFiber)", lever: "Near-instant KYC, self-booked install slots, AirFiber where fibre isn't feasible" },
-    { metric: "Status chases per customer", baseline: `${t.avgChases}`, target: "≤ 1", lever: "Live tracker + proactive WhatsApp/Telegram updates" },
-    { metric: "CAC per activation", baseline: `₹${t.cac.toLocaleString("en-IN")}`, target: "₹7,500", lever: "Digital-only for micro; field force re-sorted to multi-site and manufacturers" },
-    { metric: "6-month churn", baseline: `${t.churn6m}%`, target: "≤ 10%", lever: "Correct-first-time bundles (rules engine) + at-risk check-ins" },
-  ];
+  return evaluateTargets({ conversion: t.conversion, avgDaysToActivate: t.avgDaysToActivate, avgChases: t.avgChases, cac: t.cac, churn6m: t.churn6m });
 }

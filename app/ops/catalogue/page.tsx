@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi, Panel } from "@/components/ops/kit";
+import { BandRange, ColumnChart, DonutLegend } from "@/components/ops/charts";
+import { Boxes, Clock, PauseCircle, SlidersHorizontal } from "lucide-react";
 import { plainName } from "@/lib/catalogue/plain";
 import { api, ApiError } from "@/lib/client/api";
 import { fmtTime, inr } from "@/lib/client/format";
@@ -60,6 +63,25 @@ export default function CatalogueAdmin() {
             Eligibility rules and dependencies are locked to <code>product_catalogue.csv</code> — they are the contract the rules engine is tested against, so changing them is a code + test change.</p>
         </div>
         {err && <Card className="p-4 text-sm">{err}</Card>}
+        {rows && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <Kpi icon={Boxes} label="Products" value={rows.length} />
+              <Kpi icon={PauseCircle} label="Paused" value={rows.filter((r) => r.paused).length} sub="not offered to new quotes" />
+              <Kpi icon={SlidersHorizontal} label="Price adjusted" value={rows.filter((r) => r.priceMin !== r.original.priceMin).length} sub="inside the published band" />
+              <Kpi icon={Clock} label="Average install" value={`${(rows.reduce((t, r) => t + r.installDays, 0) / Math.max(1, rows.length)).toFixed(1)} days`} />
+            </div>
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+              <Panel title="By category"><DonutLegend centre={String(rows.length)} sub="products" parts={Object.entries(rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.category]: (m[r.category] ?? 0) + 1 }), {})).map(([label, value]) => ({ label, value }))} /></Panel>
+              <Panel title="Install time" sub="Days from order to live, by product."><ColumnChart height={190} data={rows.map((r) => ({ label: r.id, value: r.installDays }))} format={(n) => `${n}d`} /></Panel>
+            </div>
+            <Panel title="Where each price sits in its published band" sub="The marker is today's indicative price; the faint tick is the published original.">
+              <div className="grid max-h-[26rem] gap-x-8 gap-y-4 overflow-y-auto pr-2 md:grid-cols-2 xl:grid-cols-3">
+                {rows.map((r) => <div key={r.id}><div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm"><span className="truncate font-semibold">{r.id} · {r.csvName}</span>{r.paused && <span className="rounded-full bg-warning/15 px-2 text-[10px] font-bold text-warning">paused</span>}</div><BandRange min={r.original.priceMin} max={r.priceMax} value={r.priceMin} original={r.original.priceMin} /></div>)}
+              </div>
+            </Panel>
+          </div>
+        )}
         <Input placeholder="Filter by id, name or category" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-sm" />
         {rows && (
           <Card className="overflow-x-auto p-0">
