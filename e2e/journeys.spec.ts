@@ -49,6 +49,18 @@ test.describe("Customer journey (phone)", () => {
     expect(await page.getByRole("heading", { name: "Log in to your Business Account" }).evaluate(lum)).toBeLessThan(0.4);
   });
 
+  test("welcome on a desktop window: text on the left, illustration on the right, no sideways scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const h1 = page.getByRole("heading", { level: 1, name: /one place/ });
+    await expect(h1).toBeVisible({ timeout: 10000 });
+    const art = page.getByRole("img", { name: /Airtel Business shop/ });
+    await expect(art).toBeVisible();
+    const [a, b] = [await h1.boundingBox(), await art.boundingBox()];
+    expect(a!.x + a!.width).toBeLessThan(b!.x); // side by side, not stacked
+    await noSideScroll(page);
+  });
+
   test("signed out: every customer page sends you to sign in first, and comes back after", async ({ page }) => {
     for (const path of ["/advisor", "/catalogue", "/quote/QT-AAAAAA", "/support", "/account", "/track/UD-AAAAAA?t=x"]) {
       await page.goto(path);

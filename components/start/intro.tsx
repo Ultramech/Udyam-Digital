@@ -130,8 +130,8 @@ function Welcome() {
 
   return (
     <div className="light min-h-dvh bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_58%,oklch(0.975_0.016_20)_100%)]">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-4 pt-5">
-        <header className="relative flex items-center justify-center">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-4 pt-5 lg:max-w-6xl lg:justify-center lg:px-10 lg:pb-10 lg:pt-8">
+        <header className="relative flex items-center justify-center lg:justify-start">
           <Wordmark />
           <span className="absolute right-0"><LanguageSwitch className="[&_select]:h-9 [&_select]:w-10 [&_select]:pl-8 [&_select]:pr-0 [&_select]:text-transparent" /></span>
         </header>
@@ -139,17 +139,19 @@ function Welcome() {
         <div ref={rail} onScroll={(e) => { const el = e.currentTarget; setI(Math.round(el.scrollLeft / el.clientWidth)); }}
           onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)} onPointerDown={() => setPaused(true)} onPointerUp={() => setPaused(false)}
           onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
-          className="-mx-6 mt-5 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          className="-mx-6 mt-5 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:mx-0 lg:mt-8 lg:flex-none [&::-webkit-scrollbar]:hidden">
           {SLIDES.map((s, n) => (
-            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col px-6">
-              <h1 className="text-[2.125rem] font-extrabold leading-[1.12] tracking-tight [@media(max-height:700px)]:text-[1.75rem]">
+            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col px-6 lg:grid lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-x-16 lg:px-0">
+              <div className="lg:col-start-1 lg:row-start-1 lg:self-end">
+              <h1 className="text-[2.125rem] font-extrabold leading-[1.12] tracking-tight lg:text-[3.25rem] lg:leading-[1.08] [@media(max-height:700px)]:text-[1.75rem] lg:[@media(max-height:700px)]:text-[2.5rem]">
                 {(hi ? s.titleHi : s.title).map((l, k, a) => <span key={k} className={cn("block", k === a.length - 1 && "text-primary")}>{l}</span>)}
               </h1>
-              <p className="mt-3 max-w-[20rem] text-[1.125rem] leading-snug text-foreground/85 [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:text-base">{hi ? s.subHi : s.sub}</p>
-              <div className="-mx-1 grid flex-1 place-items-center py-3">{art[n]}</div>
-              <ul className="space-y-3 [@media(max-height:700px)]:space-y-2">
+              <p className="mt-3 max-w-[20rem] text-[1.125rem] leading-snug text-foreground/85 lg:mt-5 lg:max-w-md lg:text-xl [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:text-base">{hi ? s.subHi : s.sub}</p>
+              </div>
+              <div className="-mx-1 grid flex-1 place-items-center py-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mx-0 lg:flex-none lg:rounded-[2.5rem] lg:bg-[radial-gradient(90%_80%_at_50%_30%,oklch(0.975_0.02_20),oklch(0.94_0.045_22))] lg:p-10 lg:shadow-card">{art[n]}</div>
+              <ul className="space-y-3 lg:col-start-1 lg:row-start-2 lg:mt-8 lg:space-y-4 [@media(max-height:700px)]:space-y-2">
                 {s.items.map((it) => (
-                  <li key={it.en} className="flex items-center gap-4 text-[0.9375rem] font-medium">
+                  <li key={it.en} className="flex items-center gap-4 text-[0.9375rem] font-medium lg:text-lg">
                     <span className="grid h-9 w-11 shrink-0 place-items-center rounded-2xl bg-[oklch(0.955_0.03_20)] text-primary"><it.icon className="size-5" strokeWidth={1.75} aria-hidden /></span>{hi ? it.hi : it.en}
                   </li>
                 ))}
@@ -158,7 +160,7 @@ function Welcome() {
           ))}
         </div>
 
-        <div className="mt-4 flex justify-center gap-3" role="tablist" aria-label={H("Welcome slides", "वेलकम स्लाइड")}>
+        <div className="mt-4 flex justify-center gap-3 lg:mt-8 lg:justify-start" role="tablist" aria-label={H("Welcome slides", "वेलकम स्लाइड")}>
           {SLIDES.map((_, n) => (
             <button key={n} type="button" role="tab" aria-selected={n === i} aria-label={`${n + 1}`} onClick={() => goTo(n)} className="flex size-6 items-center justify-center">
               <span className={cn("block rounded-full transition-all", n === i ? "size-2.5 bg-primary" : "size-2.5 bg-foreground/20")} />
@@ -166,10 +168,10 @@ function Welcome() {
           ))}
         </div>
         <Button size="lg" onClick={() => router.push("/login")}
-          className="mt-3 h-14 w-full rounded-2xl bg-[linear-gradient(180deg,oklch(0.56_0.2_27),oklch(0.45_0.18_27))] text-lg text-white shadow-[0_12px_24px_-10px_rgb(150_20_20/0.65)] hover:brightness-105">
+          className="mt-3 h-14 w-full rounded-2xl bg-[linear-gradient(180deg,oklch(0.56_0.2_27),oklch(0.45_0.18_27))] text-lg text-white lg:max-w-[26rem] shadow-[0_12px_24px_-10px_rgb(150_20_20/0.65)] hover:brightness-105">
           {H("Get Started", "शुरू करें")}<ArrowRight className="size-5" aria-hidden />
         </Button>
-        <p className="mt-1 text-center text-sm">
+        <p className="mt-1 text-center text-sm lg:max-w-[26rem]">
           <Link href="/explore" className="inline-flex min-h-11 items-center font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">{H("Explore plans first", "पहले प्लान देखें")}</Link>
         </p>
       </div>
