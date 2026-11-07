@@ -129,7 +129,7 @@ function Welcome() {
   ];
 
   return (
-    <div className="min-h-dvh bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_58%,oklch(0.975_0.016_20)_100%)]">
+    <div className="light min-h-dvh bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_58%,oklch(0.975_0.016_20)_100%)]">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-4 pt-5">
         <header className="relative flex items-center justify-center">
           <Wordmark />
@@ -141,12 +141,12 @@ function Welcome() {
           onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
           className="-mx-6 mt-5 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SLIDES.map((s, n) => (
-            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col px-6">
+            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col justify-center px-6">
               <h1 className="text-[2.125rem] font-extrabold leading-[1.12] tracking-tight">
                 {(hi ? s.titleHi : s.title).map((l, k, a) => <span key={k} className={cn("block", k === a.length - 1 && "text-primary")}>{l}</span>)}
               </h1>
               <p className="mt-3 max-w-[20rem] text-[1.125rem] leading-snug text-foreground/85">{hi ? s.subHi : s.sub}</p>
-              <div className="-mx-1 grid flex-1 place-items-center py-2">{art[n]}</div>
+              <div className="-mx-1 my-4">{art[n]}</div>
               <ul className="space-y-3">
                 {s.items.map((it) => (
                   <li key={it.en} className="flex items-center gap-4 text-[0.9375rem] font-medium">

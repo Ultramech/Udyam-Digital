@@ -36,6 +36,19 @@ test.describe("Customer journey (phone)", () => {
     for (const n of ["2", "3", "1"]) await expect(page.getByRole("tab", { name: n })).toHaveAttribute("aria-selected", "true", { timeout: 9000 });
   });
 
+  test("start screens stay light and readable when the device is set to dark", async ({ page }) => {
+    await page.addInitScript(() => { try { localStorage.setItem("theme", "dark"); } catch { /* ignore */ } });
+    await page.goto("/");
+    const h1 = page.getByRole("heading", { level: 1, name: /one place/ });
+    await expect(h1).toBeVisible({ timeout: 10000 });
+    expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(true);
+    const lum = (el: Element) => { const [r, g, b] = getComputedStyle(el).color.match(/\d+(\.\d+)?/g)!.map(Number); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+    expect(await page.getByText(/Internet, calling, security and more/).evaluate(lum)).toBeLessThan(0.4); // dark text on the white screen, not light-on-light
+    expect(await page.getByText("High-speed internet & calling").evaluate(lum)).toBeLessThan(0.4);
+    await page.goto("/login");
+    expect(await page.getByRole("heading", { name: "Log in to your Business Account" }).evaluate(lum)).toBeLessThan(0.4);
+  });
+
   test("signed out: every customer page sends you to sign in first, and comes back after", async ({ page }) => {
     for (const path of ["/advisor", "/catalogue", "/quote/QT-AAAAAA", "/support", "/account", "/track/UD-AAAAAA?t=x"]) {
       await page.goto(path);

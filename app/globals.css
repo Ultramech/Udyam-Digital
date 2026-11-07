@@ -59,7 +59,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+:root, .light {
   /* Udyam Digital: warm paper, ink text, one red signal for the single main action per screen. Status colours always mean something. */
   --paper: oklch(0.984 0.005 295);
   --ink: oklch(0.2 0.012 60);
@@ -102,6 +102,9 @@
   --sidebar-border: oklch(0.89 0.01 80);
   --sidebar-ring: oklch(0.55 0.22 27);
 }
+
+/* A subtree marked .light keeps the light palette even when the device is on dark (the start screens are designed light). */
+.light { color-scheme: light; color: var(--foreground); }
 
 /* Dark: deep warm charcoal surfaces, the same Airtel red (a touch brighter so it reads on dark), status colours kept meaningful. */
 .dark {

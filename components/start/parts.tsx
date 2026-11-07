@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 /** Full-screen frame for the start screens: soft pink wash, a centred phone-width column and a pink wave at the foot. */
 export function AuthScreen({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[linear-gradient(180deg,var(--card)_0%,var(--card)_55%,var(--accent)_100%)]">
+    <div className="light relative min-h-dvh overflow-hidden bg-[linear-gradient(180deg,var(--card)_0%,var(--card)_55%,var(--accent)_100%)]">
       <Wave />
       <div className={cn("relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-8 pt-5", className)}>{children}</div>
     </div>
