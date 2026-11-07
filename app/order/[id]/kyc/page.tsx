@@ -1,7 +1,7 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, FlaskConical, Search, ShieldAlert } from "lucide-react";
+import { BadgeCheck, FlaskConical, Landmark, Search, ShieldAlert, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,13 +35,15 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
   const [busy, setBusy] = useState(false);
   const [removed, setRemoved] = useState<{ productId: string }[]>([]);
   const [chosenSet, setSet] = useState<string | null>(null);
-  const [dl, setDl] = useState(false); // DigiLocker configured on the server AND the owner opted into that purpose
+  const [dlLive, setDlLive] = useState(false); // DigiLocker is connected on the server
+  const [purposes, setPurposes] = useState<{ kyc: boolean; service: boolean; digilocker: boolean; marketing: boolean } | null>(null);
   useEffect(() => {
     Promise.all([api<{ services: { id: string; mode: string }[] }>("GET", "/api/status"), api<{ quote: { consentId?: string } }>("GET", `/api/quote/${id}`)])
       .then(async ([st, qv]) => {
-        if (st.services.find((x) => x.id === "digilocker")?.mode !== "live" || !qv.quote.consentId) return;
-        const c = await api<{ receipt: { purposes: { digilocker: boolean } } }>("GET", `/api/consent?id=${qv.quote.consentId}`).catch(() => null);
-        setDl(!!c?.receipt.purposes.digilocker);
+        setDlLive(st.services.find((x) => x.id === "digilocker")?.mode === "live");
+        if (!qv.quote.consentId) return;
+        const c = await api<{ receipt: { purposes: { kyc: boolean; service: boolean; digilocker: boolean; marketing: boolean } } }>("GET", `/api/consent?id=${qv.quote.consentId}`).catch(() => null);
+        if (c) setPurposes(c.receipt.purposes);
       }).catch(() => {});
     const r = new URLSearchParams(window.location.search).get("digilocker");
     if (r) toast[r === "ok" ? "success" : "info"](r === "ok" ? "Document fetched from DigiLocker." : r === "none" ? "No matching document in your DigiLocker — please upload it." : r === "declined" ? "DigiLocker access was not granted." : "DigiLocker didn't respond — please upload instead.");
@@ -113,6 +115,17 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
         : c === "FILE_TOO_LARGE" ? "The file is too large (limit 2 MB)." : t("error_generic"));
       return false;
     } finally { setBusy(false); }
+  }
+  /** Starts DigiLocker / EntityLocker for one slot. The optional DigiLocker consent is recorded right here if it was left off. */
+  async function startLocker(slot: Slot) {
+    setBusy(true);
+    try {
+      if (!purposes?.digilocker) {
+        const r = await api<{ receipt: { purposes: NonNullable<typeof purposes> } }>("POST", "/api/consent", { quoteId: id, lang, purposes: { kyc: true, service: true, marketing: purposes?.marketing ?? false, digilocker: true } });
+        setPurposes(r.receipt.purposes);
+      }
+      window.location.assign(`/api/digilocker/start?quoteId=${id}&slot=${slot}`);
+    } catch { toast.error(t("error_generic")); setBusy(false); }
   }
   async function attachSet() {
     setBusy(true);
@@ -187,13 +200,33 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
           </Card>
         )}
 
+        {/* fastest route: DigiLocker for identity, EntityLocker for the business's own registrations */}
+        {dlLive && SLOTS.filter(visible).some((s) => !k.docs[s]) && (
+          <Card className="space-y-3 border-primary/30 bg-accent/40 p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary"><ShieldCheck className="size-5" aria-hidden /></span>
+              <div className="min-w-0"><div className="font-bold">{(lang === "hi" || lang === "mr") ? "तेज़ी से सत्यापित करें — फ़ोटो की ज़रूरत नहीं" : "Verify faster, no photos needed"}</div>
+                <p className="mt-0.5 text-sm text-muted-foreground">{(lang === "hi" || lang === "mr") ? "आप DigiLocker की अपनी स्क्रीन पर लॉगिन करके तय करते हैं कि क्या साझा करना है। हम सिर्फ़ ज़रूरी जानकारी रखते हैं।" : "You log in on DigiLocker's own screen and choose what to share. We keep only what verification needs."}</p></div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {SLOTS.filter(visible).some((s) => (s === "signatory_id" || s === "address_proof") && !k.docs[s]) && (
+                <Button className="gap-2" disabled={busy} onClick={() => startLocker("signatory_id")}><ShieldCheck className="size-4" aria-hidden />{(lang === "hi" || lang === "mr") ? "DigiLocker से आधार लाएँ" : "Fetch Aadhaar from DigiLocker"}</Button>
+              )}
+              {(["gst_certificate", "udyam_certificate"] as Slot[]).filter((s) => visible(s) && !k.docs[s]).map((s) => (
+                <Button key={s} variant="outline" className="gap-2" disabled={busy} onClick={() => startLocker(s)}><Landmark className="size-4" aria-hidden />{s === "gst_certificate" ? "Fetch GST from EntityLocker" : "Fetch Udyam from EntityLocker"}</Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "या नीचे फ़ोटो/PDF अपलोड करें, या आधार ऑफ़लाइन e-KYC ZIP दें।" : "Or upload a photo or PDF below, or use an Aadhaar offline e-KYC ZIP."}</p>
+          </Card>
+        )}
+
         {/* 2. only the documents still needed */}
         <section className="space-y-3">
           {SLOTS.filter(visible).map((s) => (
             <DocSlot key={s} slot={s} doc={k.docs[s]} checks={checks} busy={busy} onFile={(f) => upload(s, f)}
               onAadhaar={s === "signatory_id" || s === "address_proof" ? (f, phrase) => aadhaar(s, f, phrase) : undefined}
               onSample={() => api<{ kyc: KycView; quote: QuoteView }>("POST", `/api/kyc/${id}`, { action: "specimen", applicant: set, slot: s }).then((r) => { setK(r.kyc); setQ(r.quote); }).catch(() => toast.info((lang === "hi" || lang === "mr") ? "इस सेट में यह दस्तावेज़ नहीं है।" : `Sample set ${set} has no document for this slot.`))}
-              sampleLabel={`${t("use_sample")} (${set})`} digilockerHref={dl ? `/api/digilocker/start?quoteId=${id}&slot=${s}` : undefined} />
+              sampleLabel={`${t("use_sample")} (${set})`} onDigilocker={dlLive ? () => startLocker(s) : undefined} digilockerLabel={s === "gst_certificate" || s === "udyam_certificate" ? "EntityLocker" : "DigiLocker"} />
           ))}
           {SLOTS.filter(visible).length === 0 && k.status === "verified" && <Card className="flex flex-row items-center gap-2 p-3.5 text-sm text-success"><BadgeCheck className="size-4" />{t("kyc_ok")}</Card>}
         </section>
