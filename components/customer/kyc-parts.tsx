@@ -44,41 +44,65 @@ export function CheckList({ checks, slot }: { checks: Check[]; slot?: Slot }) {
   );
 }
 
-export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel, onDigilocker, digilockerLabel, onAadhaar }: {
+/** What each document is for, in plain words, so nobody has to wonder why it is being asked for. */
+const DOC_INFO: Record<Slot, { title: [string, string]; why: [string, string] }> = {
+  signatory_id: { title: ["Your ID", "आपकी ID"], why: ["Confirms who is signing for the business. Aadhaar, PAN or driving licence.", "बिज़नेस की ओर से कौन साइन कर रहा है, यह पक्का करता है। आधार, PAN या ड्राइविंग लाइसेंस।"] },
+  address_proof: { title: ["Shop address proof", "दुकान का पता प्रमाण"], why: ["Confirms where we install. A recent electricity or phone bill (under 90 days), or your Aadhaar.", "हम कहाँ इंस्टॉल करेंगे, यह पक्का करता है। हाल का बिजली या फ़ोन बिल (90 दिन से कम), या आधार।"] },
+  gst_certificate: { title: ["GST certificate", "GST सर्टिफिकेट"], why: ["Confirms your GST registration, so GST-linked services can stay in your plan.", "आपका GST रजिस्ट्रेशन पक्का करता है, ताकि GST वाली सेवाएँ प्लान में रहें।"] },
+  udyam_certificate: { title: ["Udyam certificate", "उद्यम सर्टिफिकेट"], why: ["Confirms your Udyam (MSME) registration.", "आपका उद्यम (MSME) रजिस्ट्रेशन पक्का करता है।"] },
+};
+
+export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel, onDigilocker, digilockerLabel, onAadhaar, quiet }: {
   slot: Slot; doc?: KycView["docs"][string]; checks: Check[]; busy: boolean; onFile: (f: File) => void; onSample?: () => void; sampleLabel?: string;
   /** Fetch this document from DigiLocker / EntityLocker (consent is asked for on the way if needed). */
   onDigilocker?: () => void; digilockerLabel?: string;
   /** Aadhaar offline e-KYC (signatory ID and address proof only): ZIP + the owner's share phrase. */
   onAadhaar?: (f: File, phrase: string) => Promise<boolean>;
+  /** Another button on the screen is the recommended action, so uploading is shown as an ordinary option (one red button per screen). */
+  quiet?: boolean;
 }) {
   const { t, lang } = useI18n();
+  const hi = lang === "hi" || lang === "mr";
   const ref = useRef<HTMLInputElement>(null);
-  const mine = checks.filter((c) => c.slot === slot && c.severity !== "info");
+  const info = DOC_INFO[slot];
+  // a document that was simply never given is "needed", not a failure: the red/amber tones are for documents that were actually checked
+  const mine = checks.filter((c) => c.slot === slot && c.severity !== "info" && (doc || c.code !== "DOC_MISSING"));
   const worst: Severity | "ok" | null = !doc && !mine.length ? null : (["block", "reupload", "review"] as Severity[]).find((s) => mine.some((c) => c.severity === s)) ?? "ok";
   return (
-    <Card className="space-y-2.5 p-3.5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold"><FileImage className="size-4" />{t(`doc_${slot}`)}</div>
-        {worst && <VerdictChip severity={worst} />}
+    <Card className="space-y-3 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[0.9375rem] font-bold"><FileImage className="size-4 shrink-0" aria-hidden />{info.title[hi ? 1 : 0]}</div>
+          <p className="mt-0.5 text-sm text-muted-foreground">{info.why[hi ? 1 : 0]}</p>
+        </div>
+        {worst ? <VerdictChip severity={worst} /> : <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{hi ? "ज़रूरी" : "Needed"}</span>}
       </div>
       {doc && (
         <div className="rounded-lg bg-secondary p-2.5 text-xs">
-          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground"><span>{(lang === "hi" || lang === "mr") ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-xs">{doc.source === "aadhaar_offline" ? ((lang === "hi" || lang === "mr") ? "UIDAI हस्ताक्षर सत्यापित" : "UIDAI signature verified") : (doc.source === "digilocker" || doc.source === "digilocker_aadhaar") ? ((lang === "hi" || lang === "mr") ? "DigiLocker से मिला" : "From DigiLocker") : (lang === "hi" || lang === "mr") ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
+          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground"><span>{hi ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-xs">{doc.source === "aadhaar_offline" ? (hi ? "UIDAI हस्ताक्षर सत्यापित" : "UIDAI signature verified") : (doc.source === "digilocker" || doc.source === "digilocker_aadhaar") ? (hi ? "DigiLocker से मिला" : "From DigiLocker") : hi ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5">
             {Object.entries(doc.fields).filter(([k]) => k !== "document").map(([k, v]) => <div key={k} className="min-w-0"><dt className="text-xs text-muted-foreground">{k.replace(/_/g, " ")}</dt><dd className="truncate font-medium">{v ?? <span className="text-destructive">—</span>}</dd></div>)}
           </dl>
         </div>
       )}
-      {mine.length > 0 && <CheckList checks={checks} slot={slot} />}
-      <div className="flex flex-wrap gap-2">
-        <input ref={ref} type="file" accept="image/png,image/jpeg,application/pdf" className="sr-only" aria-label={`${t("upload")} ${t(`doc_${slot}`)}`} onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
-        <Button size="sm" variant="outline" disabled={busy} className="gap-1.5" onClick={() => ref.current?.click()}><Upload className="size-3.5" />{doc ? ((lang === "hi" || lang === "mr") ? "दोबारा अपलोड" : "Replace") : t("take_photo")}</Button>
-        {onDigilocker && <Button size="sm" variant="outline" disabled={busy} onClick={onDigilocker}>{digilockerLabel ?? "DigiLocker"}</Button>}
-        {onSample && <Button size="sm" variant="ghost" disabled={busy} onClick={onSample}>{sampleLabel ?? t("use_sample")}</Button>}
-      </div>
-      {onAadhaar && <AadhaarOffline busy={busy} onSubmit={onAadhaar} />}
-      {busy ? <p className="text-xs text-primary" role="status">{(lang === "hi" || lang === "mr") ? "पढ़ा जा रहा है… (10–30 सेकंड)" : "Reading your document… (10–30 seconds)"}</p>
-        : !doc && <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "PNG, JPG या PDF · 5 MB तक · DigiLocker से डाउनलोड की गई PDF भी चलती है" : "PNG, JPG or PDF · up to 5 MB · lay it flat, good light · PDFs downloaded from DigiLocker work too"}</p>}
+      {mine.length > 0 && <CheckList checks={mine} slot={slot} />}
+      <input ref={ref} type="file" accept="image/png,image/jpeg,application/pdf" className="sr-only" aria-label={`${t("upload")} ${info.title[0]}`} onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
+      {/* one obvious action; the other ways are quieter */}
+      <Button variant={doc || quiet ? "outline" : "default"} size={doc ? "sm" : "lg"} disabled={busy} className="w-full gap-2 sm:w-auto" onClick={() => ref.current?.click()}>
+        <Upload className="size-4" aria-hidden />{doc ? (hi ? "दस्तावेज़ बदलें" : "Replace document") : (hi ? "फ़ोटो या PDF अपलोड करें" : "Upload a photo or PDF")}
+      </Button>
+      {(onDigilocker || onAadhaar || onSample) && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground">{doc ? (hi ? "या दोबारा लाएँ" : "Or fetch it again") : (hi ? "या इनमें से कोई तरीका" : "Or skip the photo")}</div>
+          <div className="flex flex-wrap gap-2">
+            {onDigilocker && <Button size="sm" variant="outline" disabled={busy} onClick={onDigilocker}>{(digilockerLabel ?? "DigiLocker") === "EntityLocker" ? (hi ? "EntityLocker से लाएँ" : "Fetch from EntityLocker") : (hi ? "DigiLocker से लाएँ" : "Fetch from DigiLocker")}</Button>}
+            {onSample && <Button size="sm" variant="ghost" disabled={busy} onClick={onSample}>{sampleLabel ?? t("use_sample")}</Button>}
+          </div>
+          {onAadhaar && <AadhaarOffline busy={busy} onSubmit={onAadhaar} />}
+        </div>
+      )}
+      {busy ? <p className="text-xs text-primary" role="status">{hi ? "पढ़ा जा रहा है… (10–30 सेकंड)" : "Working on it… (10 to 30 seconds)"}</p>
+        : !doc && <p className="text-xs text-muted-foreground">{hi ? "PNG, JPG या PDF · 5 MB तक · समतल जगह पर, अच्छी रोशनी में" : "PNG, JPG or PDF, up to 5 MB. Lay it flat in good light. PDFs from DigiLocker work too."}</p>}
     </Card>
   );
 }

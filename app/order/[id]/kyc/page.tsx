@@ -12,7 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useI18n } from "@/components/i18n-provider";
 import { CustomerShell } from "@/components/customer/shell";
-import { CheckList, DocSlot, VerdictChip } from "@/components/customer/kyc-parts";
+import { CheckList, DocSlot } from "@/components/customer/kyc-parts";
+import { Collapse } from "@/components/customer/kit";
 import { plainName } from "@/lib/catalogue/plain";
 import { api, ApiError } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -124,6 +125,8 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
         const r = await api<{ receipt: { purposes: NonNullable<typeof purposes> } }>("POST", "/api/consent", { quoteId: id, lang, purposes: { kyc: true, service: true, marketing: purposes?.marketing ?? false, digilocker: true } });
         setPurposes(r.receipt.purposes);
       }
+      // a full-page navigation on purpose: this is an API redirect to DigiLocker, not a Next.js page
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign(`/api/digilocker/start?quoteId=${id}&slot=${slot}`);
     } catch { toast.error(t("error_generic")); setBusy(false); }
   }
@@ -142,11 +145,22 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
   const visible = (s: Slot) => !!k.docs[s] || k.neededSlots.includes(s) || (s === "gst_certificate" && gstDeclared && !k.gstEligible && !k.requeued);
   const ready = ["verified", "approved", "review"].includes(k.status) && q.issues.length === 0 && !gstBlocked;
   const checks = k.checks;
+  const ORDER: Slot[] = ["gst_certificate", "udyam_certificate", "signatory_id", "address_proof"]; // the ID first: it is what DigiLocker fills
+  const shown = ORDER.filter(visible);
+  const showFast = dlLive && shown.some((s) => !k.docs[s]);
+  const toGo = shown.filter((s) => !k.docs[s]).length;
+  // checks that no card on screen already explains (cards show their own problems, so this never repeats them)
+  const loose = checks.filter((c) => c.severity !== "info" && !(c.slot && shown.includes(c.slot)));
 
   return (
     <CustomerShell step={5}>
       <div className="space-y-4 pb-28">
-        <div><h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("kyc_title")}</h1><p className="mt-1 text-[0.9375rem] text-muted-foreground">{t("kyc_sub")}</p></div>
+        <div><h1 className="text-[1.625rem] font-extrabold leading-tight tracking-tight">{t("kyc_title")}</h1>
+          <p className="mt-1 text-[0.9375rem] text-muted-foreground">{toGo > 0
+            ? ((lang === "hi" || lang === "mr") ? `${toGo} दस्तावेज़ बाकी। सबसे तेज़ तरीका: DigiLocker (लगभग एक मिनट)।` : `${toGo} ${toGo === 1 ? "document" : "documents"} to go. The fastest way is DigiLocker (about a minute).`)
+            : k.status === "verified" || k.review?.decision === "approved" ? ((lang === "hi" || lang === "mr") ? "सब कुछ सत्यापित है। आगे बढ़ें।" : "Everything is verified. You can continue.")
+            : k.status === "review" ? ((lang === "hi" || lang === "mr") ? "सारे दस्तावेज़ मिल गए। एक समीक्षक उन्हें देखेगा। आप आगे बढ़ सकते हैं।" : "All documents are in. A reviewer will look at them. You can still continue.")
+            : t("kyc_sub")}</p></div>
 
         {k.review && (
           <Card className={`p-3 text-sm ${k.review.decision === "approved" ? "border-success/40 bg-success/5" : "border-warning/40 bg-warning/5"}`}>
@@ -201,12 +215,15 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
         )}
 
         {/* fastest route: DigiLocker for identity, EntityLocker for the business's own registrations */}
-        {dlLive && SLOTS.filter(visible).some((s) => !k.docs[s]) && (
+        {showFast && (
           <Card className="space-y-3 border-primary/30 bg-accent/40 p-4">
             <div className="flex items-start gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-primary"><ShieldCheck className="size-5" aria-hidden /></span>
               <div className="min-w-0"><div className="font-bold">{(lang === "hi" || lang === "mr") ? "तेज़ी से सत्यापित करें — फ़ोटो की ज़रूरत नहीं" : "Verify faster, no photos needed"}</div>
-                <p className="mt-0.5 text-sm text-muted-foreground">{(lang === "hi" || lang === "mr") ? "आप DigiLocker की अपनी स्क्रीन पर लॉगिन करके तय करते हैं कि क्या साझा करना है। हम सिर्फ़ ज़रूरी जानकारी रखते हैं।" : "You log in on DigiLocker's own screen and choose what to share. We keep only what verification needs."}</p></div>
+                <ol className="mt-1 list-decimal space-y-0.5 pl-5 text-sm text-muted-foreground">
+                  {((lang === "hi" || lang === "mr") ? ["DigiLocker में लॉगिन करें", "जो साझा करना है चुनें", "यहाँ लौट आएँ, बस"] : ["Log in to DigiLocker", "Choose what to share", "You land back here, done"]).map((x) => <li key={x}>{x}</li>)}
+                </ol>
+                <p className="mt-1 text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "हम सिर्फ़ ज़रूरी जानकारी रखते हैं।" : "We keep only what verification needs."}</p></div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {SLOTS.filter(visible).some((s) => (s === "signatory_id" || s === "address_proof") && !k.docs[s]) && (
@@ -222,33 +239,32 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
 
         {/* 2. only the documents still needed */}
         <section className="space-y-3">
-          {SLOTS.filter(visible).map((s) => (
-            <DocSlot key={s} slot={s} doc={k.docs[s]} checks={checks} busy={busy} onFile={(f) => upload(s, f)}
+          {shown.map((s) => (
+            <DocSlot key={s} slot={s} doc={k.docs[s]} checks={checks} busy={busy} quiet={showFast} onFile={(f) => upload(s, f)}
               onAadhaar={s === "signatory_id" || s === "address_proof" ? (f, phrase) => aadhaar(s, f, phrase) : undefined}
-              onSample={() => api<{ kyc: KycView; quote: QuoteView }>("POST", `/api/kyc/${id}`, { action: "specimen", applicant: set, slot: s }).then((r) => { setK(r.kyc); setQ(r.quote); }).catch(() => toast.info((lang === "hi" || lang === "mr") ? "इस सेट में यह दस्तावेज़ नहीं है।" : `Sample set ${set} has no document for this slot.`))}
-              sampleLabel={`${t("use_sample")} (${set})`} onDigilocker={dlLive ? () => startLocker(s) : undefined} digilockerLabel={s === "gst_certificate" || s === "udyam_certificate" ? "EntityLocker" : "DigiLocker"} />
+              onDigilocker={dlLive ? () => startLocker(s) : undefined} digilockerLabel={s === "gst_certificate" || s === "udyam_certificate" ? "EntityLocker" : "DigiLocker"} />
           ))}
           {SLOTS.filter(visible).length === 0 && k.status === "verified" && <Card className="flex flex-row items-center gap-2 p-3.5 text-sm text-success"><BadgeCheck className="size-4" />{t("kyc_ok")}</Card>}
         </section>
 
         {/* demo: attach any supplied specimen set (K01–K12) to see each planted problem */}
-        <Card className="space-y-2 border-dashed p-3">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><FlaskConical className="size-3.5" />Demo · {t("sample_hint")}</div>
+        <Collapse title={(lang === "hi" || lang === "mr") ? "डेमो: नमूना दस्तावेज़ आज़माएँ" : "Demo: try sample documents"}>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><FlaskConical className="size-3.5" />{t("sample_hint")}</div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <select aria-label="Sample document set" value={set} onChange={(e) => setSet(e.target.value)} className="h-12 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-base">{SAMPLE_SETS.map((s) => <option key={s} value={s}>{s === "D01" ? "D01 · Sharma Medical Store (demo)" : s}</option>)}</select>
             <Button variant="outline" disabled={busy} onClick={attachSet}>{(lang === "hi" || lang === "mr") ? "सेट जोड़ें" : "Attach set"}</Button>
           </div>
-        </Card>
+        </Collapse>
 
         {/* 3. the verdict, with reasons */}
-        {checks.some((c) => c.severity !== "info") && (
-          <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold">{(lang === "hi" || lang === "mr") ? "जाँच के नतीजे" : "Check results"}<VerdictChip severity={k.status === "blocked" ? "block" : k.status === "reupload" ? "reupload" : k.status === "review" ? "review" : "ok"} /></h2><CheckList checks={checks} /></section>
+        {loose.length > 0 && (
+          <section className="space-y-2"><h2 className="flex items-center gap-2 text-sm font-semibold">{(lang === "hi" || lang === "mr") ? "और ध्यान देने की बातें" : "Also needs attention"}</h2><CheckList checks={loose} /></section>
         )}
         {k.status === "review" && !k.review && <Card className="bg-info/5 p-3 text-sm">{t("kyc_review_note")}</Card>}
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card"><div className="mx-auto max-w-xl space-y-1 px-4 py-3">
-        {!ready && <p className="text-center text-xs text-muted-foreground">{t("kyc_not_ready")}</p>}
+        {!ready && <p className="text-center text-xs text-muted-foreground">{toGo > 0 ? ((lang === "hi" || lang === "mr") ? "आगे बढ़ने के लिए ऊपर के दस्तावेज़ जोड़ें।" : "Add the documents above to continue.") : t("kyc_not_ready")}</p>}
         <Button size="lg" className="w-full" disabled={!ready || busy} onClick={() => router.push(`/order/${id}/checkout`)}>{t("kyc_continue")}</Button>
       </div></div>
     </CustomerShell>

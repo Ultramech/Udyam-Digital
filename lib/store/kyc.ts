@@ -8,6 +8,7 @@ import { effectiveKycStatus } from "@/lib/kyc/effective";
 import { REFERENCE_DATE } from "@/lib/config";
 import type { ConsentRecord, KycCase, Quote } from "./types";
 import { getQuote, saveQuote } from "./quotes";
+import { getUser } from "@/lib/accounts/users";
 
 export const getKyc = (id: string) => get<KycCase>("kyc", id);
 
@@ -37,8 +38,12 @@ export async function recompute(k: KycCase): Promise<KycCase> {
   if (!q) throw new HttpError(404, "QUOTE_NOT_FOUND");
   const s0 = q.sites[0];
   const siteAddress = k.entered.siteAddress ?? (s0?.address ? (s0.pincode && !s0.address.includes(s0.pincode) ? `${s0.address} - ${s0.pincode}` : s0.address) : undefined);
+  // Compare the ID's name with the account holder only when that is meaningful: the person who placed the order is the owner or a director.
+  // (A manager or accountant ordering for the business, or the demo placeholder name, would only cause false alarms.)
+  const u = q.userId ? await getUser(q.userId) : null;
+  const holderName = u && (u.profileType === "owner" || u.profileType === "director") && u.name && u.name !== "Demo User" ? u.name : null;
   const r = runKyc({
-    today: REFERENCE_DATE, entered: { ...k.entered, siteAddress }, claimsUdyam: k.claimsUdyam,
+    today: REFERENCE_DATE, entered: { ...k.entered, siteAddress }, claimsUdyam: k.claimsUdyam, holderName,
     docs: k.docs, lookups: registryLookups(),
   });
   k.checks = [...r.checks, ...fingerprintChecks(k.docs)];

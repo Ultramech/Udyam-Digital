@@ -83,4 +83,15 @@ describe("Aadhaar offline e-KYC verifier", () => {
     const bad = runKyc({ today: TODAY, entered: { gstin: prop.gstin }, claimsUdyam: false, docs: { signatory_id: mk("Completely Different Person") }, lookups });
     expect(bad.checks.some((c) => c.code === "SIGNATORY_NOT_LINKED" && c.severity === "review")).toBe(true);
   });
+
+  it("flags an ID that belongs to someone other than the account holder, and stays quiet when it matches or cannot be compared", () => {
+    const prop = GST_ALL.find((r) => r.constitution === "Proprietorship" && r.status === "Active")!;
+    const owner = splitProprietor(prop.legal_name).owner;
+    const doc = aadhaarAsDocument("signatory_id", { name: owner, birthYear: null, address: "x", pincode: null, state: null, last4: "3632", generatedOn: TODAY });
+    const run = (holderName: string | null) => runKyc({ today: TODAY, entered: { gstin: prop.gstin }, claimsUdyam: false, holderName, docs: { signatory_id: doc }, lookups });
+    expect(run("Someone Entirely Different").checks.some((c) => c.code === "SIGNATORY_NAME_MISMATCH" && c.severity === "review")).toBe(true);
+    expect(run(owner).checks.some((c) => c.code === "SIGNATORY_NAME_MISMATCH")).toBe(false); // same person
+    expect(run(null).checks.some((c) => c.code === "SIGNATORY_NAME_MISMATCH")).toBe(false); // not comparable
+    expect(run("रमेश शर्मा").checks.some((c) => c.code === "SIGNATORY_NAME_MISMATCH")).toBe(false); // different script: no false alarm
+  });
 });

@@ -7,6 +7,8 @@ import type { Check, ExtractedDoc, GstRecord, KycInput, KycResult, KycStatus, Se
 /** Measured with sharp (Laplacian variance, 800px wide). Clear specimens ≥ 559; the blurred K04 certificate = 4. */
 export const SHARPNESS_MIN = 150;
 const CONFIDENCE_MIN = 0.6;
+/** Names are only compared when both are written in Latin letters; Devanagari/Tamil vs Latin spellings would raise false alarms. */
+const LATIN = /^[A-Za-z .'-]+$/;
 
 const KEY_FIELDS: Record<Slot, string[]> = {
   gst_certificate: ["gstin", "legal_name"],
@@ -128,6 +130,11 @@ export function runKyc(input: KycInput): KycResult {
     if (aadhaar && rec && rec.constitution !== "Proprietorship") linked = false;
     if (linked && rec?.constitution === "Proprietorship") linked = nameSimilarity(idDoc.fields.name!, splitProprietor(rec.legal_name).owner) >= NAME_MATCH_THRESHOLD;
     if (!linked) push("SIGNATORY_NOT_LINKED", "review", "signatory_id");
+    // the ID should belong to the person placing the order; a different name is not an error, but a person should confirm it
+    const holder = input.holderName?.trim();
+    const onId = idDoc.fields.name?.trim();
+    if (holder && onId && LATIN.test(holder) && LATIN.test(onId) && nameSimilarity(onId, holder) < 0.5 && !checks.some((c) => c.code === "SIGNATORY_NOT_LINKED"))
+      push("SIGNATORY_NAME_MISMATCH", "review", "signatory_id", { onId, holder });
   } else if (!docs.signatory_id) push("DOC_MISSING", "reupload", "signatory_id");
 
   // ---- 6. cross-document business-name consistency ------------------------------------------------
