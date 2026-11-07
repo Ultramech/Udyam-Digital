@@ -2,12 +2,29 @@ import { expect, test } from "@playwright/test";
 import { newQuote, noSideScroll, signInAndSetup } from "./helpers";
 
 test.describe("Customer journey (phone)", () => {
-  test("landing: headline, CTAs, no sideways scroll, language switch to Hindi", async ({ page }) => {
+  test("start screens: splash → welcome slides → Get Started opens log in; plans can be explored first; Hindi switch", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // the red splash first, then the welcome (a tap skips the splash)
+    await expect(page.getByRole("heading", { level: 1, name: /Your Business\.\s*Better Connected\./ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /one place/ })).toBeVisible({ timeout: 8000 });
     await noSideScroll(page);
+    await page.getByRole("tab", { name: "2" }).click();
+    await expect(page.getByText("One clear price,")).toBeVisible();
     await page.getByRole("combobox", { name: "Language" }).selectOption("hi");
     await expect(page.locator("html")).toHaveAttribute("lang", "hi");
+    await page.getByRole("combobox", { name: "Language" }).selectOption("en");
+
+    await page.getByRole("link", { name: "Explore plans first" }).click();
+    await expect(page).toHaveURL(/\/explore$/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Get Started" }).click(); // no splash the second time in a visit
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole("heading", { name: "Log in to your Business Account" })).toBeVisible();
+    await page.getByRole("button", { name: "Create Account" }).click();
+    await expect(page.getByRole("heading", { name: "Create your Business Account" })).toBeVisible();
+    await noSideScroll(page);
   });
 
   test("signed out: every customer page sends you to sign in first, and comes back after", async ({ page }) => {
@@ -28,8 +45,8 @@ test.describe("Customer journey (phone)", () => {
   test("advisor: one message → a plan with one monthly price; a follow-up question gets an answer, not the plan again", async ({ page }) => {
     await signInAndSetup(page);
     await page.goto("/advisor");
-    await expect(page.getByText(/Namaste/i).first()).toBeVisible(); // greeting loaded → input is live
     const box = page.getByPlaceholder(/business/i);
+    await expect(box).toBeEnabled(); // the page is live once the input accepts text (the greeting is model-worded, so no fixed text to wait for)
     const send = page.getByRole("button", { name: "Send" });
     await box.fill("I run a pharmacy in Indore with 3 staff and one shop. No GST. I need billing and CCTV.");
     await send.click();

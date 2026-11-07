@@ -6,7 +6,8 @@ import { AvailabilityCheck } from "@/components/customer/availability-check";
 import { OrderStatus, Row, SectionTitle } from "@/components/customer/kit";
 import { BotCards } from "@/components/customer/bot-cards";
 import { SearchLauncher } from "@/components/customer/search-sheet";
-import { AdvisorBox, advisorHref, useBundleSamples, Welcome } from "@/components/landing/welcome";
+import { AdvisorBox, advisorHref, useBundleSamples } from "@/components/landing/welcome";
+import { Intro, LaunchScreen } from "@/components/start/intro";
 import { CustomerShell } from "@/components/customer/shell";
 import { PromoCarousel } from "@/components/customer/promo-carousel";
 import { CuratedTrain } from "@/components/customer/curated-train";
@@ -39,8 +40,8 @@ export default function Home() {
 
 function HomeBody() {
   const { account, verified } = useVerify();
-  if (verified === null) return <div className="space-y-3" aria-busy="true"><Skeleton className="h-9 w-2/3" /><Skeleton className="h-52" /><Skeleton className="h-28" /></div>;
-  return account ? <Dashboard name={account.name} /> : <Welcome />;
+  if (verified === null) return <LaunchScreen />;
+  return account ? <Dashboard name={account.name} /> : <Intro />;
 }
 
 /* ------------------------------------------------------------------ signed in */

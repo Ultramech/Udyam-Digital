@@ -6,9 +6,9 @@ test.describe("Customer account", () => {
   test("signed out: /account requires sign-in (redirect to /login with next)", async ({ page }) => {
     await page.goto("/account");
     await expect(page).toHaveURL(/\/login\?next=%2Faccount/);
-    await expect(page.getByRole("heading", { name: "Sign in or create an account" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Log in to your Business Account" })).toBeVisible();
     await expect(page.getByLabel("Mobile number")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Send code" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send OTP" })).toBeVisible();
     await noSideScroll(page);
   });
 
@@ -20,36 +20,41 @@ test.describe("Customer account", () => {
     // there is no way past setup without completing it
     await expect(page.getByRole("button", { name: /Skip/ })).toHaveCount(0);
 
-    // step 1: invalid name / email are refused
+    // step 1: an invalid name is refused, then a valid name + business name move on
     await page.getByLabel(/Full name/).fill("R2D2 123");
-    await page.getByLabel(/Email/).fill("priya@");
-    await page.getByRole("button", { name: "Next — your business" }).click();
+    await page.getByLabel(/Business name/).fill("Iyer Dental Care");
+    await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByText(/Use letters only/)).toBeVisible();
-    await expect(page.getByText(/doesn't look like an email/)).toBeVisible();
     await page.getByLabel(/Full name/).fill("Priya Iyer");
-    await page.getByLabel(/Email/).fill("priya.iyer@example.in");
-    await page.getByText("Partner / director").click();
-    await page.getByRole("button", { name: "Next — your business" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
 
-    // step 2: empty / malformed business details are refused
-    await page.getByRole("button", { name: "Finish and continue" }).click();
+    // step 2: empty business profile fields are refused
+    await expect(page.getByRole("heading", { name: "Business Profile" })).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByText("Choose your type of business.")).toBeVisible();
     await expect(page.getByText("Choose your city.")).toBeVisible();
-    await page.getByLabel(/Business name/).fill("Iyer Dental Care");
     await page.getByLabel(/Type of business/).selectOption("Dental clinic");
     await page.getByLabel(/People working/).fill("6");
     await page.getByLabel(/^City/).selectOption("Chennai");
+    await page.getByLabel(/You are the/).selectOption({ label: "Partner / director" });
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    // step 3: malformed address / pincode / GSTIN / email are refused
+    await expect(page.getByRole("heading", { name: "Business Details" })).toBeVisible();
     await page.getByLabel(/Business address/).fill("short");
     await page.getByLabel(/Pincode/).fill("012345");
     await page.getByLabel(/GSTIN/).fill("27ABCDE1234F1Z9");
+    await page.getByLabel(/Email/).fill("priya@");
     await page.getByRole("button", { name: "Finish and continue" }).click();
     await expect(page.getByText(/Enter the full address/)).toBeVisible();
     await expect(page.getByText(/doesn't start with 0/)).toBeVisible();
     await expect(page.getByText(/fails its check digit/)).toBeVisible();
+    await expect(page.getByText(/doesn't look like an email/)).toBeVisible();
 
     // a real pincode that India Post doesn't know is refused by the server
     await page.getByLabel(/Business address/).fill("12, 2nd Main Road, Adyar");
     await page.getByLabel(/GSTIN/).fill("");
+    await page.getByLabel(/Email/).fill("priya.iyer@example.in");
     await page.getByLabel(/Pincode/).fill("999999");
     await page.getByRole("button", { name: "Finish and continue" }).click();
     await expect(page.getByText(/India Post has no such pincode|Couldn't save/)).toBeVisible({ timeout: 20_000 });

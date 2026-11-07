@@ -33,6 +33,9 @@ function Frame({ children, step, total, wide }: { children: React.ReactNode; ste
   // a gated page is for a signed-in owner (or is about to send them to sign in), so show the signed-in frame without a flash
   const signedIn = !!account || (verified === null && needsAccount(path));
   const tabs = signedIn && !flow && !(account && !account.onboarded);
+  // The start screens (intro, log in, create account, business profile) own the whole screen: no bar, no footer, no page padding.
+  const bare = path === "/login" || path === "/account/setup" || (path === "/" && !account);
+  if (bare) return <AuthGate>{children}</AuthGate>;
 
   return (
     <>

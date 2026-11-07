@@ -1,14 +1,13 @@
 "use client";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Pencil, PlayCircle } from "lucide-react";
+import { Check, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useI18n } from "@/components/i18n-provider";
+import { LanguageSwitch } from "@/components/customer/app-nav";
 import { CustomerShell } from "@/components/customer/shell";
 import { useVerify } from "@/components/customer/verify";
+import { AuthScreen, BackButton, Flag, Wordmark } from "@/components/start/parts";
 import { api, ApiError } from "@/lib/client/api";
 
 /** Only same-site paths are accepted for ?next= (no open redirects). */
@@ -28,6 +27,7 @@ function Login() {
   const H = (en: string, h: string) => (hi ? h : en);
   const router = useRouter();
   const { account, refresh } = useVerify();
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
@@ -73,37 +73,44 @@ function Login() {
     setBusy(false);
   }, [refresh, hi]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const title = sent ? H("Enter the code", "कोड डालें") : mode === "login" ? H("Log in to your Business Account", "अपने बिज़नेस अकाउंट में लॉग इन करें") : H("Create your Business Account", "अपना बिज़नेस अकाउंट बनाएँ");
+  const sub = sent
+    ? <>{H("We sent a 6-digit code to", "6 अंकों का कोड भेजा गया")} <span className="num font-semibold text-foreground">+91 {pretty(phone)}</span></>
+    : mode === "login" ? H("Access your business dashboard, orders and support.", "अपना बिज़नेस डैशबोर्ड, ऑर्डर और सपोर्ट देखें।") : H("Enter your mobile number. We text you a code, no password to remember.", "अपना मोबाइल नंबर डालें। हम कोड SMS करते हैं, पासवर्ड याद नहीं रखना।");
+  const field = "flex h-14 items-center gap-3 rounded-2xl border bg-card px-4 shadow-card focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/25";
+
   return (
-    <div className="mx-auto w-full max-w-md pt-4 md:pt-12">
-      <h1 className="text-[1.875rem] font-extrabold leading-tight tracking-tight">{sent ? H("Enter the code", "कोड डालें") : H("Sign in or create an account", "साइन इन करें या अकाउंट बनाएँ")}</h1>
-      <p className="mt-2 text-[0.9375rem] text-muted-foreground">
-        {sent ? <>{H("We sent a 6-digit code to", "6 अंकों का कोड भेजा गया")} <span className="num font-semibold text-foreground">+91 {pretty(phone)}</span></> : H("Your mobile number is all it takes. We text you a code, no password to remember.", "बस आपका मोबाइल नंबर चाहिए। हम कोड SMS करते हैं, पासवर्ड याद नहीं रखना।")}
-      </p>
+    <AuthScreen>
+      <div className="flex items-center justify-between">
+        <BackButton label={H("Back", "पीछे")} onClick={() => (sent ? (setSent(false), setCode(""), setErr(null)) : router.push("/"))} />
+        <LanguageSwitch />
+      </div>
+      <div className="mt-4 flex justify-center"><Wordmark /></div>
+      <h1 className="mt-10 text-[1.875rem] font-extrabold leading-tight tracking-tight">{title}</h1>
+      <p className="mt-2 text-[1.0625rem] leading-snug text-foreground/70">{sub}</p>
 
       {!sent ? (
-        <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); send(); }}>
-          <div className="space-y-1.5">
-            <Label htmlFor="login-phone">{H("Mobile number", "मोबाइल नंबर")}</Label>
-            <div className="flex gap-2">
-              <span className="flex h-12 items-center rounded-xl border border-input bg-muted px-3.5 text-base font-semibold" aria-hidden>+91</span>
-              <Input id="login-phone" inputMode="numeric" autoComplete="tel-national" autoFocus maxLength={10} placeholder="98765 43210" value={phone} aria-invalid={!!err}
-                onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setErr(null); }} className="num text-lg tracking-wide" />
-            </div>
+        <form className="mt-8 space-y-4" onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <label htmlFor="login-phone" className="sr-only">{H("Mobile number", "मोबाइल नंबर")}</label>
+          <div className={field}>
+            <Flag /><span className="text-base font-semibold" aria-hidden>+91</span><span aria-hidden className="h-6 w-px bg-border" />
+            <input id="login-phone" inputMode="numeric" autoComplete="tel-national" autoFocus maxLength={10} placeholder={H("Enter mobile number", "मोबाइल नंबर डालें")} value={phone} aria-invalid={!!err}
+              onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setErr(null); }} className="num min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground" />
           </div>
-          {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
-          <Button type="submit" size="lg" className="w-full" disabled={busy || phone.length < 10}>{busy ? H("Sending…", "भेज रहे हैं…") : H("Send code", "कोड भेजें")}</Button>
+          {err && <p role="alert" className="px-1 text-sm font-medium text-destructive">{err}</p>}
+          <Button type="submit" size="lg" className="h-14 w-full rounded-2xl text-lg shadow-lift" disabled={busy || phone.length < 10}>{busy ? H("Sending…", "भेज रहे हैं…") : H("Send OTP", "OTP भेजें")}</Button>
         </form>
       ) : (
-        <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); if (code.length === 6) check(code); }}>
-          <div className="space-y-1.5">
-            <Label htmlFor="login-code">{H("6-digit code", "6 अंकों का कोड")}</Label>
-            <Input id="login-code" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="••••••" value={code} aria-invalid={!!err}
-              onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 6); setCode(v); setErr(null); if (v.length === 6) check(v); }} className="num h-14 text-center text-2xl tracking-[0.5em]" />
+        <form className="mt-8 space-y-4" onSubmit={(e) => { e.preventDefault(); if (code.length === 6) check(code); }}>
+          <label htmlFor="login-code" className="sr-only">{H("6-digit code", "6 अंकों का कोड")}</label>
+          <div className={field + " h-16 justify-center"}>
+            <input id="login-code" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="••••••" value={code} aria-invalid={!!err}
+              onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 6); setCode(v); setErr(null); if (v.length === 6) check(v); }} className="num w-full bg-transparent text-center text-2xl font-semibold tracking-[0.5em] outline-none" />
           </div>
-          {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
-          <Button type="submit" size="lg" className="w-full" disabled={busy || code.length < 6}>{busy ? H("Checking…", "जाँच हो रही है…") : H("Verify and continue", "वेरिफाई करें और आगे बढ़ें")}</Button>
+          {err && <p role="alert" className="px-1 text-sm font-medium text-destructive">{err}</p>}
+          <Button type="submit" size="lg" className="h-14 w-full rounded-2xl text-lg shadow-lift" disabled={busy || code.length < 6}>{busy ? H("Checking…", "जाँच हो रही है…") : H("Verify and continue", "वेरिफाई करें और आगे बढ़ें")}</Button>
           <div className="flex items-center justify-between text-sm">
-            <button type="button" onClick={() => { setSent(false); setCode(""); setErr(null); }} className="inline-flex min-h-11 items-center gap-1.5 font-semibold underline-offset-4 hover:underline"><Pencil className="size-4" />{H("Change number", "नंबर बदलें")}</button>
+            <button type="button" onClick={() => { setSent(false); setCode(""); setErr(null); }} className="inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline">{H("Change number", "नंबर बदलें")}</button>
             <button type="button" disabled={wait > 0 || busy} onClick={send} className="inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline disabled:text-muted-foreground disabled:no-underline">
               {wait > 0 ? <span className="num">{H(`Resend in ${wait}s`, `${wait} सेकंड में दोबारा भेजें`)}</span> : H("Resend code", "कोड दोबारा भेजें")}
             </button>
@@ -112,22 +119,32 @@ function Login() {
       )}
 
       {DEMO && !sent && (
-        <div className="mt-5">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span className="h-px flex-1 bg-border" />{H("or", "या")}<span className="h-px flex-1 bg-border" /></div>
-          <Button type="button" size="lg" variant="outline" className="mt-4 w-full" disabled={demoBusy} onClick={tryDemo}>
+        <div className="mt-6">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground"><span className="h-px flex-1 bg-border" />{H("or", "या")}<span className="h-px flex-1 bg-border" /></div>
+          <Button type="button" size="lg" variant="outline" className="mt-5 h-14 w-full rounded-2xl text-base shadow-card" disabled={demoBusy} onClick={tryDemo}>
             <PlayCircle className="size-5 text-primary" />{demoBusy ? H("Opening demo…", "डेमो खुल रहा है…") : H("Try the demo, no sign-in needed", "डेमो देखें, साइन इन की ज़रूरत नहीं")}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">{H("Opens a sample account for a pharmacy in Indore.", "इंदौर की एक फ़ार्मेसी का सैंपल अकाउंट खुलता है।")}</p>
         </div>
       )}
 
-      <ul className="mt-8 space-y-2.5 border-t pt-6 text-sm text-muted-foreground">
-        {[H("A real SMS code. Nobody else can sign in as you.", "असली SMS कोड। आपकी जगह कोई और साइन इन नहीं कर सकता।"), H("Your plans and orders follow you to any phone.", "आपके प्लान और ऑर्डर किसी भी फ़ोन पर दिखेंगे।"), H("Download or delete your data any time from Account.", "अकाउंट से कभी भी अपना डेटा डाउनलोड या डिलीट करें।")].map((x) => (
-          <li key={x} className="flex items-start gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />{x}</li>
-        ))}
-      </ul>
-      <p className="mt-6 text-center"><Link href="/" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />{H("Back to home", "होम पर वापस")}</Link></p>
-    </div>
+      {!sent && (
+        <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+          {[H("A real SMS code. Nobody else can sign in as you.", "असली SMS कोड। आपकी जगह कोई और साइन इन नहीं कर सकता।"), H("Download or delete your data any time from Account.", "अकाउंट से कभी भी अपना डेटा डाउनलोड या डिलीट करें।")].map((x) => (
+            <li key={x} className="flex items-start gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />{x}</li>
+          ))}
+        </ul>
+      )}
+
+      {!sent && (
+        <p className="mt-auto pt-8 text-center text-[0.9375rem] text-foreground/70">
+          {mode === "login" ? H("New to Airtel SYNC?", "Airtel SYNC में नए हैं?") : H("Already have an account?", "पहले से अकाउंट है?")}{" "}
+          <button type="button" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setErr(null); }} className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4">
+            {mode === "login" ? H("Create Account", "अकाउंट बनाएँ") : H("Log in", "लॉग इन करें")}
+          </button>
+        </p>
+      )}
+    </AuthScreen>
   );
 }
 
