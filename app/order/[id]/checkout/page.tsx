@@ -45,6 +45,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [plan, setPlan] = useState<"full" | "deposit">("full");
   const [signStep, setSignStep] = useState<"idle" | "prepared" | "sent">("idle");
   const [agreed, setAgreed] = useState(false);
+  const [resendIn, setResendIn] = useState(0); // seconds until another signing code may be asked for (the server allows one per 30 s)
+  useEffect(() => { if (resendIn <= 0) return; const id = setTimeout(() => setResendIn((n) => n - 1), 1000); return () => clearTimeout(id); }, [resendIn]);
   const [signCode, setSignCode] = useState("");
   const [signOtpId, setSignOtpId] = useState<string | null>(null);
   const [docHash, setDocHash] = useState<string | null>(null);
@@ -116,7 +118,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     setBusy(true);
     try {
       const r = await api<{ otpId: string }>("POST", `/api/orders/${order.id}/esign`, { t: order.token, step: "send" });
-      setSignOtpId(r.otpId); setSignStep("sent");
+      setSignOtpId(r.otpId); setSignStep("sent"); setSignCode(""); setResendIn(30);
     } catch (e) {
       const c = e instanceof ApiError ? e.code : "";
       toast.error(c === "OTP_TOO_SOON" ? "Please wait 30 seconds before asking for another code." : c === "OTP_LIMIT" ? "Too many codes requested. Try again later." : t("error_generic"));
@@ -223,7 +225,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 <div className="space-y-2">
                   <Label htmlFor="signcode" className="text-xs">{t("otp_code")}</Label>
                   <Input id="signcode" inputMode="numeric" maxLength={6} value={signCode} onChange={(e) => setSignCode(e.target.value.replace(/\D/g, ""))} autoFocus />
-                  <Button disabled={busy || !agreed || signCode.length < 6} onClick={confirmSign}>{(lang === "hi" || lang === "mr") ? "साइन करें" : "Sign order"}</Button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button disabled={busy || !agreed || signCode.length < 6} onClick={confirmSign}>{(lang === "hi" || lang === "mr") ? "साइन करें" : "Sign order"}</Button>
+                    <Button variant="ghost" disabled={busy || resendIn > 0} onClick={sendSignCode}>
+                      {resendIn > 0 ? ((lang === "hi" || lang === "mr") ? `${resendIn} सेकंड में दोबारा भेजें` : `Resend code in ${resendIn}s`) : ((lang === "hi" || lang === "mr") ? "कोड दोबारा भेजें" : "Resend code")}
+                    </Button>
+                  </div>
                 </div>
               )}
               <div className="space-y-2 border-t pt-3"><div className="text-sm font-semibold">{hiL ? "अधिकृत साइन करने वाले को भेजें" : "Send to an authorised signatory"}</div><p className="text-xs text-muted-foreground">{hiL ? "डायरेक्टर PDF पढ़ेंगे और अपने नंबर पर आए OTP से साइन करेंगे। लिंक 24 घंटे में बंद हो जाएगा।" : "The director reviews the PDF and signs with an OTP sent to their phone. Link expires in 24 hours."}</p><div className="flex gap-2"><Input aria-label="Signatory phone" inputMode="numeric" maxLength={10} placeholder="10-digit mobile" value={remotePhone} onChange={(e) => setRemotePhone(e.target.value.replace(/\D/g, ""))} /><Button variant="outline" disabled={busy || remotePhone.length !== 10} onClick={sendRemoteSign}>Send for remote signature</Button></div>{remoteLink && <p className="break-all text-xs text-muted-foreground">Secure link: {remoteLink} · WhatsApp opened with a draft addressed to the signatory.</p>}</div>
