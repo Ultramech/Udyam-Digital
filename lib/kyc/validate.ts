@@ -1,6 +1,7 @@
 import { ADDRESS_PROOF_MAX_DAYS } from "@/lib/config";
 import { GST_STATE_CODES, UDYAM_STATE_LETTERS, editDistance, norm, repairGstin, validateGstin, validateUdyam } from "./identifiers";
 import { addressesMatch, daysBetween, namesMatch, nameSimilarity, splitProprietor, NAME_MATCH_THRESHOLD } from "./match";
+import { isAadhaarDoc } from "./types";
 import type { Check, ExtractedDoc, GstRecord, KycInput, KycResult, KycStatus, Severity, Slot, UdyamRecord } from "./types";
 
 /** Measured with sharp (Laplacian variance, 800px wide). Clear specimens ≥ 559; the blurred K04 certificate = 4. */
@@ -32,7 +33,7 @@ export function runKyc(input: KycInput): KycResult {
     if (d.docType !== slot) { push("DOC_WRONG_TYPE", "reupload", slot, { got: d.docType }); continue; }
     if (d.legibility === "skewed") push("DOC_SKEWED", "info", slot);
     let ok = true;
-    const keys = d.source === "aadhaar_offline" ? (slot === "signatory_id" ? ["name"] : ["address"]) : KEY_FIELDS[slot];
+    const keys = isAadhaarDoc(d) ? (slot === "signatory_id" ? ["name"] : ["address"]) : KEY_FIELDS[slot];
     for (const f of keys) if (!d.fields[f]) { push("FIELD_MISSING", "reupload", slot, { field: f }); ok = false; }
     if (ok) usable[slot] = d;
   }
@@ -107,7 +108,7 @@ export function runKyc(input: KycInput): KycResult {
   // ---- 4. address proof ----------------------------------------------------------------------------
   const refAddress = rec?.principal_place_of_business ?? gstDoc?.fields.address ?? entered.siteAddress ?? undefined;
   const addressSkippable = gstActive && !!entered.siteAddress && !!rec && addressesMatch(entered.siteAddress, rec.principal_place_of_business);
-  if (billDoc && billDoc.source === "aadhaar_offline") {
+  if (billDoc && isAadhaarDoc(billDoc)) {
     // an Aadhaar is an identity-and-address document, not a dated bill: only the address has to agree
     if (refAddress && !addressesMatch(billDoc.fields.address!, refAddress)) push("ADDRESS_MISMATCH", "review", "address_proof");
   } else if (billDoc) {
@@ -120,7 +121,7 @@ export function runKyc(input: KycInput): KycResult {
   // ---- 5. authorised signatory ---------------------------------------------------------------------
   const bizName = rec?.trade_name ?? gstDoc?.fields.trade_name ?? undefined;
   if (idDoc) {
-    const aadhaar = idDoc.source === "aadhaar_offline";
+    const aadhaar = isAadhaarDoc(idDoc);
     if (!aadhaar && idDoc.fields.valid_till! < today) push("SIGNATORY_ID_EXPIRED", "reupload", "signatory_id", { validTill: idDoc.fields.valid_till! });
     // a personal ID carries no business name: it can only be tied to the business through the proprietor's own name
     let linked = aadhaar ? true : !bizName || namesMatch(idDoc.fields.for_business!, bizName);
@@ -133,7 +134,7 @@ export function runKyc(input: KycInput): KycResult {
   if (bizName) {
     if (udyamDoc?.fields.enterprise_name && !namesMatch(udyamDoc.fields.enterprise_name, bizName) && !checks.some((c) => c.code === "UDYAM_NAME_MISMATCH"))
       push("NAME_MISMATCH", "review", "udyam_certificate", { a: udyamDoc.fields.enterprise_name, b: bizName });
-    if (billDoc && billDoc.source !== "aadhaar_offline" && billDoc.fields.billed_to && !namesMatch(billDoc.fields.billed_to, bizName)) push("NAME_MISMATCH", "review", "address_proof", { a: billDoc.fields.billed_to, b: bizName });
+    if (billDoc && !isAadhaarDoc(billDoc) && billDoc.fields.billed_to && !namesMatch(billDoc.fields.billed_to, bizName)) push("NAME_MISMATCH", "review", "address_proof", { a: billDoc.fields.billed_to, b: bizName });
   }
 
   // ---- verdict ---------------------------------------------------------------------------------------

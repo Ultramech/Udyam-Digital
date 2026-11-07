@@ -61,7 +61,7 @@ export function DocSlot({ slot, doc, checks, busy, onFile, onSample, sampleLabel
       </div>
       {doc && (
         <div className="rounded-lg bg-secondary p-2.5 text-xs">
-          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground"><span>{(lang === "hi" || lang === "mr") ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-xs">{doc.source === "aadhaar_offline" ? ((lang === "hi" || lang === "mr") ? "UIDAI हस्ताक्षर सत्यापित" : "UIDAI signature verified") : doc.source === "digilocker" ? "DigiLocker" : (lang === "hi" || lang === "mr") ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
+          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground"><span>{(lang === "hi" || lang === "mr") ? "हमने यह पढ़ा" : "What we read"}</span><Badge variant="outline" className="text-xs">{doc.source === "aadhaar_offline" ? ((lang === "hi" || lang === "mr") ? "UIDAI हस्ताक्षर सत्यापित" : "UIDAI signature verified") : (doc.source === "digilocker" || doc.source === "digilocker_aadhaar") ? ((lang === "hi" || lang === "mr") ? "DigiLocker से मिला" : "From DigiLocker") : (lang === "hi" || lang === "mr") ? "AI द्वारा पढ़ा गया" : "read by AI (Gemini)"}</Badge></div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5">
             {Object.entries(doc.fields).filter(([k]) => k !== "document").map(([k, v]) => <div key={k} className="min-w-0"><dt className="text-xs text-muted-foreground">{k.replace(/_/g, " ")}</dt><dd className="truncate font-medium">{v ?? <span className="text-destructive">—</span>}</dd></div>)}
           </dl>

@@ -43,7 +43,8 @@ Optional — bring your local demo data along: `DATABASE_URL=… DATABASE_AUTH_T
 | `TWOFACTOR_API_KEY` | for OTP | without it nobody can sign in or order |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` | for payments | test keys (`rzp_test_…`) until you go live |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `META_WA_*` / `TWILIO_*` | optional | chat channels |
-| `DIGILOCKER_*` | optional | needs API Setu partner onboarding |
+| `SANDBOX_API_KEY`, `SANDBOX_API_SECRET` | optional | DigiLocker (Aadhaar) + EntityLocker (GST, Udyam) through a licensed provider; `key_test…` = free test host, `key_live…` = billed. Needs `PUBLIC_BASE_URL` set to the public https address |
+| `DIGILOCKER_*` | optional | only with your own API Setu partner onboarding |
 
 **Never set `ALLOW_TEST_VERIFY` on Vercel** (it is ignored in production builds anyway).
 

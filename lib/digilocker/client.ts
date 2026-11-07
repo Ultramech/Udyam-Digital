@@ -9,7 +9,11 @@ import { createHash, randomBytes } from "node:crypto";
  */
 const BASE = () => (process.env.DIGILOCKER_BASE || "https://digilocker.meripehchaan.gov.in/public/oauth2").replace(/\/+$/, "");
 const cfg = () => ({ id: process.env.DIGILOCKER_CLIENT_ID, secret: process.env.DIGILOCKER_CLIENT_SECRET, redirect: process.env.DIGILOCKER_REDIRECT_URI });
-export const digilockerConfigured = () => { const c = cfg(); return !!(c.id && c.secret && c.redirect); };
+import { aggregatorConfigured } from "./aggregator";
+/** Direct API Setu partner credentials (organisations only). */
+export const directConfigured = () => { const c = cfg(); return !!(c.id && c.secret && c.redirect); };
+/** DigiLocker is available through our own partner credentials or through the licensed provider (lib/digilocker/aggregator.ts). */
+export const digilockerConfigured = () => directConfigured() || aggregatorConfigured();
 
 const b64url = (b: Buffer) => b.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 export function pkce() {

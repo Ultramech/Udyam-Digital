@@ -27,7 +27,7 @@ npm run db:studio            # browse the database (schema: lib/db/schema.ts, mi
 | `TELEGRAM_BOT_TOKEN` (+ the generated `TELEGRAM_WEBHOOK_SECRET`) | Telegram bot |
 | `META_WA_*` or `TWILIO_*` | WhatsApp |
 | `PUBLIC_BASE_URL` | Links in chat/notifications and webhooks (`npm run tunnel` locally) — then `npm run setup:channels` |
-| `DIGILOCKER_*` | DigiLocker fetch (needs API Setu partner onboarding) |
+| `SANDBOX_API_KEY`, `SANDBOX_API_SECRET` | DigiLocker + EntityLocker fetch via a licensed provider (no organisation needed); `DIGILOCKER_*` only if you hold API Setu credentials |
 | `DATABASE_URL`, `DATABASE_AUTH_TOKEN` | Turso for a deployed site |
 
 Without a key, that feature refuses honestly (the status panel says why); nothing is faked.

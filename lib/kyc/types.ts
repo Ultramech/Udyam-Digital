@@ -14,7 +14,7 @@ export interface ExtractedDoc {
   confidence: number;
   fields: Record<string, string | null>;
   /** "gemini" = read live by the vision model · "cached" = test fixtures only (never produced at runtime) */
-  source: "gemini" | "cached" | "digilocker" | "aadhaar_offline";
+  source: "gemini" | "cached" | "digilocker" | "aadhaar_offline" | "digilocker_aadhaar";
   file?: string;
   /** SHA-256 of the uploaded bytes (the bytes themselves are never stored). Used to spot the same file in two slots. */
   fileHash?: string;
@@ -68,3 +68,6 @@ export interface KycResult {
   /** GSTIN actually used after any OCR repair. */
   gstinUsed?: string;
 }
+
+/** Documents built from Aadhaar data (offline e-KYC or DigiLocker) carry a name and address but no business name, expiry or bill date. */
+export const isAadhaarDoc = (d: { source: string }) => d.source === "aadhaar_offline" || d.source === "digilocker_aadhaar";

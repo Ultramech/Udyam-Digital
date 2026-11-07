@@ -124,14 +124,14 @@ export async function readAadhaarOffline(file: Buffer, phrase: string, cert: str
 }
 
 /** Shapes the verified data like any other document so the same rules (name match, address match) apply. Fields are minimal and masked-ready. */
-export function aadhaarAsDocument(slot: Extract<Slot, "signatory_id" | "address_proof">, a: AadhaarKyc): ExtractedDoc {
+export function aadhaarAsDocument(slot: Extract<Slot, "signatory_id" | "address_proof">, a: AadhaarKyc, source: "aadhaar_offline" | "digilocker_aadhaar" = "aadhaar_offline"): ExtractedDoc {
   const masked = `XXXXXXXX${a.last4}`;
   return {
     slot,
     docType: slot,
     legibility: "clear",
     confidence: 1, // a verified digital signature, not a model's guess
-    source: "aadhaar_offline",
+    source,
     fields: slot === "signatory_id"
       ? { name: a.name, designation: "Aadhaar holder (offline e-KYC)", for_business: null, id_no: masked, valid_till: null }
       : { document: "Aadhaar offline e-KYC", consumer_no: masked, billed_to: a.name, address: a.address, bill_date: a.generatedOn },
@@ -139,3 +139,26 @@ export function aadhaarAsDocument(slot: Extract<Slot, "signatory_id" | "address_
 }
 
 export const AADHAAR_MAX_BYTES = MAX_ZIP;
+
+/**
+ * The Aadhaar XML that DigiLocker hands over (fetched through a licensed aggregator after the owner's own DigiLocker consent).
+ * Its authenticity rests on that authenticated, consented session, not on a signature we check here; same minimal fields are kept.
+ * Attribute names differ slightly from the offline file (co / lm), so both spellings are read.
+ */
+export function readDigilockerAadhaarXml(xml: string): AadhaarKyc {
+  if (xml.length > MAX_XML) throw new AadhaarError("MALFORMED");
+  const doc = new DOMParser({ onError: () => { throw new AadhaarError("MALFORMED"); } }).parseFromString(xml, "text/xml");
+  const poi = doc.getElementsByTagName("Poi")[0] ?? null;
+  const poa = doc.getElementsByTagName("Poa")[0] ?? null;
+  const uid = doc.getElementsByTagName("UidData")[0] ?? null;
+  const name = attr(poi, "name");
+  if (!name || !poa) throw new AadhaarError("NOT_UIDAI_XML");
+  const p = (...ks: string[]) => ks.map((k) => attr(poa, k)).find(Boolean) ?? "";
+  const address = [p("co", "careof"), p("house"), p("street"), p("lm", "landmark"), p("loc"), p("vtc"), p("po"), p("subdist"), p("dist"), p("state"), p("pc")].filter(Boolean).join(", ");
+  const dob = attr(poi, "dob");
+  const last4 = attr(uid, "uid").replace(/\D/g, "").slice(-4);
+  return {
+    name, birthYear: (dob.match(/(\d{4})$/) ?? dob.match(/^(\d{4})/))?.[1] ?? null, address,
+    pincode: p("pc") || null, state: p("state") || null, last4: last4 || "XXXX", generatedOn: null,
+  };
+}
