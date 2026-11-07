@@ -45,12 +45,18 @@ export async function GET(req: Request) {
 
 /** Licensed-provider flow: the provider already holds the owner's consent; we ask it what was shared and take only the one document for this slot. */
 async function viaProvider(saved: { quoteId: string; slot: Slot; locker?: Locker; docType?: string; sessionId?: string }, back: (q: string, r: string) => Response): Promise<Response> {
+  let step = "start";
   try {
+    step = "status";
     const st = await sessionStatus(saved.locker!, saved.sessionId!);
+    console.info(`[digilocker] ${saved.locker} session status=${st.status} consented=${st.consented.join("|") || "none"}`);
     if (st.status === "failed" || st.status === "expired") return back(saved.quoteId, "declined");
     if (st.status !== "succeeded") return back(saved.quoteId, "declined"); // the owner came back without finishing consent
+    step = "fetch";
     const file = await fetchDocument(saved.locker!, saved.sessionId!, saved.docType!);
-    if (!file) return back(saved.quoteId, "none");
+    if (!file) { console.info(`[digilocker] no ${saved.docType} file in the session`); return back(saved.quoteId, "none"); }
+    console.info(`[digilocker] got ${saved.docType} ${file.mime} ${file.buf.length} bytes`);
+    step = "read";
     const q = await getQuote(saved.quoteId);
     if (!q) return back(saved.quoteId, "error");
     let k = await kycFor(q);
@@ -67,7 +73,9 @@ async function viaProvider(saved: { quoteId: string; slot: Slot; locker?: Locker
     k = await recompute(k);
     if (q.orderId) { const o = await getOrder(q.orderId); if (o) await setKycStatus(o.id, k.status === "blocked" ? "reupload" : (k.status as never)); }
     return back(saved.quoteId, "ok");
-  } catch {
+  } catch (e) {
+    // no personal data here: only which step failed and the error's own code/message
+    console.error(`[digilocker] callback failed at ${step}: ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`.slice(0, 300));
     return back(saved.quoteId, "error");
   }
 }
