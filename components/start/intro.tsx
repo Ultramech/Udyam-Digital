@@ -141,13 +141,13 @@ function Welcome() {
           onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}
           className="-mx-6 mt-5 flex flex-1 snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SLIDES.map((s, n) => (
-            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col justify-center px-6">
-              <h1 className="text-[2.125rem] font-extrabold leading-[1.12] tracking-tight">
+            <section key={n} aria-roledescription="slide" aria-label={`${n + 1} / ${SLIDES.length}`} aria-hidden={n !== i} className="flex w-full shrink-0 snap-center flex-col px-6">
+              <h1 className="text-[2.125rem] font-extrabold leading-[1.12] tracking-tight [@media(max-height:700px)]:text-[1.75rem]">
                 {(hi ? s.titleHi : s.title).map((l, k, a) => <span key={k} className={cn("block", k === a.length - 1 && "text-primary")}>{l}</span>)}
               </h1>
-              <p className="mt-3 max-w-[20rem] text-[1.125rem] leading-snug text-foreground/85">{hi ? s.subHi : s.sub}</p>
-              <div className="-mx-1 my-4">{art[n]}</div>
-              <ul className="space-y-3">
+              <p className="mt-3 max-w-[20rem] text-[1.125rem] leading-snug text-foreground/85 [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:text-base">{hi ? s.subHi : s.sub}</p>
+              <div className="-mx-1 grid flex-1 place-items-center py-3">{art[n]}</div>
+              <ul className="space-y-3 [@media(max-height:700px)]:space-y-2">
                 {s.items.map((it) => (
                   <li key={it.en} className="flex items-center gap-4 text-[0.9375rem] font-medium">
                     <span className="grid h-9 w-11 shrink-0 place-items-center rounded-2xl bg-[oklch(0.955_0.03_20)] text-primary"><it.icon className="size-5" strokeWidth={1.75} aria-hidden /></span>{hi ? it.hi : it.en}
