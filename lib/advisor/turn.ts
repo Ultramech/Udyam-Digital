@@ -14,6 +14,7 @@ import { upsertLeadFromTurn } from "@/lib/leads/leads";
 import { estimateSchedule, priceLines } from "@/lib/rules/pricing";
 import type { Conversation, Lead } from "@/lib/store/types";
 import { getPersona } from "@/lib/demo/personas";
+import { say, unavailableNotice } from "@/lib/ai/say";
 
 export const AdvisorBody = z.object({
   conversationId: z.string().max(40).optional(),
@@ -60,30 +61,37 @@ export async function runAdvisor(b: AdvisorInput, sid?: string) {
   if (meta?.languageRequest) { lang = meta.languageRequest; conv.lang = lang; }
 
   const asking = !!meta && !b.chip && (meta.intent === "question" || ((meta.intent === "smalltalk" || meta.intent === "other") && conv.stage === "recommended"));
-  // A question must not change the plan by keyword ("why do I need CCTV?" is not a request for CCTV), so the keyword extractor is skipped.
-  const turn = advisorTurn({
-    facts, text: asking ? undefined : b.text, chip: b.chip, lang,
+  // Free text is understood by Gemini only: there is no keyword/regex fallback. If it could not read the message, the plan is left untouched.
+  const unread = !!b.text && !llmFacts;
+  const engineInput = {
+    facts, chip: b.chip,
     // a question never mutates the plan: no removals, no corrections (hypotheticals are answered from computed what-ifs instead)
     llmFacts: llmFacts ?? undefined, llmMeta: meta ? (asking ? { changedFields: [], removeNeeds: [] } : { changedFields: meta.changedFields, removeNeeds: meta.removeNeeds }) : undefined,
-  });
+  };
+  const turn = advisorTurn({ ...engineInput, lang });
   const finalTurn = turn;
   let kind: "answer" | "plan" | "collect" | "escalated" = finalTurn.stage === "recommended" ? "plan" : finalTurn.stage === "escalated" ? "escalated" : "collect";
+  const lastReply = conv.messages.filter((m) => m.role === "assistant").at(-1)?.text ?? "";
 
-  if (asking && finalTurn.stage !== "escalated") {
+  if (unread) {
+    finalTurn.reply = unavailableNotice();
+  } else if (b.refresh) {
+    finalTurn.reply = lastReply; // re-opening a conversation shows what was actually said, it never re-scripts it
+  } else if (asking && finalTurn.stage !== "escalated") {
     // Free-form question: answered ONLY from the plan + catalogue + journey facts assembled by code, then faithfulness-checked.
     const ans = await llmAnswer(lang, meta!.question ?? b.text ?? "", knowledgeContext(finalTurn.profile, finalTurn.recommendation));
-    const fallback = lang === "hi" || lang === "mr"
-      ? "इसका पक्का जवाब मैं यहाँ नहीं दे पा रहा — विशेषज्ञ मदद कर सकते हैं। \"human\" लिखें या \"किसी व्यक्ति से बात करें\" दबाएँ।"
-      : "I can't answer that reliably here — a specialist can help. Type \"human\" or tap \"Talk to a person\".";
-    finalTurn.reply = (ans ?? fallback) + (finalTurn.stage === "collecting" ? `\n\n${finalTurn.reply}` : "");
+    let next = "";
+    if (finalTurn.stage === "collecting") next = (await voiceTurn(engineInput, finalTurn, lang, !!ans)).text;
+    finalTurn.reply = (ans ?? "I can't answer that reliably here — a specialist can help. Type \"human\" or tap \"Talk to a person\".") + (next ? `\n\n${next}` : "");
     kind = "answer";
     if (ans) ai = { used: true };
-  } else {
-    // Once a plan exists, let Gemini explain it in the owner's language — but only if the text passes the faithfulness check.
+  } else if (finalTurn.stage === "recommended") {
+    // Once a plan exists, Gemini explains it in the owner's language — but only if the text passes the faithfulness check.
     const rec0 = finalTurn.recommendation;
-    if (rec0?.lines.length && finalTurn.profile && finalTurn.stage === "recommended" && !b.refresh) {
+    let msg: string | null = null;
+    if (rec0?.lines.length && finalTurn.profile) {
       const pr = priceLines(rec0.lines), sc = estimateSchedule(rec0.lines);
-      const msg = await llmExplain(lang, {
+      msg = await llmExplain(lang, {
         bundleName: bundleName(rec0.bundleId, lang), monthly: pr.monthly, setup: pr.setup, gstPercent: 18, contractMonths: pr.contractMonths,
         items: [...new Set(rec0.lines.map((l) => plainName(l.productId, "en")))],
         why: rec0.why.map((w) => ruleReason(w, "en")),
@@ -91,10 +99,14 @@ export async function runAdvisor(b: AdvisorInput, sid?: string) {
           .concat(rec0.trace.filter((t) => t.code === "DECLINED_BY_OWNER").map((t) => ruleReason({ code: t.code, productId: t.productId }, "en"))),
         notes: rec0.notices.map((n) => ruleReason(n, "en")), city: finalTurn.profile.city, businessType: finalTurn.profile.businessType ?? "business", goLive: fmtDate(sc.date, "en"),
       });
-      if (msg) { finalTurn.reply = msg; ai = { used: true }; }
     }
-  } // a hand edit in the facts panel flows through `facts`, so the recommendation is recomputed
-
+    if (msg) { finalTurn.reply = msg; ai = { used: true }; } else finalTurn.reply = unavailableNotice();
+  } else {
+    // collecting / escalated / greeting: the engine decides what is needed next; Gemini words it (and labels the quick-reply chips).
+    const v = await voiceTurn(engineInput, finalTurn, lang, false);
+    finalTurn.reply = v.text;
+    if (v.ok) ai = { used: true };
+  }
   const now = Date.now();
   if (!b.refresh) {
     if (b.text) conv.messages.push({ role: "user", text: b.text, at: now });
@@ -133,4 +145,29 @@ export async function runAdvisor(b: AdvisorInput, sid?: string) {
     lang,
     messages: conv.messages,
   });
+}
+
+/**
+ * Words the engine's decision for the current turn (greeting, next question, human hand-off, hard escalation). The English engine output is the
+ * "situation"; Gemini renders it in `lang` and labels the quick-reply chips. Chip slot/value stay engine-owned. If Gemini cannot answer, the
+ * chips keep their built-in labels (they are tap targets) and the reply is the honest unavailable notice.
+ */
+async function voiceTurn(engineInput: Omit<Parameters<typeof advisorTurn>[0], "lang">, t: ReturnType<typeof advisorTurn>, lang: Lang, followUp: boolean): Promise<{ text: string; ok: boolean }> {
+  const en = advisorTurn({ ...engineInput, lang: "en" });
+  const known = Object.fromEntries(Object.entries(t.facts).filter(([, v]) => v !== undefined && !(Array.isArray(v) && !v.length)));
+  const r = await say({
+    lang,
+    situation: t.stage === "escalated"
+      ? "A human specialist will take over. Tell the owner this using engineMessage, and that nothing they said needs repeating."
+      : en.reply.startsWith("Namaste")
+        ? "Greet the owner warmly and invite them to describe their business in their own words (what they do, how many people, which city) so you can suggest one plan with one clear monthly price."
+        : `${followUp ? "Their question was just answered. Now " : ""}briefly acknowledge what you have understood so far (if anything), then ask the owner the ONE next question given in engineMessage. Do not ask anything else.`,
+    facts: { engineMessage: en.reply, knownAboutBusiness: known },
+    chips: en.quickReplies.map((c) => ({ value: c.value, label: c.label })),
+  });
+  if (!r) return { text: unavailableNotice(), ok: false };
+  // numeric range chips ("2–3", "25+") stay as the engine wrote them: they are language-neutral and WhatsApp number matching depends on them
+  const RANGE = /^\d+\s*(?:[–-]\s*\d+|\+)?$/;
+  if (r.labels) t.quickReplies = t.quickReplies.map((c, i) => (RANGE.test(c.label.trim()) ? c : { ...c, label: r.labels![i] ?? c.label }));
+  return { text: r.text, ok: true };
 }

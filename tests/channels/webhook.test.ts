@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/ai/gemini", async () => (await import("../helpers/fakeGemini")).fakeGemini);
 const afterJobs: Array<() => Promise<void> | void> = [];
 vi.mock("next/server", () => ({ after: (fn: () => Promise<void> | void) => { afterJobs.push(fn); } }));
 
@@ -81,7 +82,7 @@ describe("WhatsApp webhook", () => {
   it("track shows 'no order yet' for a number without orders (the WhatsApp number is the verified identity)", async () => {
     await POST(req({ From: "whatsapp:+919876500127", Body: "track", MessageSid: "SM-track" }));
     await runAfter();
-    expect(sent.map((m) => m.body.get("Body")).join("\n")).toContain("can't find an order");
+    expect(sent.map((m) => m.body.get("Body")).join("\n")).toContain("No order exists");
   });
 
   it("answers 503 when the channel is not configured", async () => {

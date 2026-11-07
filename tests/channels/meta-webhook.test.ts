@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/ai/gemini", async () => (await import("../helpers/fakeGemini")).fakeGemini);
 const afterJobs: Array<() => Promise<void> | void> = [];
 vi.mock("next/server", () => ({ after: (fn: () => Promise<void> | void) => { afterJobs.push(fn); } }));
 

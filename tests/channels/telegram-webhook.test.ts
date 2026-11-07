@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/ai/gemini", async () => (await import("../helpers/fakeGemini")).fakeGemini);
 const afterJobs: Array<() => Promise<void> | void> = [];
 vi.mock("next/server", () => ({ after: (fn: () => Promise<void> | void) => { afterJobs.push(fn); } }));
 
@@ -59,7 +60,7 @@ describe("Telegram webhook", () => {
     expect(sent[0].body.text).toContain("verified");
     sent.length = 0;
     await POST(req({ text: "track" })); await runAfter();
-    expect(sent.map((s) => s.body.text).join("\n")).toContain("find an order");
+    expect(sent.map((s) => s.body.text).join("\n")).toContain("No order exists");
     expect(sent.at(-1)!.body.reply_markup?.keyboard?.[0]?.[0]?.request_contact).not.toBe(true);
   });
 

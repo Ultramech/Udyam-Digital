@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/ai/gemini", async () => (await import("../helpers/fakeGemini")).fakeGemini);
 vi.mock("next/server", () => ({ after: () => { /* not used */ } }));
 
 let handleChat: typeof import("@/lib/channels/chat").handleChat;
@@ -11,7 +12,6 @@ let store: typeof import("@/lib/db/store");
 
 beforeAll(async () => {
   process.env.DATABASE_URL = `file:${join(mkdtempSync(join(tmpdir(), "pc-")), "t.db")}`;
-  delete process.env.GEMINI_API_KEY;
   handleChat = (await import("@/lib/channels/chat")).handleChat;
   store = await import("@/lib/db/store");
 });
@@ -19,9 +19,9 @@ beforeAll(async () => {
 describe("chat privacy commands", () => {
   it("STOP and RESUME toggle the opt-out for the verified phone", async () => {
     const base = { channel: "whatsapp" as const, userId: "whatsapp:+919876500200", phone: "9876500200", baseUrl: null };
-    expect((await handleChat({ ...base, text: "STOP" })).messages[0]).toContain("won't send you order updates");
+    expect((await handleChat({ ...base, text: "STOP" })).messages[0]).toContain("now OFF");
     expect(await store.get("optout", "9876500200")).toBeTruthy();
-    expect((await handleChat({ ...base, text: "resume" })).messages[0]).toContain("back on");
+    expect((await handleChat({ ...base, text: "resume" })).messages[0]).toContain("back ON");
     expect(await store.get("optout", "9876500200")).toBeNull();
   });
 
@@ -50,6 +50,6 @@ describe("chat privacy commands", () => {
 
   it("a business description containing 'stop' is not a command", async () => {
     const out = await handleChat({ channel: "whatsapp", userId: "whatsapp:+919876500202", phone: "9876500202", text: "I run a bus stop kiosk in Jaipur", baseUrl: null });
-    expect(out.messages.join(" ")).not.toContain("won't send you order updates");
+    expect(out.messages.join(" ")).not.toContain("now OFF");
   });
 });

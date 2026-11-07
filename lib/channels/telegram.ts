@@ -35,7 +35,7 @@ export function toTelegramHtml(s: string): string {
 }
 
 export type Keyboard = { keyboard: { text: string; request_contact?: boolean }[][]; resize_keyboard: true; one_time_keyboard?: boolean } | { remove_keyboard: true };
-export const contactKeyboard = (lang: "en" | "hi"): Keyboard => ({ keyboard: [[{ text: lang === "hi" ? "📱 मेरा नंबर शेयर करें" : "📱 Share my phone number", request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
+export const contactKeyboard = (label: string): Keyboard => ({ keyboard: [[{ text: `📱 ${label}`, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
 export const chipKeyboard = (labels: string[]): Keyboard =>
   labels.length ? { keyboard: labels.slice(0, 12).map((t) => [{ text: t }]), resize_keyboard: true, one_time_keyboard: true } : { remove_keyboard: true };
 

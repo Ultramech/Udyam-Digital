@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { del, get, list, put } from "@/lib/db/store";
 import { runAdvisor } from "@/lib/advisor/turn";
+import { say, unavailableNotice, type SayLang } from "@/lib/ai/say";
 import type { QuickReply } from "@/lib/advisor/orchestrator";
 import { createQuoteFromConversation } from "@/lib/store/quotes";
 import { stageText } from "@/lib/store/orders";
@@ -45,7 +46,7 @@ interface ChatState {
 }
 
 const MAX_PER_MINUTE = 12;
-const T = (l: Lang, en: string, hi: string) => (l === "hi" ? hi : en);
+const T = (l: Lang, en: string, hi: string) => (l === "hi" ? hi : en); // card field labels only (data cards), never conversational text
 const stateKey = (c: Channel, userId: string) => `ch:${c}:${createHash("sha256").update(userId).digest("hex").slice(0, 20)}`;
 
 async function loadState(key: string): Promise<ChatState> {
@@ -70,10 +71,20 @@ function parseCommand(text: string): Cmd | null {
   return null;
 }
 
-const menuText = (l: Lang, resumed: boolean) =>
-  T(l,
-    `Namaste! I'm the *Accel Business* advisor.\n\nTell me about your business in one message — what you do, how many people, how many locations, which city, and whether you have a GST number. I'll recommend a plan with *one clear monthly price*.\n\n${resumed ? "We were in the middle of a chat — just reply to continue.\n\n" : ""}You can also type:\n• *track* — your order status\n• *human* — talk to a person\n• *hindi* / *english* — change language\n• *new* — start over\n• *stop* — no more order updates · *delete my data* — erase this chat`,
-    `नमस्ते! मैं *Accel Business* का सलाहकार हूँ।\n\nएक संदेश में अपने बिज़नेस के बारे में बताइए — क्या काम है, कितने लोग, कितनी जगह, कौन सा शहर, और GST नंबर है या नहीं। मैं *एक साफ़ मासिक कीमत* के साथ प्लान सुझाऊँगा।\n\n${resumed ? "हमारी बातचीत अधूरी है — बस जवाब दीजिए।\n\n" : ""}आप ये भी लिख सकते हैं:\n• *track* — ऑर्डर की स्थिति\n• *human* — किसी इंसान से बात\n• *hindi* / *english* — भाषा बदलें\n• *new* — नए सिरे से शुरू\n• *stop* — ऑर्डर अपडेट बंद · *delete my data* — यह चैट मिटाएँ`);
+/** Every conversational line is worded live by Gemini from facts the code supplies; only the privacy notice below is fixed legal text. */
+const COMMANDS = [
+  { word: "track", does: "shows the status of their orders" }, { word: "human", does: "asks a person to call them back" },
+  { word: "hindi", does: "switches the chat to Hindi" }, { word: "english", does: "switches the chat to English" },
+  { word: "new", does: "starts the conversation over" }, { word: "stop", does: "stops order update messages" }, { word: "delete my data", does: "erases this chat" },
+];
+const sayLang = (st: ChatState): SayLang => st.advLang ?? st.lang;
+async function words(st: ChatState, situation: string, facts: unknown = {}, mustInclude: string[] = []): Promise<string> {
+  const r = await say({ lang: sayLang(st), situation, facts, mustInclude, format: "whatsapp" });
+  return r ? r.text : unavailableNotice();
+}
+const menuText = (st: ChatState, resumed: boolean) =>
+  words(st, "Greet the owner as the Accel Business advisor. Ask them to describe their business in ONE message: what they do, how many people, how many locations, which city, and whether they have a GST number. Promise a plan with one clear monthly price. Then list the commands they can type, each on its own line starting with '•' with the command word in *bold* exactly as given.",
+    { alreadyMidConversation: resumed, commands: COMMANDS }, COMMANDS.map((c) => c.word));
 
 const privacyLine = (l: Lang) =>
   T(l, "_Your messages are used only to recommend a plan and track your order. Documents (KYC) are collected only on our secure web app, after your consent._",
@@ -146,11 +157,11 @@ export async function handleChat(inp: ChatInput): Promise<ChatOutput> {
   };
 
   const text = inp.text.replace(/\s+/g, " ").trim().slice(0, 1000);
-  if (!text) return finish([T(st.lang, "Please send a message and I'll help.", "कृपया संदेश भेजें, मैं मदद करूँगा।")]);
+  if (!text) return finish([await words(st, "The owner sent an empty message. Ask them to send a message.")]);
 
   const now = Date.now();
   st.recent = st.recent.filter((t) => now - t < 60_000);
-  if (st.recent.length >= MAX_PER_MINUTE) return finish([T(st.lang, "You're sending messages very fast — please wait a minute and try again.", "आप बहुत तेज़ी से संदेश भेज रहे हैं — कृपया एक मिनट रुककर फिर कोशिश करें।")]);
+  if (st.recent.length >= MAX_PER_MINUTE) return finish([await words(st, "The owner is sending messages too fast. Ask them to wait a minute and try again.")]);
   st.recent.push(now);
   if (hasDevanagari(text) && st.lang === "en") st.lang = "hi";
 
@@ -159,22 +170,22 @@ export async function handleChat(inp: ChatInput): Promise<ChatOutput> {
 
   if (cmd === "hindi" || cmd === "english") {
     st.lang = cmd === "hindi" ? "hi" : "en"; st.advLang = st.lang;
-    return finish([T(st.lang, "Language set to English. Tell me about your business.", "भाषा हिन्दी कर दी गई है। अपने बिज़नेस के बारे में बताइए।")]);
+    return finish([await words(st, `Confirm the chat language is now ${st.lang === "hi" ? "Hindi" : "English"} and ask them to tell you about their business.`)]);
   }
   if (cmd === "reset") {
     st.conversationId = undefined; st.chips = []; st.planSig = undefined; st.quoteId = undefined;
-    return finish([menuText(st.lang, false)]);
+    return finish([await menuText(st, false)]);
   }
-  if (cmd === "menu") return finish([menuText(st.lang, !!st.conversationId), ...(first ? [privacyLine(st.lang)] : [])]);
+  if (cmd === "menu") return finish([await menuText(st, !!st.conversationId), ...(first ? [privacyLine(st.lang)] : [])]);
 
   // Opt-out of proactive order updates is keyed by the verified phone, so it holds on every channel that number uses.
   if (cmd === "stop" || cmd === "resume") {
-    if (!inp.phone) return finish([T(st.lang, "To change update settings I first need to verify your phone number.", "अपडेट सेटिंग बदलने से पहले मुझे आपका फ़ोन नंबर वेरिफाई करना होगा।")], { needsVerify: true });
+    if (!inp.phone) return finish([await words(st, "To change order-update settings you first need to verify the owner's phone number.")], { needsVerify: true });
     if (cmd === "stop") await put("optout", inp.phone, { at: Date.now(), channel: inp.channel });
     else await del("optout", inp.phone);
     return finish([cmd === "stop"
-      ? T(st.lang, "Done — we won't send you order updates any more. You can still message me any time. Type *resume* to turn updates back on.", "ठीक है — अब हम आपको ऑर्डर अपडेट नहीं भेजेंगे। आप कभी भी मुझे संदेश भेज सकते हैं। अपडेट फिर से चालू करने के लिए *resume* लिखें।")
-      : T(st.lang, "Order updates are back on.", "ऑर्डर अपडेट फिर से चालू हैं।")]);
+      ? await words(st, "Confirm that order update messages are now OFF, that they can still message you any time, and that typing *resume* turns updates back on.", {}, ["resume"])
+      : await words(st, "Confirm that order update messages are back ON.")]);
   }
 
   // Erase this chat: the conversation transcript, this channel's chat state and any Telegram phone link.
@@ -188,29 +199,29 @@ export async function handleChat(inp: ChatInput): Promise<ChatOutput> {
       if (link?.phone) await del("tglink", `phone:${link.phone}`);
     }
     await del("session", key);
-    return { messages: [T(st.lang, "Your chat history and contact link have been deleted. Records we must keep by law (orders, invoices, signed forms) stay until their retention period ends. Say *hi* any time to start again.", "आपकी चैट हिस्ट्री और संपर्क लिंक हटा दिए गए हैं। जो रिकॉर्ड कानूनन रखने ज़रूरी हैं (ऑर्डर, इनवॉइस, साइन किए फ़ॉर्म) वे अवधि पूरी होने तक रहेंगे। फिर से शुरू करने के लिए कभी भी *hi* लिखें।")], chips: [] };
+    return { messages: [await words(st, "Confirm the chat history and contact link are deleted. Records the law requires us to keep (orders, invoices, signed forms) stay until their retention period ends. They can say *hi* any time to start again.", {}, ["hi"])], chips: [] };
   }
 
   if (cmd === "track") {
-    if (!inp.phone) return finish([T(st.lang, "To show your orders I first need to verify your phone number.", "आपके ऑर्डर दिखाने से पहले मुझे आपका फ़ोन नंबर वेरिफाई करना होगा।")], { needsVerify: true });
+    if (!inp.phone) return finish([await words(st, "To show their orders you first need to verify the owner's phone number.")], { needsVerify: true });
     const orders = await ordersFor(inp.phone);
-    if (!orders.length) return finish([T(st.lang, "I can't find an order for this number yet. An order appears here once you complete checkout with this number. Want me to recommend a plan? Just describe your business.", "इस नंबर पर अभी कोई ऑर्डर नहीं मिला। इसी नंबर से चेकआउट पूरा होते ही ऑर्डर यहाँ दिखेगा। प्लान चाहिए? बस अपने बिज़नेस के बारे में बताइए।")]);
+    if (!orders.length) return finish([await words(st, "No order exists for this number yet; an order appears once checkout is completed with this number. Offer to recommend a plan if they describe their business.")]);
     return finish(orders.map((o) => orderText(st.lang, o, inp.baseUrl)));
   }
 
   if (cmd === "human") {
-    if (!inp.phone) return finish([T(st.lang, "So a specialist can call you back, I first need to verify your phone number.", "ताकि विशेषज्ञ आपको कॉल कर सके, पहले आपका फ़ोन नंबर वेरिफाई करना होगा।")], { needsVerify: true });
+    if (!inp.phone) return finish([await words(st, "So a specialist can call the owner back, you first need to verify their phone number.")], { needsVerify: true });
     const r = await runAdvisor({ conversationId: st.conversationId, text: "I want to talk to a person please", ...advisorCommon(st, inp.channel) });
     st.conversationId = r.conversationId;
     if (r.leadId) await patchLead(r.leadId, (l) => ({ ...l, phone: l.phone ?? inp.phone }));
-    return finish([T(st.lang, "A specialist will call you within 2 working hours on this number — they already have everything you've told me.", "विशेषज्ञ 2 कार्य-घंटों में इसी नंबर पर आपको कॉल करेगा — आपने जो बताया है वह उसके पास पहले से है।")]);
+    return finish([await words(st, "Tell the owner a specialist will call them back on this number within 2 working hours, and already has everything they have shared.", { callbackWithinWorkingHours: 2 })]);
   }
 
   if (cmd === "plan") {
     const conv = st.conversationId ? await get<Conversation>("conversation", st.conversationId) : null;
-    if (!conv) return finish([T(st.lang, "I don't have a plan for you yet. Tell me about your business first.", "अभी आपके लिए कोई प्लान नहीं है। पहले अपने बिज़नेस के बारे में बताइए।")]);
+    if (!conv) return finish([await words(st, "There is no plan for the owner yet. Ask them to tell you about their business first.")]);
     const res = await runAdvisor({ conversationId: conv.id, refresh: true, ...advisorCommon(st, inp.channel) });
-    if (res.turn.stage !== "recommended" || !res.pricing) return finish([T(st.lang, "I still need a few details before I can recommend a plan.", "प्लान सुझाने से पहले मुझे कुछ और जानकारी चाहिए।"), toWhatsAppText(res.turn.reply), chipsToText(st.chips, st.lang)].filter(Boolean));
+    if (res.turn.stage !== "recommended" || !res.pricing) return finish([toWhatsAppText(res.turn.reply), chipsToText(st.chips, st.lang)].filter(Boolean));
     const qid = await ensureQuote(st, (await get<Conversation>("conversation", conv.id))!, res);
     return finish([planCard(st.lang, res, qid && inp.baseUrl ? `${inp.baseUrl}/quote/${qid}` : null)], { quoteUrl: qid && inp.baseUrl ? `${inp.baseUrl}/quote/${qid}` : undefined });
   }

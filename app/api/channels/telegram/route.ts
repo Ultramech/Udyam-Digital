@@ -1,3 +1,4 @@
+import { say, unavailableNotice } from "@/lib/ai/say";
 import { after } from "next/server";
 import { get, put } from "@/lib/db/store";
 import { handleChat } from "@/lib/channels/chat";
@@ -30,28 +31,29 @@ export async function POST(req: Request) {
   if (await get("analytics", key)) return new Response("OK");
   await put("analytics", key, { at: Date.now() });
   const chatId = m.chat.id, base = publicBaseUrl();
-  const lang: "en" | "hi" = m.from.language_code === "hi" ? "hi" : "en";
+  const lang: "en" | "hi" | "mr" | "ta" = m.from.language_code === "hi" ? "hi" : m.from.language_code === "mr" ? "mr" : m.from.language_code === "ta" ? "ta" : "en";
+  const w = async (situation: string, mustInclude?: string[]) => (await say({ lang, situation, facts: {}, mustInclude, format: "whatsapp" }))?.text ?? unavailableNotice();
 
   after(async () => {
     try {
       if (m.contact) {
         // Trust only the sender's OWN contact (Telegram has verified that number); reject forwarded contacts.
         const digits = m.contact.phone_number.replace(/\D/g, "");
-        if (m.contact.user_id !== m.from!.id) return void (await sendTelegram(chatId, lang === "hi" ? "कृपया अपना ही नंबर शेयर करें।" : "Please share your own number using the button."));
-        if (!(digits.length === 12 && digits.startsWith("91"))) return void (await sendTelegram(chatId, lang === "hi" ? "अभी सिर्फ़ भारतीय (+91) नंबर समर्थित हैं।" : "Only Indian (+91) numbers are supported for orders right now.", { remove_keyboard: true }));
+        if (m.contact.user_id !== m.from!.id) return void (await sendTelegram(chatId, await w("The shared contact is not the sender's own. Ask them to share their own number using the button.")));
+        if (!(digits.length === 12 && digits.startsWith("91"))) return void (await sendTelegram(chatId, await w("Only Indian mobile numbers are supported for orders right now."), { remove_keyboard: true }));
         await linkPhone(chatId, digits.slice(2));
-        await sendTelegram(chatId, lang === "hi" ? "✅ नंबर वेरिफाई हो गया। अब *track* लिखें या अपने बिज़नेस के बारे में बताएँ। ऑर्डर के अपडेट यहाँ भी आएँगे।" : "✅ Number verified. Send *track* to see your orders, or tell me about your business. Order updates will also come here.", { remove_keyboard: true });
+        await sendTelegram(chatId, await w("Confirm their phone number is verified. They can send *track* to see their orders, or tell you about their business. Order updates will also arrive on this chat.", ["track"]), { remove_keyboard: true });
         return;
       }
-      if (!m.text) return void (await sendTelegram(chatId, "I can read text messages only. Documents for KYC are uploaded on our secure web app, after you give consent. / मैं सिर्फ़ टेक्स्ट पढ़ सकता हूँ।"));
+      if (!m.text) return void (await sendTelegram(chatId, await w("Explain you can read text messages only here; KYC documents are uploaded on the secure web app, after the owner gives consent.")));
       const start = m.text.match(/^\/start(?:\s+(\S+))?/); // deep link t.me/<bot>?start=track arrives as "/start track"
-      const text = start ? (start[1] ?? (lang === "hi" ? "नमस्ते" : "hi")) : m.text.replace(/^\/(\w+).*/, "$1");
+      const text = start ? (start[1] ?? "hi") : m.text.replace(/^\/(\w+).*/, "$1");
       const phone = await phoneForChat(chatId);
       const out = await handleChat({ channel: "telegram", userId: `tg:${chatId}`, phone, text, baseUrl: base });
       const msgs = out.messages.flatMap((x) => splitMessage(x, 3800)).filter(Boolean);
       for (let i = 0; i < msgs.length; i++) {
         const last = i === msgs.length - 1;
-        await sendTelegram(chatId, msgs[i], last ? (out.needsVerify ? contactKeyboard(lang) : chipKeyboard(out.chips.map((c) => c.label))) : undefined);
+        await sendTelegram(chatId, msgs[i], last ? (out.needsVerify ? contactKeyboard((await say({ lang, situation: "Short button text that lets the user share their own phone number", facts: {}, chips: [{ value: "share", label: "Share my phone number" }] }))?.labels?.[0] ?? "Share my phone number") : chipKeyboard(out.chips.map((c) => c.label))) : undefined);
       }
     } catch (e) {
       console.error("telegram turn failed", e instanceof Error ? e.message : "unknown");
