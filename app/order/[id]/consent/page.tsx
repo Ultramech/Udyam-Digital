@@ -1,5 +1,5 @@
 "use client";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Database, Hourglass, UserCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +19,9 @@ export default function ConsentPage({ params }: { params: Promise<{ id: string }
   const router = useRouter();
   const [p, setP] = useState<P>({ kyc: true, service: true, digilocker: false, marketing: false }); // optional purposes start OFF
   const [busy, setBusy] = useState(false);
+  // DigiLocker only appears as a choice when it is actually connected; a switch that does nothing would be a false promise
+  const [dlLive, setDlLive] = useState(false);
+  useEffect(() => { api<{ services: { id: string; mode: string }[] }>("GET", "/api/status").then((s) => setDlLive(s.services.find((x) => x.id === "digilocker")?.mode === "live")).catch(() => {}); }, []);
 
   async function accept() {
     setBusy(true);
@@ -32,7 +35,7 @@ export default function ConsentPage({ params }: { params: Promise<{ id: string }
   const rows: { key: keyof P; title: string; body: string; required?: boolean }[] = [
     { key: "kyc", title: t("c_kyc"), body: t("c_kyc_d"), required: true },
     { key: "service", title: t("c_service"), body: t("c_service_d"), required: true },
-    { key: "digilocker", title: t("c_digilocker"), body: t("c_digilocker_d") },
+    ...(dlLive ? [{ key: "digilocker" as const, title: t("c_digilocker"), body: t("c_digilocker_d") }] : []),
     { key: "marketing", title: t("c_marketing"), body: t("c_marketing_d") },
   ];
   return (

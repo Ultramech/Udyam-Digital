@@ -32,7 +32,8 @@ export function runKyc(input: KycInput): KycResult {
     if (d.docType !== slot) { push("DOC_WRONG_TYPE", "reupload", slot, { got: d.docType }); continue; }
     if (d.legibility === "skewed") push("DOC_SKEWED", "info", slot);
     let ok = true;
-    for (const f of KEY_FIELDS[slot]) if (!d.fields[f]) { push("FIELD_MISSING", "reupload", slot, { field: f }); ok = false; }
+    const keys = d.source === "aadhaar_offline" ? (slot === "signatory_id" ? ["name"] : ["address"]) : KEY_FIELDS[slot];
+    for (const f of keys) if (!d.fields[f]) { push("FIELD_MISSING", "reupload", slot, { field: f }); ok = false; }
     if (ok) usable[slot] = d;
   }
   // a document with a blank key field is not usable for cross-checks, but a present Udyam number elsewhere may still be
@@ -106,7 +107,10 @@ export function runKyc(input: KycInput): KycResult {
   // ---- 4. address proof ----------------------------------------------------------------------------
   const refAddress = rec?.principal_place_of_business ?? gstDoc?.fields.address ?? entered.siteAddress ?? undefined;
   const addressSkippable = gstActive && !!entered.siteAddress && !!rec && addressesMatch(entered.siteAddress, rec.principal_place_of_business);
-  if (billDoc) {
+  if (billDoc && billDoc.source === "aadhaar_offline") {
+    // an Aadhaar is an identity-and-address document, not a dated bill: only the address has to agree
+    if (refAddress && !addressesMatch(billDoc.fields.address!, refAddress)) push("ADDRESS_MISMATCH", "review", "address_proof");
+  } else if (billDoc) {
     const days = daysBetween(billDoc.fields.bill_date!, today);
     if (days > ADDRESS_PROOF_MAX_DAYS) push("ADDRESS_PROOF_STALE", "reupload", "address_proof", { days, max: ADDRESS_PROOF_MAX_DAYS, billDate: billDoc.fields.bill_date! });
     else if (days < 0) push("ADDRESS_PROOF_FUTURE", "review", "address_proof", { billDate: billDoc.fields.bill_date! });
@@ -116,8 +120,11 @@ export function runKyc(input: KycInput): KycResult {
   // ---- 5. authorised signatory ---------------------------------------------------------------------
   const bizName = rec?.trade_name ?? gstDoc?.fields.trade_name ?? undefined;
   if (idDoc) {
-    if (idDoc.fields.valid_till! < today) push("SIGNATORY_ID_EXPIRED", "reupload", "signatory_id", { validTill: idDoc.fields.valid_till! });
-    let linked = !bizName || namesMatch(idDoc.fields.for_business!, bizName);
+    const aadhaar = idDoc.source === "aadhaar_offline";
+    if (!aadhaar && idDoc.fields.valid_till! < today) push("SIGNATORY_ID_EXPIRED", "reupload", "signatory_id", { validTill: idDoc.fields.valid_till! });
+    // a personal ID carries no business name: it can only be tied to the business through the proprietor's own name
+    let linked = aadhaar ? true : !bizName || namesMatch(idDoc.fields.for_business!, bizName);
+    if (aadhaar && rec && rec.constitution !== "Proprietorship") linked = false;
     if (linked && rec?.constitution === "Proprietorship") linked = nameSimilarity(idDoc.fields.name!, splitProprietor(rec.legal_name).owner) >= NAME_MATCH_THRESHOLD;
     if (!linked) push("SIGNATORY_NOT_LINKED", "review", "signatory_id");
   } else if (!docs.signatory_id) push("DOC_MISSING", "reupload", "signatory_id");
@@ -126,7 +133,7 @@ export function runKyc(input: KycInput): KycResult {
   if (bizName) {
     if (udyamDoc?.fields.enterprise_name && !namesMatch(udyamDoc.fields.enterprise_name, bizName) && !checks.some((c) => c.code === "UDYAM_NAME_MISMATCH"))
       push("NAME_MISMATCH", "review", "udyam_certificate", { a: udyamDoc.fields.enterprise_name, b: bizName });
-    if (billDoc?.fields.billed_to && !namesMatch(billDoc.fields.billed_to, bizName)) push("NAME_MISMATCH", "review", "address_proof", { a: billDoc.fields.billed_to, b: bizName });
+    if (billDoc && billDoc.source !== "aadhaar_offline" && billDoc.fields.billed_to && !namesMatch(billDoc.fields.billed_to, bizName)) push("NAME_MISMATCH", "review", "address_proof", { a: billDoc.fields.billed_to, b: bizName });
   }
 
   // ---- verdict ---------------------------------------------------------------------------------------
