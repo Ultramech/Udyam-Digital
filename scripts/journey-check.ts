@@ -33,11 +33,11 @@ async function reset(phone: string) {
   await login(phone);
 }
 /** Every customer API needs a signed-in, set-up account. The seam skips only the SMS round-trip; setup is the real, validated one. */
-async function login(phone: string) {
+async function login(phone: string, name = "Ramesh Sharma") {
   const v = await call("POST", "/api/demo/verify", { phone });
   if (v.status !== 200) throw new Error(`test-verify seam refused (${v.status}) — start the server with ALLOW_TEST_VERIFY=1`);
-  const s = await call("POST", "/api/me/setup", { name: "Journey Tester", profileType: "owner", email: "",
-    business: { name: "Journey Test Shop", type: "Pharmacy", typeOther: "", city: "Indore", cityOther: "", employees: "3", sites: "1", address: "Shop 14, MG Road, Indore", pincode: "452001", gstin: "", udyam: "" } });
+  const s = await call("POST", "/api/me/setup", { name, profileType: "owner", email: "",
+    business: { name: "Sharma Medical Store", type: "Pharmacy", typeOther: "", city: "Indore", cityOther: "", employees: "3", sites: "1", address: "Shop 14, MG Road, Indore", pincode: "452001", gstin: "", udyam: "" } });
   if (s.status !== 200) throw new Error(`profile setup failed: ${JSON.stringify(s.data)}`);
 }
 async function ops(id: string) { const jar: Record<string, string> = {}; await call("POST", "/api/ops/session", { id }, { jar }); return jar; }

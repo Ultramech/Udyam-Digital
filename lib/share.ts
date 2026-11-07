@@ -30,6 +30,7 @@ export async function sharedPlan(token: string, lang: Lang = "en") {
   return {
     quote: q,
     view: {
+      quoteId: s.quoteId,
       plan: bundleName(q.bundleId, lang), business: q.profile.businessType ?? "", city: q.profile.city, locations: q.profile.sites,
       monthly: pr.monthly, gstMonthly: pr.gstMonthly, setup: pr.setup, gstSetup: pr.gstSetup, payToday: pr.firstPayment, contractMonths: pr.contractMonths, goLive: sc.date,
       items: pr.lines.map((l) => ({ name: plainName(l.productId, lang), benefit: plainBenefit(l.productId, lang), qty: l.qty, location: l.siteIndex, monthly: l.monthly, setup: l.setup })),

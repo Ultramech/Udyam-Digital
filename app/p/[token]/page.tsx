@@ -8,6 +8,7 @@ import { CustomerShell } from "@/components/customer/shell";
 import { fmtDate, inr } from "@/lib/client/format";
 
 interface Shared {
+  quoteId?: string;
   plan: string; business: string; city: string; locations: number; monthly: number; gstMonthly: number; setup: number; gstSetup: number; payToday: number;
   contractMonths: number; goLive: string; items: { name: string; benefit: string; qty: number; location: number | null; monthly: number; setup: number }[];
   why: string[]; notIncluded: string[]; expiresAt: number;
@@ -49,6 +50,7 @@ export default function SharedPlan({ params }: { params: Promise<{ token: string
         {v.notIncluded.length > 0 && <Card className="space-y-1 p-3 text-sm"><div className="font-semibold">{hi ? "शामिल नहीं — और क्यों" : "Not included — and why"}</div><ul className="list-disc pl-5 text-muted-foreground">{v.notIncluded.map((w, i) => <li key={i}>{w}</li>)}</ul></Card>}
         <div className="flex flex-wrap gap-2">
           <a className="inline-flex h-9 items-center rounded-md border px-3 text-sm font-medium" target="_blank" rel="noreferrer" href={`/api/share/${token}/pdf`}>{hi ? "PDF डाउनलोड करें" : "Download PDF"}</a>
+          <a className="inline-flex h-9 items-center rounded-md border px-3 text-sm font-medium" href={`/api/share/${token}/resume`}>{hi ? "मेरा प्लान फिर खोलें" : "Resume my quote"}</a>
           <Link className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground" href="/advisor">{hi ? "अपना प्लान बनाएँ" : "Get a plan for my business"}</Link>
         </div>
         <p className="text-xs text-muted-foreground">{hi ? "अनुमानित प्रोटोटाइप कीमत — अंतिम कीमत KYC के बाद चेकआउट पर पक्की होती है।" : "Indicative prototype prices — the final price is confirmed at checkout after KYC."} {hi ? "लिंक की वैधता" : "Link valid until"} {fmtDate(new Date(v.expiresAt).toISOString().slice(0, 10), lang)}.</p>
