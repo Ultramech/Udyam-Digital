@@ -23,6 +23,7 @@
     "db:studio": "drizzle-kit studio",
     "db:import-legacy": "NODE_OPTIONS=--conditions=react-server tsx scripts/import-legacy-docs.ts",
     "vercel-build": "npm run db:migrate && npm run db:seed && next build",
+    "check:kyc": "NODE_OPTIONS=--conditions=react-server tsx --env-file=.env.local scripts/check-kyc-live.ts",
     "check:routes": "tsx scripts/route-audit.ts"
   },
   "dependencies": {

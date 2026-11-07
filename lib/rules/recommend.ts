@@ -107,6 +107,8 @@ function build(profile: BusinessProfile, segment: Segment, mode: Mode): Built {
     const r = eligibility("P03", profile);
     if (r.ok) pref = "P03"; else addExcl("P03", r.code, r.params);
   }
+  // An owner who asks for very fast / dedicated internet is told plainly why a leased line (P05) is or isn't on offer.
+  if (has(profile, "fast_internet")) { const r5 = eligibility("P05", profile); if (!r5.ok) addExcl("P05", r5.code, r5.params); }
 
   eachSite((s) => {
     let id = pref;
