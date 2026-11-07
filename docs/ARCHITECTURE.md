@@ -8,6 +8,7 @@ questions — always from a context the code assembled, and every number it writ
 
 Source: [`architecture.html`](architecture.html) (hand-drawn SVG) · print version: [`architecture.pdf`](architecture.pdf).
 
+The diagram is self-explaining: numbered markers ①–⑨ match the nine notes printed under it (one customer journey, end to end).
 Four lanes run inside one server-only Next.js app on Vercel: **(1) AI advisor** — understand → decide (rules engine) → explain → check;
 **(2) Smart KYC** — consent → registry → missing docs only → AI reads page → validators → verdict; **(3) quote → feasibility → e-sign → pay →
 order + tracker**; **(4) ops console** — KYC review, orders board, leads, computed insights, scenario lab. Turso (libSQL) is the one record
