@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useI18n } from "@/components/i18n-provider";
 import { CustomerShell } from "@/components/customer/shell";
 import { CheckList, DocSlot } from "@/components/customer/kyc-parts";
+import { DelegateCard } from "@/components/customer/delegate-card";
 import { Collapse } from "@/components/customer/kit";
 import { plainName } from "@/lib/catalogue/plain";
 import { api, ApiError } from "@/lib/client/api";
@@ -83,6 +84,9 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
     const h = setInterval(() => api<{ kyc: KycView }>("GET", `/api/kyc/${id}`).then((r) => setK(r.kyc)).catch(() => {}), 5000);
     return () => clearInterval(h);
   }, [k?.status, k?.review, id]);
+
+  /** Something came back from a delegate's phone: refresh what is on screen without touching the owner's own work. */
+  const refreshKyc = useCallback(() => { api<{ kyc: KycView }>("GET", `/api/kyc/${id}`).then((r) => setK(r.kyc)).catch(() => {}); api<QuoteView>("GET", `/api/quote/${id}`).then(setQ).catch(() => {}); }, [id]);
 
   async function upload(slot: Slot, f: File) {
     setBusy(true);
@@ -236,6 +240,9 @@ export default function KycPage({ params }: { params: Promise<{ id: string }> })
             <p className="text-xs text-muted-foreground">{(lang === "hi" || lang === "mr") ? "या नीचे फ़ोटो/PDF अपलोड करें, या आधार ऑफ़लाइन e-KYC ZIP दें।" : "Or upload a photo or PDF below, or use an Aadhaar offline e-KYC ZIP."}</p>
           </Card>
         )}
+
+        {/* someone else holds the papers? send them a link */}
+        <DelegateCard quoteId={id} missing={shown.filter((s) => !k.docs[s])} onChanged={refreshKyc} />
 
         {/* 2. only the documents still needed */}
         <section className="space-y-3">
