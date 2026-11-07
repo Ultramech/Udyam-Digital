@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi } from "@/components/ops/kit";
+import { Building2, CheckCircle2, UserPlus, Wallet } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { fmtTime, inr } from "@/lib/client/format";
 
@@ -31,13 +33,21 @@ export default function Customers() {
   return (
     <OpsShell>
       <div className="space-y-4">
-        <div><h1 className="text-xl font-bold">Customers</h1><p className="text-sm text-muted-foreground">Every business from the digital journey, grouped by the phone they verified by OTP (masked). Leads, orders and support requests in one place.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Customers</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Every business from the digital journey, grouped by the phone they verified by OTP (masked). Leads, orders and support requests in one place.</p></div>
         <div className="flex flex-wrap gap-2">
           <Input className="max-w-xs" placeholder="Search name, city or order id" value={q} onChange={(e) => setQ(e.target.value)} />
           <select className={sel} value={seg} onChange={(e) => setSeg(e.target.value)} aria-label="Segment"><option value="all">All segments</option>{Object.entries(SEG).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
           <select className={sel} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status"><option value="all">All statuses</option>{["prospect", "onboarding", "active", "cancelled"].map((s) => <option key={s} value={s}>{s}</option>)}</select>
           <select className={sel} value={city} onChange={(e) => setCity(e.target.value)} aria-label="City"><option value="all">All cities</option>{cities.map((c) => <option key={c} value={c}>{c}</option>)}</select>
         </div>
+        {rows && rows.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Kpi icon={Building2} label="Customers" value={rows.length} />
+            <Kpi icon={UserPlus} label="Onboarding" value={rows.filter((r) => r.status === "onboarding").length} />
+            <Kpi icon={CheckCircle2} label="Active" value={rows.filter((r) => r.status === "active").length} />
+            <Kpi icon={Wallet} label="Monthly revenue" value={inr(rows.reduce((t, r) => t + r.mrr, 0))} sub="active, before GST" />
+          </div>
+        )}
         {!rows ? <Skeleton className="h-64" /> : shown.length === 0 ? <Card className="p-6 text-center text-sm text-muted-foreground">No customers match. Run a demo journey from the customer app to create one.</Card> : (
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[820px] text-sm">

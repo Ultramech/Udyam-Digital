@@ -61,8 +61,32 @@ export function analytics(f: Filters) {
     .sort((a, b) => b.risk.probability - a.risk.probability);
   const bands = (["high", "medium", "low"] as const).map((b) => { const g = scored.filter((s) => s.risk.band === b); return { band: b, customers: g.length, actualChurn: pct(g.filter((s) => s.churned).length, g.length) }; });
 
+  // Weekly trend by the week a lead was created (Monday start). Only COMPLETE weeks inside the period are used (the dataset's first and last
+  // weeks are partial), and a week reports churn / days / CAC only when it has enough activations to mean something.
+  const dayMs = 86_400_000, MIN_ACT = 5;
+  const dates = data().map((r) => r.created_date).sort();
+  const [from, to] = f.month ? [`${f.month}-01`, new Date(Date.UTC(+f.month.slice(0, 4), +f.month.slice(5, 7), 0)).toISOString().slice(0, 10)] : [dates[0], dates[dates.length - 1]];
+  const monday = (d: string) => { const t = new Date(`${d}T00:00:00Z`); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7)); return t.toISOString().slice(0, 10); };
+  const weeks = new Map<string, Raw[]>();
+  for (const r of all) { const k = monday(r.created_date); (weeks.get(k) ?? weeks.set(k, []).get(k)!).push(r); }
+  const trend = [...weeks.entries()].sort(([a], [b]) => a.localeCompare(b))
+    .filter(([week]) => week >= from && new Date(new Date(`${week}T00:00:00Z`).getTime() + 6 * dayMs).toISOString().slice(0, 10) <= to)
+    .map(([week, rs]) => {
+      const a = rs.filter((r) => r.outcome === "Activated");
+      const spend = rs.reduce((t, r) => t + (Number(r.acquisition_cost_inr) || 0), 0);
+      const enough = a.length >= MIN_ACT;
+      return {
+        week, label: new Date(`${week}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }),
+        leads: rs.length, activations: a.length, conversion: pct(a.length, rs.length),
+        avgDays: enough ? +mean(a.map((r) => Number(r.days_lead_to_activation))).toFixed(1) : null,
+        cac: enough ? Math.round(spend / a.length) : null,
+        churn: enough ? pct(a.filter((r) => r.churned_within_6_months === "Y").length, a.length) : null,
+      };
+    });
+
   return {
     n: all.length,
+    trend,
     totals: {
       leads: all.length, activations: act.length, conversion: pct(act.length, all.length),
       avgDaysToActivate: +mean(act.map((r) => Number(r.days_lead_to_activation))).toFixed(1),

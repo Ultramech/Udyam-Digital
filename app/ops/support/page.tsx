@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi } from "@/components/ops/kit";
+import { AlertCircle, CheckCircle2, Inbox, UserX } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { fmtTime, inr } from "@/lib/client/format";
 import type { PublicTicket } from "@/lib/support/tickets";
@@ -32,9 +34,17 @@ export default function SupportQueue() {
     <OpsShell>
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <div><h1 className="text-xl font-bold">Support requests</h1><p className="text-sm text-muted-foreground">Raised from the customer Help page. Each one carries the order context and what the owner already asked — don&apos;t make them repeat it.</p></div>
+          <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Support requests</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Raised from the customer Help page. Each one carries the order context and what the owner already asked — don&apos;t make them repeat it.</p></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showResolved} onChange={(e) => setShowResolved(e.target.checked)} />Show resolved</label>
         </div>
+        {tickets && tickets.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Kpi icon={Inbox} label="Open requests" value={tickets.filter((t) => t.status !== "resolved").length} />
+            <Kpi icon={AlertCircle} label="High priority" value={tickets.filter((t) => t.status !== "resolved" && t.priority === "high").length} />
+            <Kpi icon={UserX} label="Unassigned" value={tickets.filter((t) => t.status !== "resolved" && !t.assignedTo).length} />
+            <Kpi icon={CheckCircle2} label="Resolved" value={tickets.filter((t) => t.status === "resolved").length} />
+          </div>
+        )}
         {tickets && shown.length === 0 && <Card className="p-4 text-sm text-muted-foreground">No open requests. </Card>}
         {shown.length > 0 && (
           <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">

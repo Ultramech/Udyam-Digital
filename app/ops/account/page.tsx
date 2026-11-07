@@ -22,7 +22,7 @@ export default function StaffAccount() {
   return (
     <OpsShell>
       <div className="max-w-md space-y-4">
-        <h1 className="text-xl font-bold">My account</h1>
+        <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">My account</h1>
         {me && <Card className="p-4 text-sm"><div className="font-semibold">{me.name}</div><div className="text-muted-foreground">{me.email} · <span className="capitalize">{me.role}</span></div></Card>}
         {me?.isDemo ? <Card className="p-4 text-sm text-muted-foreground">Demo accounts have no password; they work only while DEMO_MODE is on.</Card> : (
           <Card className="space-y-3 p-4">

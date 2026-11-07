@@ -167,6 +167,34 @@ test.describe("Ops console: new screens and role gates", () => {
     await expect(tile("Leads")).not.toHaveText("5,000");
   });
 
+  test("analytics and overview show real charts, and Export downloads exactly what is on screen", async ({ page }) => {
+    await staff(page, "OPS1");
+    await page.goto("/ops/analytics");
+    await expect(page.getByRole("img", { name: /Line chart, latest/ }).first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Conversion funnel")).toBeVisible();
+    await expect(page.getByText("Key insights")).toBeVisible();
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Export" }).click()]);
+    expect(dl.suggestedFilename()).toBe("analytics.csv");
+    const csv = (await (await import("node:fs/promises")).readFile(await dl.path(), "utf8"));
+    expect(csv).toContain("Leads,5000");
+    expect(csv).toContain("Lead,5000,");
+    await page.goto("/ops");
+    await expect(page.getByRole("heading", { name: "The supplied quarter" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Weekly lead → activation" })).toBeVisible();
+    await expect(page.getByRole("img", { name: /Line chart, latest/ }).first()).toBeVisible();
+  });
+
+  test("the console works on a phone: no sideways scroll on the main pages", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await staff(page, "ADM1");
+    for (const path of ["/ops", "/ops/analytics", "/ops/playbook", "/ops/customers"]) {
+      await page.goto(path);
+      await expect(page.getByRole("navigation", { name: "Operations" })).toBeVisible({ timeout: 30_000 });
+      await page.waitForTimeout(800);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), path).toBe(true);
+    }
+  });
+
   test("catalogue admin: out-of-band price refused; pause shows up for customers; history + audit recorded; reset", async ({ page }) => {
     await signInAndSetup(page);
     const request = page.request;

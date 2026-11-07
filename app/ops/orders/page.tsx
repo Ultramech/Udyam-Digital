@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OpsShell } from "@/components/ops/shell";
+import { Kpi } from "@/components/ops/kit";
+import { CheckCircle2, CreditCard, Package, Truck } from "lucide-react";
 import { api, ApiError } from "@/lib/client/api";
 import { fmtDate, inr } from "@/lib/client/format";
 import { bundleName } from "@/lib/i18n/bundles";
@@ -33,13 +35,21 @@ export default function Orders() {
   return (
     <OpsShell>
       <div className="space-y-4">
-        <div><h1 className="text-2xl font-bold">Orders</h1><p className="text-sm text-muted-foreground">Advance an order and the customer&apos;s tracker, timeline and WhatsApp-style updates change with it. Delays post a proactive message.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Orders</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Advance an order and the customer&apos;s tracker, timeline and WhatsApp-style updates change with it. Delays post a proactive message.</p></div>
+        {rows && rows.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Kpi icon={Package} label="Orders" value={rows.length} />
+            <Kpi icon={CreditCard} label="Waiting for payment" value={rows.filter((r) => !r.stage).length} />
+            <Kpi icon={Truck} label="In installation" value={rows.filter((r) => r.stage === "INSTALL_SCHEDULED" || r.stage === "INSTALL_IN_PROGRESS").length} />
+            <Kpi icon={CheckCircle2} label="Activated" value={rows.filter((r) => r.stage === "ACTIVATED").length} />
+          </div>
+        )}
         {!rows ? <Skeleton className="h-64" /> : rows.length === 0 ? <Card className="p-8 text-center text-sm text-muted-foreground">No orders yet. Complete a customer journey to place one.</Card> : (
           <div className="flex gap-3 overflow-x-auto pb-3" role="list" aria-label="Orders by stage">
             {COLS.map((c) => {
               const items = rows.filter((r) => (c.key === "AWAITING" ? !r.stage : r.stage === c.key));
               return (
-                <div key={c.key} role="listitem" className="w-56 shrink-0 space-y-2 rounded-xl bg-muted/50 p-2"><div className="flex items-center justify-between px-1 text-[11px] font-semibold text-muted-foreground"><span>{c.label}</span><span className="rounded-full bg-card px-1.5">{items.length}</span></div>
+                <div key={c.key} role="listitem" className="w-60 shrink-0 space-y-2.5 rounded-2xl bg-[oklch(0.965_0.016_20)] p-2.5"><div className="flex items-center justify-between px-1 text-[11px] font-semibold text-muted-foreground"><span>{c.label}</span><span className="rounded-full bg-card px-2 py-0.5 text-xs shadow-sm">{items.length}</span></div>
                   {items.map((r) => (
                     <Card key={r.id} className="space-y-1.5 p-2.5 text-xs">
                       <div className="font-semibold">{r.business}</div><div className="font-mono text-[10px] text-muted-foreground">{r.id}</div>

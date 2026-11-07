@@ -55,7 +55,7 @@ export default function CatalogueAdmin() {
     <OpsShell>
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold">Catalogue</h1>
+          <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Catalogue</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">Pause a product or move its indicative price inside the published band. Changes apply to every new quote and advisor answer within seconds; placed orders keep the price they were sold at.
             Eligibility rules and dependencies are locked to <code>product_catalogue.csv</code> — they are the contract the rules engine is tested against, so changing them is a code + test change.</p>
         </div>

@@ -241,3 +241,14 @@
   .ud-float, .ud-ping, .ud-pulse { animation: none; }
   .ud-fill { animation: none; width: 100%; }
 }
+
+/* Operations console skin: soft tables, rounded filters, pink hover. Scoped to .dense (the ops shell), so the customer app is untouched. */
+.dense table { border-collapse: separate; border-spacing: 0; }
+.dense thead th { background: oklch(0.975 0.012 20); color: var(--muted-foreground); font-size: 0.75rem; font-weight: 600; text-transform: none; letter-spacing: 0; padding-block: 0.7rem; }
+.dense thead th:first-child { border-top-left-radius: 0.875rem; } .dense thead th:last-child { border-top-right-radius: 0.875rem; }
+.dense tbody tr { transition: background-color 120ms; } .dense tbody tr:hover { background: oklch(0.985 0.008 20); }
+.dense tbody tr + tr td, .dense tbody tr + tr th { border-top: 1px solid oklch(0.94 0.008 20); }
+.dense tbody tr, .dense tbody tr.border-t { border-top-width: 0; }
+.dense select { border-radius: 1rem; border-color: transparent; background-color: var(--card); box-shadow: var(--shadow-card); font-weight: 500; }
+.dense [data-slot="input"], .dense textarea { border-radius: 0.875rem; background: var(--card); }
+.dense [data-slot="button"] { border-radius: 0.875rem; }

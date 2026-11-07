@@ -36,7 +36,7 @@ export default function Lab() {
   return (
     <OpsShell>
       <div className="max-w-5xl space-y-4">
-        <div><h1 className="text-2xl font-bold">Scenario Lab</h1><p className="text-sm text-muted-foreground">Paste any business description. See what the advisor extracted, every rule it applied, and the priced plan. Nothing is saved.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Scenario Lab</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Paste any business description. See what the advisor extracted, every rule it applied, and the priced plan. Nothing is saved.</p></div>
         <Card className="space-y-3 p-4">
           <Textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} aria-label="Business description" />
           <div className="flex flex-wrap items-center gap-2">{EXAMPLES.map((e, i) => <button key={i} type="button" onClick={() => { setText(e); run(e); }} className="rounded-full border bg-card px-2.5 py-1 text-xs hover:border-primary">Example {i + 1}</button>)}</div>

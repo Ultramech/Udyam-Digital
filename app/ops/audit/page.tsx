@@ -25,7 +25,7 @@ export default function AuditLog() {
   return (
     <OpsShell>
       <div className="space-y-4">
-        <div><h1 className="text-xl font-bold">Audit log</h1><p className="text-sm text-muted-foreground">Append-only record of staff actions: KYC decisions, lead and order changes, catalogue edits, support replies, cancellations. It stores ids only — never raw identifiers.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Audit log</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Append-only record of staff actions: KYC decisions, lead and order changes, catalogue edits, support replies, cancellations. It stores ids only — never raw identifiers.</p></div>
         {err && <Card className="p-4 text-sm">{err}</Card>}
         <div className="flex flex-wrap gap-2">
           <select className={sel} value={actor} onChange={(e) => setActor(e.target.value)} aria-label="Actor"><option value="">Everyone</option>{actors.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.role})</option>)}</select>

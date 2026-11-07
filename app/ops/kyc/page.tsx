@@ -77,7 +77,7 @@ export default function KycQueue() {
   return (
     <OpsShell>
       <div className="max-w-5xl space-y-4">
-        <div className="flex items-center justify-between"><div><h1 className="flex items-center gap-2 text-2xl font-bold"><ClipboardCheck className="size-6 text-primary" />KYC review</h1><p className="text-sm text-muted-foreground">Cases flagged for a person. Your decision appears on the customer&apos;s screen and order tracker.</p></div>
+        <div className="flex items-center justify-between"><div><h1 className="flex items-center gap-2 text-[1.75rem] font-extrabold leading-tight tracking-tight"><ClipboardCheck className="size-6 text-primary" />KYC review</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Cases flagged for a person. Your decision appears on the customer&apos;s screen and order tracker.</p></div>
           <Button variant="outline" size="sm" onClick={() => setAll((a) => !a)}>{all ? "Show open only" : "Show all cases"}</Button></div>
         {denied && <Card className="border-destructive/40 bg-destructive/5 p-4 text-sm">Your role can&apos;t review KYC. Sign in as KYC ops or admin.</Card>}
         {!rows ? <Skeleton className="h-64" /> : rows.length === 0 && !denied ? <Card className="p-8 text-center text-sm text-muted-foreground">Nothing waiting. Run the &ldquo;Dr. Menon&rdquo; or &ldquo;Vindhya Tours&rdquo; demo to create a case.</Card> : rows.map((r) => <Case key={r.id} r={r} onDone={load} />)}

@@ -30,7 +30,7 @@ export default function Team() {
   return (
     <OpsShell>
       <div className="max-w-4xl space-y-4">
-        <div><h1 className="text-xl font-bold">Team</h1><p className="text-sm text-muted-foreground">Staff and partner accounts. New accounts get a temporary password and must set their own at first sign-in. Deactivating or resetting a password ends that person&apos;s sessions immediately.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Team</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Staff and partner accounts. New accounts get a temporary password and must set their own at first sign-in. Deactivating or resetting a password ends that person&apos;s sessions immediately.</p></div>
         <Card className="space-y-3 p-4">
           <div className="text-sm font-semibold">Add a person</div>
           <div className="grid gap-2 sm:grid-cols-4">

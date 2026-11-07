@@ -39,7 +39,7 @@ export default function LeadDetail({ params }: { params: Promise<{ id: string }>
     const l = d.lead;
     return (
       <OpsShell><div className="max-w-3xl space-y-4"><Link href="/ops/leads" className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="size-4" />Leads</Link>
-        <div><h1 className="text-2xl font-bold">{l.business}</h1><div className="font-mono text-xs text-muted-foreground">{l.id} · historical dataset</div></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">{l.business}</h1><div className="font-mono text-xs text-muted-foreground">{l.id} · historical dataset</div></div>
         <Card className="grid grid-cols-2 gap-3 p-4 text-sm md:grid-cols-4">{[["Segment", l.segment], ["City", l.city], ["Source", l.source], ["Reached", l.stage], ["Outcome", l.outcome], ["GSTIN", l.hasGstin ? "Yes" : "No"], ["Turnover", l.turnover], ["People / sites", `${l.employees} / ${l.sites}`]].map(([k, v]) => <div key={k}><div className="text-[11px] uppercase text-muted-foreground">{k}</div><div className="font-medium">{v}</div></div>)}</Card>
         {l.dropReason && <Card className="p-4 text-sm"><div className="text-[11px] uppercase text-muted-foreground">Why it dropped</div><div className="font-medium">{l.dropReason}</div>{l.winback && <Badge className="mt-2">digitally fixable → win-back</Badge>}</Card>}
         <Card className="space-y-2 p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><Sparkles className="size-4 text-primary" />Propensity {Math.round(l.score.probability * 100)} · {l.score.band}</div>
@@ -55,7 +55,7 @@ export default function LeadDetail({ params }: { params: Promise<{ id: string }>
       <div className="max-w-5xl space-y-4">
         <Link href="/ops/leads" className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="size-4" />Leads</Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><h1 className="text-2xl font-bold">{l.businessName ?? "New enquiry"}</h1><div className="font-mono text-xs text-muted-foreground">{l.id} · {l.profile.city} · {l.attribution.source ?? "advisor"}</div></div>
+          <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">{l.businessName ?? "New enquiry"}</h1><div className="font-mono text-xs text-muted-foreground">{l.id} · {l.profile.city} · {l.attribution.source ?? "advisor"}</div></div>
           <div className="flex flex-wrap gap-1.5"><Badge variant={l.level === "hard" ? "destructive" : "default"}>{l.level === "hard" ? "needs a person" : "specialist assist"}</Badge><Badge variant="secondary" className="capitalize">{l.status}</Badge>
             {l.assistCredit && <Badge variant="outline">assist credit → {l.assistCredit.to}</Badge>}</div>
         </div>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Segmented } from "@/components/ops/kit";
 import { NEXT_ACTION, OpsShell } from "@/components/ops/shell";
 import { api } from "@/lib/client/api";
 import { inr } from "@/lib/client/format";
@@ -39,8 +39,8 @@ function Inner() {
   return (
     <OpsShell>
       <div className="space-y-4">
-        <div><h1 className="text-2xl font-bold">Leads</h1><p className="text-sm text-muted-foreground">Live enquiries from the advisor, and the supplied historical leads ranked by propensity × expected value.</p></div>
-        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}><TabsList>{TABS.map(([k, l]) => <TabsTrigger key={k} value={k}>{l}</TabsTrigger>)}</TabsList></Tabs>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Leads</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Live enquiries from the advisor, and the supplied historical leads ranked by propensity × expected value.</p></div>
+        <Segmented label="Lead views" value={tab} onChange={setTab} options={TABS} />
         {hist && (
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative"><Search className="absolute left-2 top-2 size-3.5 text-muted-foreground" /><Input className="h-8 w-48 pl-7" placeholder="Search business / ID" aria-label="Search" value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} /></div>

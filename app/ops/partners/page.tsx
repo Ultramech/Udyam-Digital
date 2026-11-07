@@ -20,7 +20,7 @@ export default function Partners() {
   return (
     <OpsShell>
       <div className="max-w-5xl space-y-5">
-        <div><h1 className="text-2xl font-bold">Partner book</h1><p className="text-sm text-muted-foreground">Every lead a partner brought or was assigned, where it stands and what it is worth. Figures come from real paid orders only.</p></div>
+        <div><h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tight">Partner book</h1><p className="mt-1 max-w-3xl text-[0.9375rem] text-muted-foreground">Every lead a partner brought or was assigned, where it stands and what it is worth. Figures come from real paid orders only.</p></div>
         {!d ? <Skeleton className="h-64" /> : d.length === 0 ? <Card className="p-8 text-center text-sm text-muted-foreground">No partner data.</Card> : d.map((p) => (
           <section key={p.partnerId} className="space-y-3" aria-label={p.name}>
             <h2 className="flex items-center gap-2 text-lg font-semibold">{p.name}<Badge variant="outline" className="font-mono text-[10px]">{p.partnerId}</Badge></h2>
