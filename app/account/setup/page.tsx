@@ -88,10 +88,18 @@ function Setup() {
     { t: H("Business Profile", "बिज़नेस प्रोफ़ाइल"), d: H("Help us understand your business better.", "अपने बिज़नेस को बेहतर समझने में हमारी मदद करें।") },
     { t: H("Business Details", "बिज़नेस की जानकारी"), d: H("Where you are and your registrations. We verify them at KYC.", "आप कहाँ हैं और आपके रजिस्ट्रेशन। KYC में इनकी पुष्टि होती है।") },
   ][step - 1];
-  const back = () => (step > 1 ? setStep((step - 1) as 1 | 2) : router.push("/login"));
+  // Step 1 has nothing before it but the phone number, so "back" means "use a different number": log out on the server, then load /login
+  // fresh. (A plain link to /login would bounce straight back here, because a verified account is sent on to setup, and clearing the
+  // account in place would race this page's own sign-in redirect.)
+  const back = async () => {
+    if (step > 1) { setStep((step - 1) as 1 | 2); return; }
+    await api("POST", "/api/auth/logout").catch(() => {});
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full load on purpose: it starts /login from a clean, signed-out state
+    window.location.assign("/login");
+  };
   return (
     <AuthScreen>
-      <div className="flex items-center"><BackButton label={H("Back", "पीछे")} onClick={back} /><div className="flex-1 pl-2"><Segments step={step} total={3} /></div><span className="size-11" aria-hidden /></div>
+      <div className="flex items-center"><BackButton label={step > 1 ? H("Back", "पीछे") : H("Use a different number", "दूसरा नंबर इस्तेमाल करें")} onClick={back} /><div className="flex-1 pl-2"><Segments step={step} total={3} /></div><span className="size-11" aria-hidden /></div>
       <div className="mt-3 flex justify-center"><Wordmark /></div>
       <h1 className="mt-8 text-[1.75rem] font-extrabold leading-tight tracking-tight">{copy.t}</h1>
       <p className="mt-1.5 text-[1.0625rem] leading-snug text-foreground/70">{copy.d}</p>

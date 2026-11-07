@@ -70,6 +70,17 @@ test.describe("Customer account", () => {
     await noSideScroll(page);
   });
 
+  test("setup step 1: back signs out and returns to log in instead of looping back to setup", async ({ page }) => {
+    await page.goto("/login");
+    await page.request.post("/api/demo/verify", { data: { phone: freshPhone() } });
+    await page.goto("/account/setup");
+    await expect(page.getByRole("heading", { name: "Create Business Account" })).toBeVisible();
+    await page.getByRole("button", { name: "Use a different number" }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole("heading", { name: "Log in to your Business Account" })).toBeVisible();
+    expect((await page.request.get("/api/me")).status()).toBe(401);
+  });
+
   test("signed in: edit profile, add another business + location, see devices, sign out → locked again", async ({ page }) => {
     await signInAndSetup(page);
     await page.goto("/account");
