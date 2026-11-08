@@ -6,7 +6,7 @@ questions — always from a context the code assembled, and every number it writ
 
 ![Architecture diagram](architecture.png)
 
-Source: [`architecture.html`](architecture.html) (hand-drawn SVG) · print version: [`architecture.pdf`](architecture.pdf).
+Source: [`architecture.html`](architecture.html) (hand-drawn SVG) · print version: [`solutionarchitecturediagram.pdf`](solutionarchitecturediagram.pdf).
 
 The diagram is self-explaining: numbered markers ①–⑨ match the nine notes printed under it (one customer journey, end to end).
 Four lanes run inside one server-only Next.js app on Vercel: **(1) AI advisor** — understand → decide (rules engine) → explain → check;
