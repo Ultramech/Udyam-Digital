@@ -9,7 +9,7 @@ Discover a bundle, get one clear price, verify, sign, pay and track — on a pho
 
 [![Live app](https://img.shields.io/badge/Live_app-udyam--digital--kappa.vercel.app-E40000?style=for-the-badge)](https://udyam-digital-kappa.vercel.app)
 [![Ops console](https://img.shields.io/badge/Ops_console-%2Fops-16110F?style=for-the-badge)](https://udyam-digital-kappa.vercel.app/ops)
-[![Demo video](https://img.shields.io/badge/Demo_video_%26_deck-Google_Drive-1F9D55?style=for-the-badge)](https://drive.google.com/drive/u/1/folders/1kKCy7cLnNn8draOn5uVk0nRQHl97aGQG)
+[![Demo video](https://img.shields.io/badge/▶_Demo_video-3_min-1F9D55?style=for-the-badge)](https://github.com/Ultramech/Udyam-Digital/blob/main/docs/demo/udyam-digital-demo.mp4)
 
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs) ![React 19](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white) ![Gemini](https://img.shields.io/badge/AI-Google_Gemini-7C4DDB) ![Turso](https://img.shields.io/badge/DB-Turso_libSQL-4FF8D2) ![Vercel](https://img.shields.io/badge/Hosted-Vercel_Mumbai-000?logo=vercel) ![Unit tests](https://img.shields.io/badge/unit_tests-270%2B-1F9D55) ![E2E](https://img.shields.io/badge/browser_tests-37-1F9D55)
 
@@ -19,11 +19,29 @@ Discover a bundle, get one clear price, verify, sign, pay and track — on a pho
 
 ---
 
+## Watch the demo
+
+<div align="center">
+
+<a href="https://github.com/Ultramech/Udyam-Digital/blob/main/docs/demo/udyam-digital-demo.mp4"><img src="docs/demo/poster.png" alt="Watch the 3-minute demo of Udyam Digital" width="760"/></a>
+
+**[▶ Play the 3-minute demo](https://github.com/Ultramech/Udyam-Digital/blob/main/docs/demo/udyam-digital-demo.mp4)** · [download MP4](docs/demo/udyam-digital-demo.mp4) · [Google Drive](https://drive.google.com/drive/u/1/folders/1kKCy7cLnNn8draOn5uVk0nRQHl97aGQG)
+
+<sub>Recorded end-to-end on production: real SMS OTP, DigiLocker, SMS e-sign, Razorpay test mode (fail → retry → success), WhatsApp updates and the ops console.</sub>
+
+<img src="docs/demo/preview.gif" alt="Highlights: Hindi advisor, quote, KYC catches, payment retry, WhatsApp, ops console" width="600"/>
+
+<sub>Highlights preview</sub>
+
+</div>
+
+---
+
 ## Submission at a glance
 
 | | Deliverable | Link |
 |---|---|---|
-| 🎥 | **Demo video (3 min)** — shot end-to-end on production with a real phone, DigiLocker, SMS e-sign, Razorpay test mode and WhatsApp | [Google Drive folder](https://drive.google.com/drive/u/1/folders/1kKCy7cLnNn8draOn5uVk0nRQHl97aGQG) |
+| 🎥 | **Demo video (3 min)** — shot end-to-end on production with a real phone, DigiLocker, SMS e-sign, Razorpay test mode and WhatsApp | [Play on GitHub](https://github.com/Ultramech/Udyam-Digital/blob/main/docs/demo/udyam-digital-demo.mp4) · [Google Drive](https://drive.google.com/drive/u/1/folders/1kKCy7cLnNn8draOn5uVk0nRQHl97aGQG) |
 | 📱 | **Live prototype** — customer app (open on a phone, or tap *Try the demo, no sign-in needed*) | [udyam-digital-kappa.vercel.app](https://udyam-digital-kappa.vercel.app) |
 | 🛠️ | **Ops console** — sales, KYC reviewers, partners (one click: *Demo Admin*) | [udyam-digital-kappa.vercel.app/ops](https://udyam-digital-kappa.vercel.app/ops) |
 | 🏗️ | **Architecture diagram** — numbered, self-explaining | [PNG](docs/architecture.png) · [PDF](docs/solutionarchitecturediagram.pdf) · [notes](docs/ARCHITECTURE.md) |
